@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>ControllerList.qml</file>
+        <file>ManageControllers.qml</file>
+        <file>TurnoutController.qml</file>
+        <file>PanelController.qml</file>
+        <file>EditController.qml</file>
+        <file>PanelInputDelegate.qml</file>
+        <file>PanelOutputDelegate.qml</file>
+        <file>EditPanelModule.qml</file>
+        <file>NewController.qml</file>
+        <file>LookupController.qml</file>
+    </qresource>
+</RCC>

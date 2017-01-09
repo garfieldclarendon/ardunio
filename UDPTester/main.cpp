@@ -1,0 +1,30 @@
+#include "MainWindow.h"
+#include <QApplication>
+#include <QtQml>
+
+#include "ControllerModel.h"
+#include "TurnoutModel.h"
+#include "PanelModuleModel.h"
+#include "PanelInputModel.h"
+#include "PanelOutputModel.h"
+
+int main(int argc, char *argv[])
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+    QApplication a(argc, argv);
+
+    qRegisterMetaType<UDPMessage>("UDPMessage");
+
+    qmlRegisterType<ControllerModel>("Utils", 1, 0, "ControllerModel");
+    qmlRegisterType<TurnoutModel>("Utils", 1, 0, "TurnoutModel");
+    qmlRegisterType<PanelModuleModel>("Utils", 1, 0, "PanelModuleModel");
+    qmlRegisterType<PanelInputModel>("Utils", 1, 0, "PanelInputModel");
+    qmlRegisterType<PanelOutputModel>("Utils", 1, 0, "PanelOutputModel");
+
+    MainWindow w;
+    w.show();
+
+    return a.exec();
+}
