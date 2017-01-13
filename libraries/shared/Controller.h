@@ -9,12 +9,6 @@
 class Controller
 {
 public:
-	enum DeviceMode
-	{
-		UnLocked,
-		Locked,
-		Test
-	};
 	typedef std::function<void(const Message &message)> TMessageHandlerFunction;
 
 	Controller();

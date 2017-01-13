@@ -62,8 +62,6 @@ typedef struct RouteStruct RouteStruct;
 #define SYS_CONFIG_CHANGED 15
 #define SYS_REBOOT_CONTROLLER 16
 #define SYS_DOWNLOAD_FIRMWARE 17
-#define SYS_LOCK_DEVICE 18
-#define SYS_UNLOCK_DEVICE 19
 
 //Turnout Messages
 #define TRN_STATUS 101
@@ -79,5 +77,4 @@ typedef struct RouteStruct RouteStruct;
 //Panel Messages
 #define PANEL_ACTIVATE_ROUTE 221
 #define PANEL_STATUS 222
-#define PANEL_TEST_LED 223
-#define PANEL_TEST_BUTTON 224
+

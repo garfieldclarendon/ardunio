@@ -18,7 +18,7 @@ bool BlockHandler::process(void)
 	bool ret = false;
 	byte raw = digitalRead(m_blockPin);
 	long t = millis();
-//	Serial.println(raw);          // Irms
+//	Serial.println(raw); 
 
 	if (raw == m_lastRead && raw != m_current && (t - m_currentTimeout) > 2000)
 	{
@@ -31,13 +31,13 @@ bool BlockHandler::process(void)
 			Serial.println("Occupied TRUE");
 			Serial.println("-------------------------------");
 			Serial.print(" ");
-			Serial.println(raw);          // Irms
+			Serial.println(raw); 
 			Serial.println("-------------------------------");
 		}
 		else
 		{
 			Serial.println("Occupied FALSE");
-			Serial.println(raw);          // Irms
+			Serial.println(raw);
 			m_currentState = Empty;
 		}
 		ret = true;
@@ -51,16 +51,4 @@ bool BlockHandler::handleMessage(const Message &message)
 	bool ret = false;
 	
 	return ret;
-}
-
-Message BlockHandler::createMessage(BlockState newState)
-{
-	Message message;
-
-	message.setDeviceID(m_blockID);
-	message.setMessageID(BLOCK_STATUS);
-	message.setMessageClass(ClassBlock);
-	message.setIntValue1(m_currentState);
-
-	return message;
 }

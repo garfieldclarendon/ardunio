@@ -41,7 +41,7 @@ Rectangle {
                         id: panelNameText
                         text: id > 0 ? panelIndex + " " + panelName : index
                         font.bold: true
-                        font.pointSize: ui.applyFontRatio(6)
+                        font.pointSize: ui.applyFontRatio(ui.baseFontSize + 4)
                         anchors.margins: ui.margin
                         Layout.minimumWidth: ui.applyRatio(175)
                         color: "blue"

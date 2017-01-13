@@ -180,11 +180,23 @@ void addActiveRoute(int routeID)
 			if (routeIndex >= 0)
 			{
 				PanelRouteStruct route;
-				EEPROM.get(MODULE_ROUTE_BASE_ADDRESS + (sizeof(PanelRouteStruct) * routeIndex) + 1, route);
-				activeRoutes[x].route = route;
-				activeRoutes[x].timeout = millis();
-				Serial.print("ADD ACTIVE ROUTE: ");
-				Serial.println(route.routeID);
+				String fileName;
+				fileName = "Route_";
+				fileName += routeID;
+				fileName += ".dat";
+
+				File f = SPIFFS.open(fileName,"r");
+				if (f)
+				{
+					Serial.print("Reading route file: ");
+					Serial.println(f.name());
+
+					f.read((uint8_t*)&route, sizeof(PanelRouteStruct));
+					activeRoutes[x].route = route;
+					activeRoutes[x].timeout = millis();
+					Serial.print("ADD ACTIVE ROUTE: ");
+					Serial.println(route.routeID);
+				}
 				break;
 			}
 		}
@@ -195,19 +207,26 @@ void updateActiveRoutes(int turnoutID, TurnoutState newState)
 {
 	for (byte x = 0; x < MAX_ACTIVE_ROUTES; x++)
 	{
-		bool allAreSet = true;
-
-		for (byte index = 0; index < MAX_ROUTE_ENTRIES; index++)
+		if (activeRoutes[x].route.routeID > 0)
 		{
-			if (activeRoutes[x].route.entries[index].turnoutID == turnoutID && activeRoutes[x].route.entries[index].state == newState)
-				activeRoutes[x].route.entries[index].turnoutID = 0;
+			bool allAreSet = true;
 
-			if (activeRoutes[x].route.entries[index].turnoutID > 0)
-				allAreSet = false;
+			for (byte index = 0; index < MAX_ROUTE_ENTRIES; index++)
+			{
+				if (activeRoutes[x].route.entries[index].turnoutID == turnoutID && activeRoutes[x].route.entries[index].state == newState)
+					activeRoutes[x].route.entries[index].turnoutID = 0;
+
+				if (activeRoutes[x].route.entries[index].turnoutID > 0)
+					allAreSet = false;
+			}
+
+			if (allAreSet)
+			{
+				Serial.print("REMOVE ACTIVE ROUTE: ");
+				Serial.println(activeRoutes[x].route.routeID);
+				activeRoutes[x].route.routeID = 0;
+			}
 		}
-
-		if (allAreSet)
-			activeRoutes[x].route.routeID = 0;
 	}
 }
 

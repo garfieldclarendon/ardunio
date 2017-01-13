@@ -97,7 +97,7 @@ void MessageBroadcaster::processPendingMessages()
 
             UDPMessage message(datagram);
             emit newMessage(message);
-            QString str(QString("Message: %1, Controller: %2, Device: %3 Version: %4 lValue %5").arg(datagram.messageID).arg(datagram.controllerID).arg(datagram.deviceID).arg(datagram.messageVersion).arg(datagram.payload.payloadStruct.lValue));
+            QString str(QString("Message: %1, Controller: %2, Device: %3 Version: %4 byteValue1 %5 byteValue2 %6").arg(datagram.messageID).arg(datagram.controllerID).arg(datagram.deviceID).arg(datagram.messageVersion).arg(datagram.payload.payloadStruct.byteValue1).arg(datagram.payload.payloadStruct.byteValue2));
             emit newRawUDPMessage(str);
         }
         else

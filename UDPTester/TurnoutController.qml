@@ -50,27 +50,41 @@ Item {
                 anchors.fill: parent
                 anchors.margins: ui.margin
                 RowLayout {
+                    Rectangle {
+                        color: "red"
+                        width: 15
+                        height: 25
+                    }
+                    Text {
+                        text: "hello???"
+                    }
+
                     Text
                     {
                         id: controllerNameText
-                        text: id > 0 ? itemName : ""
+                        text: "Testing" //id > 0 ? itemName : ""
                         font.bold: true
-                        font.pointSize: ui.applyFontRatio(6)
-                        anchors.margins: ui.margin
-                        Layout.minimumWidth:  ui.applyRatio(100)
+//                        font.pointSize: ui.applyFontRatio(ui.baseFontSize + 4)
+//                        anchors.margins: ui.margin
+//                        Layout.minimumWidth:  ui.applyRatio(100)
                         color: "blue"
+                    }
+                    Rectangle {
+                        color: "green"
+                        width: 15
+                        height: 25
                     }
                     ColumnLayout {
                         Layout.minimumWidth: ui.applyRatio(200)
                         Text {
                             text: id > 0 ? '<b>Description:</b> ' + itemDescription : ""
                             verticalAlignment: Text.AlignVCenter
-                            height: parent.height
+                            height: 50 //parent.height
                          }
                         Text {
                             text: id > 0 ? '<b>ID:</b> ' + id : ""
                             verticalAlignment: Text.AlignVCenter
-                            height: parent.height
+                            height: 50 //parent.height
                          }
                         Text {
                             text: id > 0 ? '<b>State:</b> ' + getStateText(currentState) : ""

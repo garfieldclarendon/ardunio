@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QGuiApplication>
 #include <QFont>
+#include <QWidget>
 
 class UI : public QObject
 {
@@ -16,7 +17,8 @@ public:
 
     int getMargin(void) { applyRatio(m_margin); return m_margin; }
     void setMargin(int value) { m_margin = value; emit marginChanged(); }
-    int getBaseFontSize(void) { return QGuiApplication::font().pointSize(); }
+ //   int getBaseFontSize(void) { return QGuiApplication::font().pixelSize() > 0 ? QGuiApplication::font().pixelSize() : 8; }
+   int getBaseFontSize(void) { QWidget w; return  w.font().pixelSize(); }
 
 signals:
     void marginChanged(void);

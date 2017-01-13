@@ -45,8 +45,8 @@ void UpdateServer::readClient()
 
             QString fileName;
             QString path;
-//            path = "C:/Users/John/Documents/Arduino/";
-            path = "C:/Users/Jreil/OneDrive/Documents/Arduino/";
+            path = "C:/Users/John/Documents/Arduino/";
+//            path = "C:/Users/Jreil/OneDrive/Documents/Arduino/";
             QString returnCode("200 OK");
             if(controllerType == "1")
                 fileName = path + "TurnoutController/Release/TurnoutController.ino.bin";
@@ -56,6 +56,8 @@ void UpdateServer::readClient()
                 fileName = path + "SignalController/Release/SignalController.ino.bin";
             else if(controllerType == "5")
                 fileName = path + "SemaphoreController/Release/SemaphoreController.ino.bin";
+            else if(controllerType == "6")
+                fileName = path + "BlockController/Release/BlockController.ino.bin";
 
             // PROCESS //
             QByteArray fileData;

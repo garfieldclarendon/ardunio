@@ -19,10 +19,9 @@ public:
 	void setConfig(BlockConfigStruct value) { m_blockID = value.blockID; }
 	bool process(void);
 	bool handleMessage(const Message &message);
-	BlockState getCurrentState(void) const { m_currentState; }
+	BlockState getCurrentState(void) const { return m_currentState; }
 
 	int getBlockID(void) const { return m_blockID; }
-	Message createMessage(BlockState newState);
 
 private:
 	byte m_blockPin;
