@@ -1,30 +1,31 @@
 import QtQuick 2.5
-import QtQuick.Controls 1.4
-import QtQuick.Layouts 1.2
+import QtQuick.Controls 2.1
+import QtQuick.Layouts 1.1
 import Utils 1.0
 
-Item {
+Rectangle {
     id: outerRect
-    property int currentControllerID: 0
+   property int currentControllerID: 0
 
     TurnoutModel {
         id: turnoutModel
         controllerID: currentControllerID
     }
 
-//    radius: 20
-//    border.color: "grey"
+    radius: 20
+    border.color: "grey"
 
     Component {
         id: turnoutDelegate
-        Rectangle {
+         GroupBox {
             id: wraper
-            clip: true
             width: outerRect.width - ui.applyRatio(35)
             height: ui.applyRatio(60)
-            border.color: "grey"
-            border.width: 1
-            color: id > 0 ? "white" : "lightgrey"
+//            title: itemName
+//            clip: true
+//            border.color: "grey"
+//            border.width: 1
+//            color: id > 0 ? "white" : "lightgrey"
             function getStateText(state)
             {
                 if(state === "0" || state === "?")
@@ -50,44 +51,31 @@ Item {
                 anchors.fill: parent
                 anchors.margins: ui.margin
                 RowLayout {
-                    Rectangle {
-                        color: "red"
-                        width: 15
-                        height: 25
-                    }
-                    Text {
-                        text: "hello???"
-                    }
-
+                    Layout.fillWidth: true
                     Text
                     {
                         id: controllerNameText
-                        text: "Testing" //id > 0 ? itemName : ""
+                        text: id > 0 ? itemName : ""
                         font.bold: true
-//                        font.pointSize: ui.applyFontRatio(ui.baseFontSize + 4)
-//                        anchors.margins: ui.margin
-//                        Layout.minimumWidth:  ui.applyRatio(100)
+                        font.pointSize: ui.applyFontRatio(ui.baseFontSize + 4)
+                        anchors.margins: ui.margin
+                        Layout.minimumWidth:  ui.applyRatio(50)
                         color: "blue"
                     }
-                    Rectangle {
-                        color: "green"
-                        width: 15
-                        height: 25
-                    }
                     ColumnLayout {
-                        Layout.minimumWidth: ui.applyRatio(200)
+                        Layout.minimumWidth: ui.applyRatio(100)
                         Text {
                             text: id > 0 ? '<b>Description:</b> ' + itemDescription : ""
                             verticalAlignment: Text.AlignVCenter
-                            height: 50 //parent.height
+                            height: parent.height
                          }
                         Text {
                             text: id > 0 ? '<b>ID:</b> ' + id : ""
                             verticalAlignment: Text.AlignVCenter
-                            height: 50 //parent.height
+                            height: parent.height
                          }
                         Text {
-                            text: id > 0 ? '<b>State:</b> ' + getStateText(currentState) : ""
+                            text: id > 0 ? '<b>State:</b> ' + wraper.getStateText(currentState) : ""
                             verticalAlignment: Text.AlignVCenter
                             height: parent.height
                          }
@@ -123,6 +111,7 @@ Item {
         delegate: turnoutDelegate
         spacing: ui.applyRatio(2)
         focus: true
+        clip: true
     }
 }
 

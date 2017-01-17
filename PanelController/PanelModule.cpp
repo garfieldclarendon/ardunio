@@ -193,7 +193,7 @@ void PanelModuleClass::updateOutputs(int itemID, byte newState)
 {
 	for (byte index = 0; index < MAX_PANEL_OUTPUTS; index++)
 	{
-		if (m_configuration.outputs[index].itemID == itemID)
+		if (m_configuration.outputs[index].itemID == itemID && itemID > 0)
 		{
 			if (m_configuration.outputs[index].flashingValue == newState)
 			{
@@ -203,9 +203,12 @@ void PanelModuleClass::updateOutputs(int itemID, byte newState)
 			}
 			else
 			{
-				//Serial.print(index);
-				//Serial.print(" Removing to blinking pins:  ");
-				//Serial.println(m_configuration.outputs[index].onValue == newState);
+				Serial.println("Index");
+				Serial.println(index);
+				Serial.println("State:");
+				Serial.println(newState);
+				Serial.println("OnValue");
+				Serial.println(m_configuration.outputs[index].onValue);
 				removeBlinkingPin(index);
 				bitWrite(m_outputs, index, m_configuration.outputs[index].onValue == newState);
 			}

@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QTimer>
 #include <QNetworkInterface>
+#include <QHostAddress>
 
 #include "MessageBroadcaster.h"
 #include "TcpClientHandler.h"
@@ -60,6 +61,8 @@ QHostAddress MessageBroadcaster::getLocalAddress() const
             if (list[nIter].protocol() == QAbstractSocket::IPv4Protocol )
             {
                 address = list[nIter];
+                if(address.toString().startsWith("192."))
+                    break;
             }
         }
     }

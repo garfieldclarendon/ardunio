@@ -33,7 +33,8 @@ int UI::applyFontRatio(const int value)
 {
     if(m_ratio == 0.0)
         init();
-    qDebug(QString("VLUE IS %1 ratio is %2 = %3").arg(value).arg(m_ratioFont).arg(value * m_ratioFont).toLatin1());
+    int s = QGuiApplication::font().pointSize();
+    qDebug(QString("VALUE IS %1 ratio is %2 = %3").arg(value).arg(m_ratioFont).arg(value * m_ratioFont).toLatin1());
     return value;
 }
 /*

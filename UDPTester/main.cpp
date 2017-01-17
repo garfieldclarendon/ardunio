@@ -15,6 +15,12 @@ int main(int argc, char *argv[])
 #endif
     QApplication a(argc, argv);
 
+    if(QApplication::font().pointSize() < 1)
+    {
+        QFont f = QApplication::font();
+        f.setPointSize(12);
+        QApplication::setFont(f);
+    }
     qRegisterMetaType<UDPMessage>("UDPMessage");
 
     qmlRegisterType<ControllerModel>("Utils", 1, 0, "ControllerModel");
