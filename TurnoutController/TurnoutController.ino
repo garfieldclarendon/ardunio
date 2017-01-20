@@ -135,6 +135,12 @@ void messageCallback(const Message &message)
 		bool sendStatus1 = turnout1.handleMessage(message);
 		bool sendStatus2 = turnout2.handleMessage(message);
 
+		static bool sysHeatbeatHandled = false;
+		if (sysHeatbeatHandled == false && message.getMessageID() == SYS_HEARTBEAT)
+		{
+			sendStatusMessage();
+			sysHeatbeatHandled = true;
+		}
 		if (sendStatus1 || sendStatus2 || message.getMessageID() == PANEL_STATUS)
 			sendStatusMessage();
 	}
@@ -143,6 +149,7 @@ void messageCallback(const Message &message)
 void sendStatusMessage(void)
 {
 	Message message;
+	Serial.println("----------------------");
 	Serial.println("Sending status message");
 
 	message = turnout1.createMessage(turnout1.getCurrentState());
@@ -153,4 +160,5 @@ void sendStatusMessage(void)
 	message.setByteValue2(turnout2.getCurrentState());
 
 	controller.sendNetworkMessage(message, "turnout");
+	Serial.println("----------------------");
 }

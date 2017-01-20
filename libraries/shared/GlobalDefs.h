@@ -10,7 +10,7 @@ const int ControllerVersion = 5;
 //#define MAX_MODULE_ROUTE_DOWNLOADS 8
 #define MAX_SIGNAL_CONDITIONS 10
 
-#define TIMEOUT_INTERVAL 200
+#define TIMEOUT_INTERVAL 100
 
 enum TurnoutState 
 {

@@ -12,8 +12,9 @@
 #include <ESP8266httpUpdate.h>
 
 Controller::Controller(int localServerPort)
-	: m_server(localServerPort), m_controllerID(-1), m_class(ClassUnknown), m_serverPort(0)
+	: m_server(localServerPort), m_controllerID(-1), m_class(ClassUnknown), m_serverPort(0), m_lastDNSCount(0), m_dnsCheckTimeout(0)
 {
+	m_lastDNSService = "turnout";
 }
 
 Controller::~Controller()
@@ -39,6 +40,10 @@ void Controller::setup(TMessageHandlerFunction messageCallback, ClassEnum contro
 void Controller::setupNetwork(void)
 {
 	Serial.printf("Connecting to %s ", ssid);
+	
+	String name("gcmrr_");
+	name += ESP.getChipId();
+	WiFi.hostname(name);
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(ssid, password);
 	
@@ -50,23 +55,21 @@ void Controller::setupNetwork(void)
 	Serial.println(" connected");
 
 	// Set up mDNS responder:
-	// - first argument is the domain name, in this example
-	//   the fully-qualified domain name is "esp8266.local"
+	// - first argument is the domain name, 
+	//   the fully-qualified domain name is "gcmrr_<chip ID>.local"
+	//   where <chip ID> is the id of this ESP8266 (returned by getChipId())
 	// - second argument is the IP address to advertise
 	//   we send our IP address on the WiFi network
-	String name("gcmrr_");
-	name += ESP.getChipId();
 
-	if (!MDNS.begin(name.c_str())) {
+	if (MDNS.begin(name.c_str())) 
+		Serial.println("mDNS responder started.  Name: " + name);
+	else
 		Serial.println("Error setting up MDNS responder!");
-		while (1) {
-			delay(1000);
-		}
-	}
-	Serial.println("mDNS responder started.  Name: " + name);
 
-	m_udp.begin(UdpPort);
-	Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), UdpPort);
+	if(m_udp.begin(UdpPort))
+		Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), UdpPort);
+	else
+		Serial.println("Error starting UDP!");
 
 	// Start TCP server
 	m_server.begin();
@@ -75,7 +78,9 @@ void Controller::setupNetwork(void)
 
 void Controller::process(void)
 {
+	MDNS.update();
 	processLocalServer();
+
 	int packetSize = m_udp.parsePacket();
 	if (packetSize >= sizeof(MessageStruct))
 	{
@@ -87,7 +92,7 @@ void Controller::process(void)
 
 void Controller::processMessage(const Message &message)
 {
-	Serial.printf("NEW MESSAGE! MessageID %d\n", message.getMessageID());
+//	Serial.printf("NEW MESSAGE! MessageID %d\n", message.getMessageID());
 	if (message.getMessageID() == SYS_SET_CONTROLLER_ID && message.getLValue() == ESP.getChipId())
 	{
 		handleSetControllerIDMessage(message);
@@ -179,19 +184,25 @@ void Controller::sendNetworkMessage(const Message &message, const String &servic
 	//Serial.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 	//Serial.print("MessageSize: ");
 	//Serial.println(sizeof(MessageStruct));
-	//Serial.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-	int n = MDNS.queryService(service, "tcp"); // Send out query for controllers interested in turnout tcp services
-	if (n > 0)
+	Serial.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+	if (m_lastDNSService != service)
 	{
-		WiFiClient client;
+		m_lastDNSService = service;
+	}
+	updateDNSQuery();
 
-		for (int count = 0; count < n; count++)
+	if (m_lastDNSCount > 0)
+	{
+		for (int count = 0; count < m_lastDNSCount; count++)
 		{
 			Serial.print("Connecting to: ");
 			Serial.println(MDNS.hostname(count));
+			
+			WiFiClient client;
+			client.setNoDelay(true);
 			if (client.connect(MDNS.IP(count), LocalServerPort))
 			{
-				Serial.println("Sending message");
+//				Serial.println("Sending message");
 				client.write(message.getRef(), sizeof(MessageStruct));
 			}
 			else
@@ -210,12 +221,19 @@ void Controller::sendNetworkMessage(const Message &message, const String &servic
 	{
 		WiFiClient client;
 
-		if (client.connect(m_serverAddress, m_serverPort))
+		client.setNoDelay(true);
+		if (client.connect(m_serverAddress, m_serverPort + 2))
 		{
 			Serial.println("Sending message to server");
 			client.write(message.getRef(), sizeof(MessageStruct));
 		}
+		else
+		{
+			m_serverPort = 0;
+			Serial.println("Server connection failed");
+		}
 	}
+//	Serial.println("Finished Sending message");
 }
 
 void Controller::handleSetControllerIDMessage(const Message &message)
@@ -292,9 +310,7 @@ void Controller::processLocalServer(void)
 		{
 			return;
 		}
-		Serial.println("---------------------------------------------------------");
 		Serial.println("New client");
-		Serial.println("---------------------------------------------------------");
 
 		// Wait for data from client to become available
 		while (client.connected() && client.available() < sizeof(MessageStruct))
@@ -302,10 +318,24 @@ void Controller::processLocalServer(void)
 			delay(1);
 		}
 
-		client.read((uint8_t *)message.getRef(), sizeof(MessageStruct));
+		if (client.available() >= sizeof(MessageStruct))
+			client.read((uint8_t *)message.getRef(), sizeof(MessageStruct));
 		Serial.println("Done with client");
 	}
 	if (message.isValid())
 		processMessage(message);
 
+}
+
+void Controller::updateDNSQuery(void)
+{
+	long t = millis();
+	static bool firstTime = true;
+	if (firstTime || ((t - m_dnsCheckTimeout) > 10000 && m_lastDNSService.length() > 0))
+	{
+		Serial.println("updateDNSQuery");
+		m_dnsCheckTimeout = t;
+		m_lastDNSCount = MDNS.queryService(m_lastDNSService, "tcp");
+		firstTime = false;
+	}
 }

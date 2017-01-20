@@ -36,6 +36,7 @@ private:
 	void downloadFirmwareUpdate(void);
 	void processLocalServer(void);
 	void processMessage(const Message &message);
+	void updateDNSQuery(void);
 
 
 	TMessageHandlerFunction m_messageCallback;
@@ -46,5 +47,8 @@ private:
 	ClassEnum m_class;
 	IPAddress m_serverAddress;
 	byte m_serverPort;
+	String m_lastDNSService;
+	int m_lastDNSCount;
+	long m_dnsCheckTimeout;
 };
 
