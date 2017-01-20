@@ -1,11 +1,9 @@
 #include <dummy.h>
-#include <WebSocketsServer.h>
 #include <WebSocketsClient.h>
-#include <WebSockets.h>
 #include <Hash.h>
 #include <Wire.h>
 #include <EEPROM.h>
-#include "FS.h"
+#include <FS.h>
 
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -38,15 +36,11 @@ bool buttonPressed = false;
 byte totalModules = 1;
 byte totalRoutes = 0;
 
-WebSocketsClient webSocket;
 PanelModuleClass modules[MAX_PANEL_MODULES];
-Controller controller;
+Controller controller(LocalServerPort);
 PanelControllerConfigStruct *controllerConfig = NULL;
 PanelControllerRouteConfigStruct *routeConfigDownload = NULL;
 ActiveRoute activeRoutes[MAX_ACTIVE_ROUTES];
-
-const long heartbeatTimeout = 10 * 1000;
-long currentHeartbeatTimeout = 0;
 
 enum DownloadMode
 {
@@ -79,7 +73,7 @@ void messageCallback(const Message &message)
 			}
 			returnMessage = modules[x].handleMessage(message);
 			if (returnMessage.isValid())
-				controller.sendNetworkMessage(message);
+				controller.sendNetworkMessage(message, "route");
 		}
 	}
 }
@@ -100,6 +94,11 @@ void setup()
 
 	loadConfiguration();
 	controller.setup(messageCallback, ClassPanel);
+
+    // Add service to MDNS-SD
+    // These are the services we want to hear FROM
+    MDNS.addService("turnout", "tcp", LocalServerPort);
+    MDNS.addService("block", "tcp", LocalServerPort);
 
 	// If totalRoutes is less than 1, then this panel hasn't been configured yet.
 	if (totalRoutes < 1)
@@ -130,7 +129,12 @@ void buttonPressedInterrupt(void)
 
 void loop() 
 {
-	webSocket.loop();
+  static bool statusSent = false;
+  if(statusSent == false)
+  {
+    statusSent = true;
+    sendStatusMessage();
+  }
 	controller.process();
 
 	ConfigDownload.process();
@@ -162,11 +166,10 @@ void loop()
 		{
 			if (message.getMessageID() == PANEL_ACTIVATE_ROUTE)
 				addActiveRoute(message.getDeviceID());
-			controller.sendNetworkMessage(message);
+			controller.sendNetworkMessage(message, "route");
 		}
 	}
 	checkActiveRoutes();
-	sendHeartbeat();
 }
 
 void addActiveRoute(int routeID)
@@ -242,7 +245,7 @@ void checkActiveRoutes(void)
 			message.setDeviceID(activeRoutes[x].route.routeID);
 			message.setMessageID(PANEL_ACTIVATE_ROUTE);
 			message.setMessageClass(ClassRoute);
-			controller.sendNetworkMessage(message);
+			controller.sendNetworkMessage(message, "route");
 			activeRoutes[x].timeout = t;
 		}
 	}
@@ -412,21 +415,16 @@ void downloadConfig(void)
 	}
 }
 
-void sendHeartbeat()
+void sendStatusMessage()
 {
-	long t = millis();
-	if (t - currentHeartbeatTimeout > heartbeatTimeout)
-	{
-		Serial.println("Sending heartbeat");
-		currentHeartbeatTimeout = t;
+	Serial.println("Sending status message");
 
-		Message message;
-		message.setMessageID(PANEL_STATUS);
-		message.setControllerID(controller.getControllerID());
-		message.setMessageClass(ClassPanel);
+	Message message;
+	message.setMessageID(PANEL_STATUS);
+	message.setControllerID(controller.getControllerID());
+	message.setMessageClass(ClassPanel);
 
-		controller.sendNetworkMessage(message);
-	}
+	controller.sendNetworkMessage(message, "route");
 }
 
 void setupFileSystem(void)

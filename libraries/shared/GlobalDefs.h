@@ -35,6 +35,7 @@ enum ClassEnum
 };
 static unsigned char UdpBroadcast[] = {0xFF, 0xFF, 0xFF, 0xFF};
 const int UdpPort = 45454;
+const int LocalServerPort = 45455;
 const unsigned int sendTimeout = 100; 
 
 struct RouteEntryStruct

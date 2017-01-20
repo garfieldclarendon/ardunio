@@ -34,7 +34,7 @@ SOURCES += main.cpp\
     PanelInputModel.cpp \
     PanelOutputModel.cpp \
     UI.cpp \
-    JMRIWebSocket.cpp
+    TcpServer.cpp
 
 HEADERS  += MainWindow.h \
     MessageMonitorWidget.h \
@@ -56,7 +56,7 @@ HEADERS  += MainWindow.h \
     PanelInputModel.h \
     PanelOutputModel.h \
     UI.h \
-    JMRIWebSocket.h
+    TcpServer.h
 
 RESOURCES += \
     Resources.qrc

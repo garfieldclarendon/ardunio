@@ -10,6 +10,7 @@
 #include "MessageBroadcaster.h"
 #include "SystemMessageHandler.h"
 #include "GlobalDefs.h"
+#include "TcpServer.h"
 
 MessageMonitorWidget::MessageMonitorWidget(QWidget *parent) : QWidget(parent)
 {
@@ -19,6 +20,10 @@ MessageMonitorWidget::MessageMonitorWidget(QWidget *parent) : QWidget(parent)
 
     SystemMessageHandler *sysHandler = new SystemMessageHandler(this);
     connect(MessageBroadcaster::instance(), SIGNAL(newMessage(UDPMessage)), sysHandler, SLOT(handleMessage(UDPMessage)));
+
+    TcpServer *tcpServer = new TcpServer(83, this);
+    connect(tcpServer, SIGNAL(newMessage(UDPMessage)), sysHandler, SLOT(handleMessage(UDPMessage)));
+    connect(tcpServer, SIGNAL(newRawUDPMessage(QString)), this, SLOT(newRawMessage(QString)));
 }
 
 void MessageMonitorWidget::setupUI()

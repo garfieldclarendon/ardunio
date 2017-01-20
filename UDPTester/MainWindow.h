@@ -4,8 +4,6 @@
 #include <QMainWindow>
 #include "Database.h"
 
-class JMRIWebSocket;
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -23,7 +21,6 @@ protected:
 
 private:
     Database db;
-    JMRIWebSocket *m_jmriSocket;
 
     // QWidget interface
 protected:

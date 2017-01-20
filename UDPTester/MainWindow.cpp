@@ -16,7 +16,6 @@
 #include "ControllerWidget.h"
 #include "GlobalDefs.h"
 #include "UI.h"
-#include "JMRIWebSocket.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -30,10 +29,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     UpdateServer *updateServer = new UpdateServer(82, this);
     Q_UNUSED(updateServer);
-
-    m_jmriSocket = NULL;
-//    m_jmriSocket = new JMRIWebSocket(QUrl("ws://localhost:12080/json/"), this);
-//    connect(m_jmriSocket, SIGNAL(newMessage(UDPMessage)), MessageBroadcaster::instance(), SLOT(sendUDPMessage(UDPMessage)), Qt::QueuedConnection);
 }
 
 MainWindow::~MainWindow()
@@ -109,6 +104,4 @@ void MainWindow::setupUI()
 
 void MainWindow::closeEvent(QCloseEvent *)
 {
-    if(m_jmriSocket)
-        delete m_jmriSocket;
 }

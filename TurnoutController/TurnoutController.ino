@@ -1,4 +1,3 @@
-#include "ConfigDownload.h"
 #include <WebSocketsClient.h>
 #include <Hash.h>
 #include <EEPROM.h>
@@ -6,6 +5,7 @@
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <WiFiClient.h>
+#include <WiFiServer.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
 
@@ -27,21 +27,17 @@ const int diverge1_pin = 14;
 // Configuration EEPROM memory addresses
 const int TURNOUT_CONFIG_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
 
-WiFiClient Tcp;
-
-Controller controller;
+Controller controller(LocalServerPort);
 TurnoutHandler turnout1;
 TurnoutHandler turnout2;
 TurnoutControllerConfigStruct controllerConfig;
-const long heartbeatTimeout = 5 * 1000;
-long currentHeartbeatTimeout = 0;
 
 void setup() 
 {
   Serial.begin(115200);
   Serial.println();
   Serial.println("setup");
-  
+
   memset(&controllerConfig, 0, sizeof(TurnoutControllerConfigStruct));
   EEPROM.begin(512);
 
@@ -59,6 +55,8 @@ void setup()
 
   turnout1.setTurnout(TrnNormal);
   turnout2.setTurnout(TrnNormal);
+
+  sendStatusMessage();
 
   Serial.println("setup complete");
 }
@@ -79,9 +77,7 @@ void loop()
 	bool sendMessage = turnout1.process();
 	bool sendMessage2 = turnout2.process();
 	if (sendMessage || sendMessage2)
-		sendHeartbeat(true);
-	else
-		sendHeartbeat(false);
+		sendStatusMessage();
 } 
 
 void loadConfiguration(void)
@@ -92,6 +88,15 @@ void loadConfiguration(void)
 
 		turnout1.setConfig(controllerConfig.turnout1);
 		turnout2.setConfig(controllerConfig.turnout2);
+
+		// Add service to MDNS-SD
+		// These are the services we want to hear FROM
+		MDNS.addService("route", "tcp", LocalServerPort);
+		String device("device");
+		if (controllerConfig.turnout1.turnoutID > 0)
+			MDNS.addService(device + controllerConfig.turnout1.turnoutID, "tcp", LocalServerPort);
+		if (controllerConfig.turnout2.turnoutID > 0)
+			MDNS.addService(device + controllerConfig.turnout2.turnoutID, "tcp", LocalServerPort);
 	}
 	else
 	{
@@ -127,30 +132,25 @@ void messageCallback(const Message &message)
 	}
 	else
 	{
-		bool sendHeartbeat1 = turnout1.handleMessage(message);
-		bool sendHeartbeat2 = turnout2.handleMessage(message);
+		bool sendStatus1 = turnout1.handleMessage(message);
+		bool sendStatus2 = turnout2.handleMessage(message);
 
-		if (sendHeartbeat1 || sendHeartbeat2)
-			sendHeartbeat(true);
+		if (sendStatus1 || sendStatus2 || message.getMessageID() == PANEL_STATUS)
+			sendStatusMessage();
 	}
 }
 
-void sendHeartbeat(bool forceSend)
+void sendStatusMessage(void)
 {
 	Message message;
-	long t = millis();
-	if (forceSend || (t - currentHeartbeatTimeout > heartbeatTimeout))
-	{
-		Serial.println("Sending heartbeat");
-		currentHeartbeatTimeout = t;
+	Serial.println("Sending status message");
 
-		message = turnout1.createMessage(turnout1.getCurrentState());
-		message.setControllerID(controller.getControllerID());
-		message.setIntValue1(turnout1.getTurnoutID());
-		message.setIntValue2(turnout2.getTurnoutID());
-		message.setByteValue1(turnout1.getCurrentState());
-		message.setByteValue2(turnout2.getCurrentState());
+	message = turnout1.createMessage(turnout1.getCurrentState());
+	message.setControllerID(controller.getControllerID());
+	message.setIntValue1(turnout1.getTurnoutID());
+	message.setIntValue2(turnout2.getTurnoutID());
+	message.setByteValue1(turnout1.getCurrentState());
+	message.setByteValue2(turnout2.getCurrentState());
 
-		controller.sendNetworkMessage(message);
-	}
+	controller.sendNetworkMessage(message, "turnout");
 }
