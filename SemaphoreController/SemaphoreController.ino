@@ -30,7 +30,7 @@ const int SEMAPHORE_CONFIG_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
 
 WiFiClient Tcp;
 
-Controller controller;
+Controller controller(LocalServerPort);
 SemaphoreHandler signal1;
 SemaphoreHandler signal2;
 SignalControllerConfigStruct controllerConfig;
@@ -51,6 +51,11 @@ void setup()
   loadConfiguration();
   controller.setup(messageCallback, ClassSemaphore);
 
+  // Add service to MDNS-SD
+  // These are the services we want to hear FROM
+  MDNS.addService("turnout", "tcp", LocalServerPort);
+  MDNS.addService("block", "tcp", LocalServerPort);
+
   signal1.setup(motor1_pinA, motor1_pinB, normal1_pin, diverge1_pin);
   signal2.setup(motor2_pinA, motor2_pinB, normal2_pin, diverge2_pin);
 
@@ -59,6 +64,13 @@ void setup()
 
 void loop() 
 {
+	static bool statusSent = false;
+	if (statusSent == false)
+	{
+		statusSent = true;
+		sendStatusMessage();
+	}
+
 	controller.process();
 	ConfigDownload.process();
 	if (ConfigDownload.downloadComplete())
@@ -73,9 +85,7 @@ void loop()
 	bool sendMessage = signal1.process();
 	bool sendMessage2 = signal2.process();
 	if (sendMessage || sendMessage2)
-		sendHeartbeat(true);
-	else
-		sendHeartbeat(false);
+		sendStatusMessage();
 } 
 
 void loadConfiguration(void)
@@ -128,26 +138,22 @@ void messageCallback(const Message &message)
 	}
 	else
 	{
-		bool sendHeartbeat1 = signal1.handleMessage(message);
-		bool sendHeartbeat2 = signal2.handleMessage(message);
+		bool sendStatus1 = signal1.handleMessage(message);
+		bool sendStatus2 = signal2.handleMessage(message);
 
-		if (sendHeartbeat1 || sendHeartbeat2)
-			sendHeartbeat(true);
+		if (sendStatus1 || sendStatus2)
+			sendStatusMessage();
 	}
 }
 
-void sendHeartbeat(bool forceSend)
+void sendStatusMessage(void)
 {
+	Serial.println("Sending status message.");
+
 	Message message;
-	long t = millis();
-	if (forceSend || (t - currentHeartbeatTimeout > heartbeatTimeout))
-	{
-		currentHeartbeatTimeout = t;
+	message.setMessageID(SIG_STATUS);
+	message.setControllerID(controller.getControllerID());
+	message.setMessageClass(ClassSemaphore);
 
-		message.setMessageID(SIG_STATUS);
-		message.setControllerID(controller.getControllerID());
-		message.setMessageClass(ClassSemaphore);
-
-		controller.sendNetworkMessage(message);
-	}
+	controller.sendNetworkMessage(message, "signal");
 }

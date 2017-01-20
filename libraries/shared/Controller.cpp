@@ -1,7 +1,6 @@
 #include "Controller.h"
 #include "GlobalDefs.h"
 #include "ssid.h"
-#include "base64_full.h"
 
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>

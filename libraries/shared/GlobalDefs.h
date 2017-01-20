@@ -1,6 +1,6 @@
 #pragma once
 
-const int ControllerVersion = 5;
+const int ControllerVersion = 6;
 
 #define MAX_PANEL_MODULES 8
 #define MAX_ROUTE_ENTRIES 5

@@ -426,8 +426,3 @@ void sendStatusMessage()
 
 	controller.sendNetworkMessage(message, "route");
 }
-
-void setupFileSystem(void)
-{
-
-}
