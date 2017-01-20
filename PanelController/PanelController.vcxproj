@@ -47,10 +47,10 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\John\Documents\Arduino\libraries\ArduinoJson-master;C:\Users\John\Documents\Arduino\libraries\easyMesh-master\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\esp8266\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src;C:\Users\John\Documents\Arduino\libraries\shared;C:\Users\John\Documents\Arduino\libraries\WebSockets\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire;C:\Users\John\Documents\Arduino\libraries\ArduinoJson-master\utility;C:\Users\John\Documents\Arduino\libraries\easyMesh-master\src\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\esp8266\src\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\src\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src\utility;C:\Users\John\Documents\Arduino\libraries\shared\utility;C:\Users\John\Documents\Arduino\libraries\WebSockets\src\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire\utility;D:\arduino-nightly\libraries;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries;C:\Users\John\Documents\Arduino\libraries;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\libb64;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\umm_malloc;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\variants\generic;C:\Users\John\Documents\Arduino\PanelController;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/include;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/lwip/include;{build.path}/core;C:\Users\John\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\John\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\John\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include;C:\Users\John\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\tools\sdk\include;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\libb64;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\umm_malloc;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\esp8266\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\include;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src\sha1;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\variants\generic;C:\Users\John\Documents\Arduino\libraries\shared;C:\Users\John\Documents\Arduino\libraries\WebSockets\src\libb64;C:\Users\John\Documents\Arduino\libraries\WebSockets\src\libsha1;C:\Users\John\Documents\Arduino\libraries\WebSockets\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>C:\Users\John\Documents\Arduino\PanelController\__vm\.PanelController.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <PreprocessorDefinitions>__ESP8266_ESp8266__;__ESP8266_ESP8266__;_VMDEBUG=1;__ets__;ICACHE_FLASH;F_CPU=80000000L;LWIP_OPEN_SRC;ARDUINO=10609;ARDUINO_ESP8266_ESP01;ARDUINO_ARCH_ESP8266;ESP8266;__cplusplus=201103L;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\esp8266\src;C:\Users\John\Documents\Arduino\libraries\WebSockets\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\src;C:\Users\John\Documents\Arduino\libraries\shared;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\esp8266\src\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\src\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src\utility;C:\Users\John\Documents\Arduino\libraries\shared\utility;C:\Users\John\Documents\Arduino\libraries\WebSockets\src\utility;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire\utility;D:\arduino-nightly\libraries;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries;C:\Users\John\Documents\Arduino\libraries;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\libb64;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\umm_malloc;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\variants\generic;C:\Users\John\Documents\Arduino\PanelController;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/include;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/lwip/include;C:\Users\John\AppData\Local\Temp\VMicroBuilds\PanelController\esp8266_generic/core;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\variants\generic;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\esp8266\src;C:\Users\John\Documents\Arduino\libraries\WebSockets\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\src;C:\Users\John\Documents\Arduino\libraries\shared;D:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\vhrne5hz.nyn\Micro Platforms\default\debuggers\VM_DBG;D:\arduino-nightly\libraries;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries;D:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\vhrne5hz.nyn\Micro Platforms\default\debuggers;C:\Users\John\Documents\Arduino\libraries;C:\Users\John\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\John\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\John\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include;C:\Users\John\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\John\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -59,14 +59,10 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\esp8266\src;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\src;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src;C:\Users\jreil\OneDrive\Documents\Arduino\libraries\shared;C:\Users\jreil\OneDrive\Documents\Arduino\libraries\WebSockets\src;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM\utility;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\esp8266\src\utility;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src\utility;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\src\utility;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS\utility;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\utility;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src\utility;C:\Users\jreil\OneDrive\Documents\Arduino\libraries\shared\utility;C:\Users\jreil\OneDrive\Documents\Arduino\libraries\WebSockets\src\utility;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire\utility;C:\arduino-nightly\libraries;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries;C:\Users\jreil\OneDrive\Documents\Arduino\libraries;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\libb64;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\umm_malloc;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\variants\generic;C:\Users\jreil\OneDrive\Documents\Arduino\PanelController;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/include;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/lwip/include;C:\Users\jreil\AppData\Local\Temp\VMicroBuilds\PanelController\esp8266_generic/core;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\esp8266\src;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\src;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src;C:\Users\jreil\OneDrive\Documents\Arduino\libraries\shared;C:\Users\jreil\OneDrive\Documents\Arduino\libraries\WebSockets\src;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire;C:\arduino-nightly\libraries;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries;C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\btghtsfd.el0\Micro Platforms\default\debuggers;C:\Users\jreil\OneDrive\Documents\Arduino\libraries;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\variants\generic;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\jreil\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>C:\Users\John\Documents\Arduino\PanelController\__vm\.PanelController.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>__ESP8266_ESp8266__;__ESP8266_ESP8266__;__ets__;ICACHE_FLASH;F_CPU=80000000L;LWIP_OPEN_SRC;ARDUINO=10609;ARDUINO_ESP8266_ESP01;ARDUINO_ARCH_ESP8266;ESP8266;__cplusplus=201103L;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -78,194 +74,21 @@
     <ProjectCapability Include="VisualMicro" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\cont.S" />
-    <None Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM\library.properties" />
-    <None Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\library.properties" />
-    <None Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\library.properties" />
-    <None Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\library.properties" />
-    <None Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\esp8266\library.properties" />
-    <None Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\library.properties" />
-    <None Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire\library.properties" />
-    <None Include="..\libraries\WebSockets\library.json" />
-    <None Include="..\libraries\WebSockets\library.properties" />
-    <None Include="..\libraries\WebSockets\tests\webSocket.html" />
     <None Include="PanelController.ino">
       <FileType>CppCode</FileType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Arduino.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\base64.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\binary.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\cbuf.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Client.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\cont.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_features.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_version.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\debug.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\eboot_command.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Esp.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\esp8266_peri.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\flash_utils.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\FS.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\FSImpl.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\HardwareSerial.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\i2s.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\interrupts.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\IPAddress.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\libb64\cdecode.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\libb64\cencode.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\md5.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\MD5Builder.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\pgmspace.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Print.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Printable.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Schedule.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Server.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\sigma_delta.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs\spiffs.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs\spiffs_config.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs\spiffs_nucleus.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs_api.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\stdlib_noniso.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Stream.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\StreamString.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\twi.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\uart.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Udp.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\umm_malloc\umm_malloc.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\umm_malloc\umm_malloc_cfg.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Updater.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\user_config.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\WCharacter.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\wiring_private.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\WString.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM\EEPROM.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src\ESP8266HTTPClient.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\src\ESP8266httpUpdate.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS\ESP8266mDNS.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFi.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFiAP.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFiGeneric.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFiMulti.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFiScan.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFiSTA.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFiType.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\include\ClientContext.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\include\slist.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\include\ssl.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\include\UdpContext.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\include\wl_definitions.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\WiFiClient.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\WiFiClientSecure.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\WiFiServer.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\WiFiUdp.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\esp8266\src\dummy.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src\Hash.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src\sha1\sha1.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire\Wire.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\variants\generic\common.h" />
-    <ClInclude Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\variants\generic\pins_arduino.h" />
-    <ClInclude Include="..\libraries\shared\ConfigDownload.h" />
-    <ClInclude Include="..\libraries\shared\ConfigStructures.h" />
-    <ClInclude Include="..\libraries\shared\Controller.h" />
-    <ClInclude Include="..\libraries\shared\GlobalDefs.h" />
-    <ClInclude Include="..\libraries\shared\GlobalFunctions.h" />
-    <ClInclude Include="..\libraries\shared\Message.h" />
-    <ClInclude Include="..\libraries\shared\ssid.h" />
-    <ClInclude Include="..\libraries\shared\UDPNetwork.h" />
-    <ClInclude Include="..\libraries\WebSockets\src\libb64\cdecode_inc.h" />
-    <ClInclude Include="..\libraries\WebSockets\src\libb64\cencode_inc.h" />
-    <ClInclude Include="..\libraries\WebSockets\src\libsha1\libsha1.h" />
-    <ClInclude Include="..\libraries\WebSockets\src\WebSockets.h" />
-    <ClInclude Include="..\libraries\WebSockets\src\WebSocketsClient.h" />
-    <ClInclude Include="..\libraries\WebSockets\src\WebSocketsServer.h" />
-    <ClInclude Include="PanelModule.h" />
-    <ClInclude Include="Structures.h" />
-    <ClInclude Include="__vm\.PanelController.vsarduino.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\abi.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\base64.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\cbuf.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\cont_util.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_eboot_command.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_flash_utils.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_i2s.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_main.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_noniso.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_phy.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_postmortem.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_si2c.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_timer.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_wiring.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_wiring_analog.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_wiring_digital.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_wiring_pulse.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_wiring_pwm.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\core_esp8266_wiring_shift.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\debug.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Esp.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\FS.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\HardwareSerial.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\heap.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\IPAddress.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\libb64\cdecode.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\libb64\cencode.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\libc_replacements.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\MD5Builder.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\pgmspace.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Print.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Schedule.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs\spiffs_cache.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs\spiffs_check.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs\spiffs_gc.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs\spiffs_hydrogen.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs\spiffs_nucleus.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs_api.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs_hal.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Stream.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\StreamString.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\time.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Tone.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\uart.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\umm_malloc\umm_malloc.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\Updater.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\WMath.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\WString.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM\EEPROM.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266HTTPClient\src\ESP8266HTTPClient.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266httpUpdate\src\ESP8266httpUpdate.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS\ESP8266mDNS.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFi.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFiAP.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFiGeneric.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFiMulti.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFiScan.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\ESP8266WiFiSTA.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\WiFiClient.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\WiFiClientSecure.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\WiFiServer.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\WiFiUdp.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src\Hash.cpp" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Hash\src\sha1\sha1.c" />
-    <ClCompile Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire\Wire.cpp" />
-    <ClCompile Include="..\libraries\shared\ConfigDownload.cpp" />
-    <ClCompile Include="..\libraries\shared\Controller.cpp" />
-    <ClCompile Include="..\libraries\WebSockets\src\libb64\cdecode.c" />
-    <ClCompile Include="..\libraries\WebSockets\src\libb64\cencode.c" />
-    <ClCompile Include="..\libraries\WebSockets\src\libsha1\libsha1.c" />
-    <ClCompile Include="..\libraries\WebSockets\src\WebSockets.cpp" />
-    <ClCompile Include="..\libraries\WebSockets\src\WebSocketsClient.cpp" />
-    <ClCompile Include="..\libraries\WebSockets\src\WebSocketsServer.cpp" />
     <ClCompile Include="PanelModule.cpp" />
     <ClCompile Include="Structures.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM\keywords.txt" />
-    <Text Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS\keywords.txt" />
-    <Text Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\keywords.txt" />
-    <Text Include="..\..\..\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire\keywords.txt" />
+    <ClInclude Include="PanelModule.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClInclude Include="Structures.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>
@@ -273,9 +96,4 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <ProjectExtensions>
-    <VisualStudio>
-      <UserProperties arduino.build.auto_discover_includes="0" arduino.upload.port="COM5" />
-    </VisualStudio>
-  </ProjectExtensions>
 </Project>
