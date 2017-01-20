@@ -12,6 +12,7 @@ public:
     explicit TcpServer(quint16 port, QObject *parent = 0);
 
     void incomingConnection(int socket);
+    static TcpServer *instance(void);
 
 signals:
     void newMessage(const UDPMessage &message);
@@ -22,6 +23,7 @@ public slots:
     void discardClient(void);
 
 private:
+    static TcpServer *m_instance;
     QTcpSocket *m_currentSocket;
 };
 

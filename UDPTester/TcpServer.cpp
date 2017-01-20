@@ -3,8 +3,10 @@
 #include "TcpServer.h"
 #include "UDPMessage.h"
 
+TcpServer *TcpServer::m_instance = NULL;
 TcpServer::TcpServer(quint16 port, QObject *parent) : QTcpServer(parent), m_currentSocket(NULL)
 {
+    m_instance = this;
     listen(QHostAddress::Any, port);
 }
 
@@ -17,13 +19,18 @@ void TcpServer::incomingConnection(int socket)
         connect(m_currentSocket, SIGNAL(disconnected()), this, SLOT(discardClient()));
         m_currentSocket->setSocketDescriptor(socket);
 
-        qDebug(QString("New Connection from: %1").arg(m_currentSocket->peerAddress().toString()).toLatin1().constData());
+        qDebug(QString("TCP Server:  New Connection from: %1").arg(m_currentSocket->peerAddress().toString()).toLatin1().constData());
         this->pauseAccepting();
     }
     else
     {
         qDebug(QString("New Connection ignored").toLatin1().constData());
     }
+}
+
+TcpServer *TcpServer::instance()
+{
+    return m_instance;
 }
 
 void TcpServer::readClient()

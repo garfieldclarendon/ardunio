@@ -4,6 +4,7 @@
 #include "Database.h"
 #include "GlobalDefs.h"
 #include "MessageBroadcaster.h"
+#include "TcpServer.h"
 
 TurnoutModel::TurnoutModel(QObject *parent)
     : QSortFilterProxyModel(parent), m_controllerID(0)
@@ -15,6 +16,7 @@ TurnoutModel::TurnoutModel(QObject *parent)
 
     this->setSourceModel(m_tableModel);
     connect(MessageBroadcaster::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(onNewMessage(UDPMessage)));
+    connect(TcpServer::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(onNewMessage(UDPMessage)));
     initArrays();
 }
 

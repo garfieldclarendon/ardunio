@@ -6,6 +6,7 @@
 #include "ControllerModel.h"
 #include "Database.h"
 #include "MessageBroadcaster.h"
+#include "TcpServer.h"
 
 ControllerModel::ControllerModel(QObject *parent)
     : QSortFilterProxyModel(parent), m_tableModel(NULL), m_filterByOnline(-1)
@@ -22,6 +23,7 @@ ControllerModel::ControllerModel(QObject *parent)
     QTimer::singleShot(1000, this, SLOT(timerProc()));
 //QTimer::singleShot(5000, this, SLOT(tmpTimerSlot()));
     connect(MessageBroadcaster::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(onNewMessage(UDPMessage)));
+    connect(TcpServer::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(onNewMessage(UDPMessage)));
 }
 
 QHash<int, QByteArray> ControllerModel::roleNames(void) const

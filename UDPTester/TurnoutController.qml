@@ -84,7 +84,7 @@ Rectangle {
                         Button {
                             id: activate
                             text: "Activate"
-                            enabled: currentState != "?" && id > 0
+                            enabled: true //currentState != "?" && id > 0
                             onClicked: {
                                 console.debug("current state: " + currentState);
                                 broadcaster.sendMessage(102, currentControllerID, id, 1, 0, id, 0, currentState === "1" ? 2 : 1, 0);
