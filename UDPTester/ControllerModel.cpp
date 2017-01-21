@@ -222,8 +222,6 @@ void ControllerModel::filterByText(const QString &text)
     qDebug(QString("filterByText: %1").arg(text).toLatin1());
     m_filterByOnline = -1;
     m_textFilter = text;
-    int count = this->rowCount();
-    int sourceCount = m_tableModel->rowCount();
 
     invalidateFilter();
 }

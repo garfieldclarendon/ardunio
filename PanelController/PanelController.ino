@@ -73,7 +73,7 @@ void messageCallback(const Message &message)
 			}
 			returnMessage = modules[x].handleMessage(message);
 			if (returnMessage.isValid())
-				controller.sendNetworkMessage(message, "route");
+				controller.sendNetworkMessage(message);
 		}
 	}
 }
@@ -110,6 +110,8 @@ void setup()
 		modules[x].setup(x);
 	}
 
+	sendStatusMessage(false);
+
 	Serial.println("setup complete");
 }
 
@@ -129,13 +131,8 @@ void buttonPressedInterrupt(void)
 
 void loop() 
 {
-  static bool statusSent = false;
-  if(statusSent == false)
-  {
-    statusSent = true;
-    sendStatusMessage();
-  }
 	controller.process();
+	sendHeartbeatMessage();
 
 	ConfigDownload.process();
 	if (ConfigDownload.downloadComplete())
@@ -166,7 +163,7 @@ void loop()
 		{
 			if (message.getMessageID() == PANEL_ACTIVATE_ROUTE)
 				addActiveRoute(message.getDeviceID());
-			controller.sendNetworkMessage(message, "route");
+			controller.sendNetworkMessage(message);
 		}
 	}
 	checkActiveRoutes();
@@ -245,7 +242,7 @@ void checkActiveRoutes(void)
 			message.setDeviceID(activeRoutes[x].route.routeID);
 			message.setMessageID(PANEL_ACTIVATE_ROUTE);
 			message.setMessageClass(ClassRoute);
-			controller.sendNetworkMessage(message, "route");
+			controller.sendNetworkMessage(message);
 			activeRoutes[x].timeout = t;
 		}
 	}
@@ -385,7 +382,7 @@ void saveRoutesToFiles(void)
 
 void downloadConfig(void)
 {
-	// Key should be the ControllerID and a single letter indicating the type of controller:
+	// Key should be the Chip ID and a single letter indicating the type of controller:
 	// T = Turnout controller
 	// P = Panel controller
 	// S = Signal-Block controller
@@ -396,7 +393,7 @@ void downloadConfig(void)
 	if (downloadMode != DownloadNone)
 	{
 		String key;
-		key += controller.getControllerID();
+		key += ESP.getChipId(); 
 		key += ",P,";
 		key += downloadMode;
 
@@ -415,7 +412,7 @@ void downloadConfig(void)
 	}
 }
 
-void sendStatusMessage()
+void sendStatusMessage(bool sendOnce)
 {
 	Serial.println("Sending status message");
 
@@ -424,5 +421,16 @@ void sendStatusMessage()
 	message.setControllerID(controller.getControllerID());
 	message.setMessageClass(ClassPanel);
 
-	controller.sendNetworkMessage(message, "route");
+	controller.sendNetworkMessage(message, sendOnce);
+}
+
+long heartbeatTimeout = 0;
+void sendHeartbeatMessage(void)
+{
+	long t = millis();
+	if ((t - heartbeatTimeout) > HEARTBEAT_INTERVAL)
+	{
+		heartbeatTimeout = t;
+		sendStatusMessage(true);
+	}
 }

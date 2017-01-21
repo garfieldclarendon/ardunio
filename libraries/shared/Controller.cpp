@@ -40,9 +40,9 @@ void Controller::setupNetwork(void)
 {
 	Serial.printf("Connecting to %s ", ssid);
 	
-	String name("gcmrr_");
-	name += ESP.getChipId();
-	WiFi.hostname(name);
+//	String name("gcmrr_");
+//	name += ESP.getChipId();
+//	WiFi.hostname(name);
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(ssid, password);
 	
@@ -60,10 +60,10 @@ void Controller::setupNetwork(void)
 	// - second argument is the IP address to advertise
 	//   we send our IP address on the WiFi network
 
-	if (MDNS.begin(name.c_str())) 
-		Serial.println("mDNS responder started.  Name: " + name);
-	else
-		Serial.println("Error setting up MDNS responder!");
+	//if (MDNS.begin(name.c_str())) 
+	//	Serial.println("mDNS responder started.  Name: " + name);
+	//else
+	//	Serial.println("Error setting up MDNS responder!");
 
 	if(m_udp.begin(UdpPort))
 		Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), UdpPort);
@@ -71,15 +71,15 @@ void Controller::setupNetwork(void)
 		Serial.println("Error starting UDP!");
 
 	// Start TCP server
-	m_server.begin();
-	Serial.println("TCP server started");
+//	m_server.begin();
+//	Serial.println("TCP server started");
 }
 
 void Controller::process(void)
 {
-	MDNS.update();
-	processLocalServer();
-
+//	MDNS.update();
+//	processLocalServer();
+	resendLastMessage();
 	int packetSize = m_udp.parsePacket();
 	if (packetSize >= sizeof(MessageStruct))
 	{
@@ -138,6 +138,8 @@ void Controller::sendUdpBroadcastMessage(const Message &message)
 	//Serial.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 	//Serial.print("MessageSize: ");
 	//Serial.println(sizeof(MessageStruct));
+	//Serial.print("MessageID: ");
+	//Serial.println(message.getMessageID());
 	//Serial.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
 	IPAddress broadcastIp;
@@ -147,6 +149,39 @@ void Controller::sendUdpBroadcastMessage(const Message &message)
 	m_udp.endPacket();
 }
 
+void Controller::sendNetworkMessage(const Message &message, bool sendOnce)
+{
+	if (sendOnce)
+	{
+		sendUdpBroadcastMessage(message);
+	}
+	else
+	{
+		resetSendMessageCounter(message);
+		sendUdpBroadcastMessage(message);
+	}
+}
+
+void Controller::resetSendMessageCounter(const Message &message)
+{
+	m_resendMessageTimeout = millis();
+	m_lastMessage = message;
+	m_resendMessageCount = 3;
+}
+
+void Controller::resendLastMessage(void)
+{
+	long t = millis();
+	static bool firstTime = true;
+	if ((t - m_resendMessageTimeout) >= 1000 && m_resendMessageCount > 0 && m_lastMessage.isValid())
+	{
+		m_resendMessageTimeout = t;
+		sendUdpBroadcastMessage(m_lastMessage);
+		m_resendMessageCount--;
+	}
+}
+
+/*
 void Controller::sendNetworkMessage(const Message &message, int deviceID)
 {
 	String deviceName("device");
@@ -234,7 +269,7 @@ void Controller::sendNetworkMessage(const Message &message, const String &servic
 	}
 //	Serial.println("Finished Sending message");
 }
-
+*/
 void Controller::handleSetControllerIDMessage(const Message &message)
 {
 	Serial.printf("NEW ControllerID Message! New ControllerID %d\n", message.getControllerID());
@@ -277,17 +312,17 @@ bool Controller::checkEEPROM(byte signature)
 	if (EEPROM.read(0) == signature)
 	{
 		EEPROM.get(CONTROLLER_ID_ADDRESS, m_controllerID);
-		Serial.println("-----------------------------");
-		Serial.println("-----------------------------");
+		Serial.println("CONFIGURATION DATA IS VALID!");
+		Serial.println("----------------------------");
 		Serial.println(m_controllerID);
-		Serial.println("-----------------------------");
+		Serial.println("----------------------------");
 	}
 	else
 	{
-		Serial.println("-----------------------------");
+		Serial.println("--------------------------------");
 		Serial.println("CONFIGURATION DATA IS INVALID!!!");
-		Serial.println("-----------------------------");
-		Serial.println("-----------------------------");
+		Serial.println("--------------------------------");
+		Serial.println("--------------------------------");
 		valid = false;
 		m_controllerID = -1;
 		EEPROM.put(CONTROLLER_ID_ADDRESS, m_controllerID);

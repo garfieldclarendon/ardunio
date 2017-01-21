@@ -45,8 +45,8 @@ void UpdateServer::readClient()
 
             QString fileName;
             QString path;
-            path = "C:/Users/John/Documents/Arduino/";
-//            path = "C:/Users/Jreil/OneDrive/Documents/Arduino/";
+//            path = "C:/Users/John/Documents/Arduino/";
+            path = "C:/Users/Jreil/OneDrive/Documents/Arduino/";
             QString returnCode("200 OK");
             if(controllerType == "1")
                 fileName = path + "TurnoutController/Release/TurnoutController.ino.bin";

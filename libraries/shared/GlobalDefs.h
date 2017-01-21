@@ -1,6 +1,6 @@
 #pragma once
 
-const int ControllerVersion = 6;
+const int ControllerVersion = 7;
 
 #define MAX_PANEL_MODULES 8
 #define MAX_ROUTE_ENTRIES 5
@@ -10,7 +10,8 @@ const int ControllerVersion = 6;
 //#define MAX_MODULE_ROUTE_DOWNLOADS 8
 #define MAX_SIGNAL_CONDITIONS 10
 
-#define TIMEOUT_INTERVAL 100
+#define TIMEOUT_INTERVAL 200
+#define HEARTBEAT_INTERVAL 60000 // One minute
 
 enum TurnoutState 
 {

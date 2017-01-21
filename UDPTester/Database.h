@@ -26,11 +26,11 @@ public:
     int getDBVersion(void);
     void setDBVersion(int newVersion);
 
-    QByteArray getTurnoutConfig(int controllerID);
-    QByteArray getPanelConfig(int controllerID);
-    QByteArray getPanelRouteConfig(int controllerID);
-    QByteArray getSignalConfig(int controllerID);
-    QByteArray getBlockConfig(int controllerID);
+    QByteArray getTurnoutConfig(quint32 serialNumber);
+    QByteArray getPanelConfig(quint32 serialNumber);
+    QByteArray getPanelRouteConfig(quint32 serialNumber);
+    QByteArray getSignalConfig(quint32 serialNumber);
+    QByteArray getBlockConfig(quint32 serialNumber);
 
     QString getTurnoutName(int turnoutID);
     int getTurnoutID(const QString &name);

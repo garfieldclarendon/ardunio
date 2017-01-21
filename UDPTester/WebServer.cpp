@@ -77,53 +77,53 @@ void WebServer::socketDisconnected()
     }
 }
 
-QByteArray WebServer::getTurnoutConfig(int controllerID)
+QByteArray WebServer::getTurnoutConfig(quint32 serialNumber)
 {
-    qDebug() << "getTurnoutConfig: " << controllerID;
+    qDebug() << "getTurnoutConfig: " << serialNumber;
     QByteArray data;
 
     Database db;
-    data = db.getTurnoutConfig(controllerID);
+    data = db.getTurnoutConfig(serialNumber);
 
     return data;
 }
 
-QByteArray WebServer::getPanelConfig(int controllerID)
+QByteArray WebServer::getPanelConfig(quint32 serialNumber)
 {
     QByteArray data;
 
     Database db;
-    data = db.getPanelConfig(controllerID);
+    data = db.getPanelConfig(serialNumber);
 
     return data;
 }
 
-QByteArray WebServer::getPanelRouteConfig(int controllerID)
+QByteArray WebServer::getPanelRouteConfig(quint32 serialNumber)
 {
     QByteArray data;
 
     Database db;
-    data = db.getPanelRouteConfig(controllerID);
+    data = db.getPanelRouteConfig(serialNumber);
 
     return data;
 }
 
-QByteArray WebServer::getSignalConfig(int controllerID)
+QByteArray WebServer::getSignalConfig(quint32 serialNumber)
 {
     QByteArray data;
 
     Database db;
-    data = db.getSignalConfig(controllerID);
+    data = db.getSignalConfig(serialNumber);
 
     return data;
 }
 
-QByteArray WebServer::getBlockConfig(int controllerID)
+QByteArray WebServer::getBlockConfig(quint32 serialNumber)
 {
     QByteArray data;
 
     Database db;
-    data = db.getBlockConfig(controllerID);
+    data = db.getBlockConfig(serialNumber);
 
     return data;
 }

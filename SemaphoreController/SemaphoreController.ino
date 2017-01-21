@@ -34,8 +34,6 @@ Controller controller(LocalServerPort);
 SemaphoreHandler signal1;
 SemaphoreHandler signal2;
 SignalControllerConfigStruct controllerConfig;
-const long heartbeatTimeout = 10 * 1000;
-long currentHeartbeatTimeout = 0;
 
 void setup() 
 {
@@ -53,24 +51,19 @@ void setup()
 
   // Add service to MDNS-SD
   // These are the services we want to hear FROM
-  MDNS.addService("turnout", "tcp", LocalServerPort);
-  MDNS.addService("block", "tcp", LocalServerPort);
+  //MDNS.addService("turnout", "tcp", LocalServerPort);
+  //MDNS.addService("block", "tcp", LocalServerPort);
 
   signal1.setup(motor1_pinA, motor1_pinB, normal1_pin, diverge1_pin);
   signal2.setup(motor2_pinA, motor2_pinB, normal2_pin, diverge2_pin);
+
+  sendStatusMessage(false);
 
   Serial.println("setup complete");
 }
 
 void loop() 
 {
-	static bool statusSent = false;
-	if (statusSent == false)
-	{
-		statusSent = true;
-		sendStatusMessage();
-	}
-
 	controller.process();
 	ConfigDownload.process();
 	if (ConfigDownload.downloadComplete())
@@ -85,7 +78,7 @@ void loop()
 	bool sendMessage = signal1.process();
 	bool sendMessage2 = signal2.process();
 	if (sendMessage || sendMessage2)
-		sendStatusMessage();
+		sendStatusMessage(false);
 } 
 
 void loadConfiguration(void)
@@ -107,14 +100,14 @@ void loadConfiguration(void)
 
 void downloadConfig(void)
 {
-	// Key should be the ControllerID and a single letter indicating the type of controller:
+	// Key should be the Chip ID and a single letter indicating the type of controller:
 	// T = Turnout controller
 	// P = Panel controller
 	// S = Signal-Block controller
 	// 
 	// The server will use this information to lookup the configuration information for this controller
 	String key;
-	key += controller.getControllerID();
+	key += ESP.getChipId();
 	key += ",S";
 
 	ConfigDownload.downloadConfig((uint8_t *)&controllerConfig, sizeof(SignalControllerConfigStruct), key);
@@ -142,11 +135,11 @@ void messageCallback(const Message &message)
 		bool sendStatus2 = signal2.handleMessage(message);
 
 		if (sendStatus1 || sendStatus2)
-			sendStatusMessage();
+			sendStatusMessage(false);
 	}
 }
 
-void sendStatusMessage(void)
+void sendStatusMessage(bool sendOnce)
 {
 	Serial.println("Sending status message.");
 
@@ -155,5 +148,16 @@ void sendStatusMessage(void)
 	message.setControllerID(controller.getControllerID());
 	message.setMessageClass(ClassSemaphore);
 
-	controller.sendNetworkMessage(message, "signal");
+	controller.sendNetworkMessage(message, sendOnce);
+}
+
+long heartbeatTimeout = 0;
+void sendHeartbeatMessage(void)
+{
+	long t = millis();
+	if ((t - heartbeatTimeout) > HEARTBEAT_INTERVAL)
+	{
+		heartbeatTimeout = t;
+		sendStatusMessage(true);
+	}
 }

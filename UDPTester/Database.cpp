@@ -181,7 +181,7 @@ void Database::setDBVersion(int newVersion)
     }
 }
 
-QByteArray Database::getTurnoutConfig(int controllerID)
+QByteArray Database::getTurnoutConfig(quint32 serialNumber)
 {
     TurnoutControllerConfigStruct *configStruct = new TurnoutControllerConfigStruct;
     memset(configStruct, 0, sizeof(TurnoutControllerConfigStruct));
@@ -191,8 +191,8 @@ QByteArray Database::getTurnoutConfig(int controllerID)
     turnoutIDs[1] = 0;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT id FROM layoutItem WHERE controllerID = %1").arg(controllerID));
-//    query.exec(QString("SELECT id FROM device WHERE controllerID = %1").arg(controllerID));
+    query.exec(QString("SELECT layoutItem.id FROM layoutItem JOIN controller ON layoutItem.controllerID = controller.ID WHERE serialNumber = %1").arg(serialNumber));
+//    query.exec(QString("SELECT device.id FROM device JOIN controller ON layoutItem.controllerID = controller.ID WHERE controllerID = %1").arg(serialNumber));
     int index = 0;
     while (query.next())
     {
@@ -231,7 +231,7 @@ QByteArray Database::getTurnoutConfig(int controllerID)
     return config;
 }
 
-QByteArray Database::getSignalConfig(int controllerID)
+QByteArray Database::getSignalConfig(quint32 serialNumber)
 {
     SignalControllerConfigStruct *configStruct = new SignalControllerConfigStruct;
     memset(configStruct, 0, sizeof(SignalControllerConfigStruct));
@@ -241,7 +241,7 @@ QByteArray Database::getSignalConfig(int controllerID)
     signalIDs[1] = 0;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT id FROM signal WHERE controllerID = %1").arg(controllerID));
+    query.exec(QString("SELECT signal.id FROM signal JOIN controller ON signal.controllerID = controller.ID WHERE serialNumber = %1").arg(serialNumber));
     int index = 0;
     while (query.next())
     {
@@ -312,13 +312,13 @@ QByteArray Database::getSignalConfig(int controllerID)
     return config;
 }
 
-QByteArray Database::getBlockConfig(int controllerID)
+QByteArray Database::getBlockConfig(quint32 serialNumber)
 {
     BlockControllerConfigStruct *configStruct = new BlockControllerConfigStruct;
     memset(configStruct, 0, sizeof(BlockControllerConfigStruct));
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT id FROM block WHERE controllerID = %1").arg(controllerID));
+    query.exec(QString("SELECT block.id FROM block JOIN controller ON block.controllerID = controller.ID WHERE serialNumber = %1").arg(serialNumber));
     int index = 0;
     while (query.next())
     {
@@ -333,7 +333,7 @@ QByteArray Database::getBlockConfig(int controllerID)
     return config;
 }
 
-QByteArray Database::getPanelConfig(int controllerID)
+QByteArray Database::getPanelConfig(quint32 serialNumber)
 {
     int panelModuleIDs[MAX_PANEL_MODULES];
     memset(&panelModuleIDs, 0, sizeof(panelModuleIDs));
@@ -341,7 +341,7 @@ QByteArray Database::getPanelConfig(int controllerID)
     memset(&configStruct, 0, sizeof(PanelControllerConfigStruct));
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT id FROM panelModule WHERE controllerID = %1 ORDER BY panelIndex").arg(controllerID));
+    query.exec(QString("SELECT panelModule.id FROM panelModule JOIN controller ON panelModule.controllerID = controller.ID WHERE serialNumber = %1 ORDER BY panelIndex").arg(serialNumber));
     int index = 0;
     while (query.next())
     {
@@ -381,13 +381,13 @@ QByteArray Database::getPanelConfig(int controllerID)
     return config;
 }
 
-QByteArray Database::getPanelRouteConfig(int controllerID)
+QByteArray Database::getPanelRouteConfig(quint32 serialNumber)
 {
     PanelControllerRouteConfigStruct configStruct;
     memset(&configStruct, 0, sizeof(PanelControllerRouteConfigStruct));
 
     QSqlQuery routesQuery(db);
-    routesQuery.exec(QString("SELECT routeID, turnoutID, turnoutState FROM routeEntry WHERE RouteID IN (SELECT inputID FROM panelInputEntry WHERE inputType = 1 AND panelModuleID IN (SELECT id FROM panelModule WHERE controllerID = %1)) ORDER BY routeID").arg(controllerID));
+    routesQuery.exec(QString("SELECT routeID, turnoutID, turnoutState FROM routeEntry WHERE RouteID IN (SELECT inputID FROM panelInputEntry WHERE inputType = 1 AND panelModuleID IN (SELECT panelModule.id FROM panelModule JOIN controller ON panelModule.controllerID = controller.ID WHERE serialNumber = %1)) ORDER BY routeID").arg(serialNumber));
     int routeIndex = 0;
     int routeEntryIndex = 0;
     int currentRouteID = 0;

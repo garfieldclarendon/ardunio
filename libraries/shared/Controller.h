@@ -20,8 +20,9 @@ public:
 
 	int getControllerID(void) const { return m_controllerID;  }
 	void process(void);
-	void sendNetworkMessage(const Message &message, int deviceID);
-	void sendNetworkMessage(const Message &message, const String &service);
+//	void sendNetworkMessage(const Message &message, int deviceID);
+//	void sendNetworkMessage(const Message &message, const String &service);
+	void sendNetworkMessage(const Message &message, bool sendOnce = false);
 	void sendUdpBroadcastMessage(const Message &message);
 	ClassEnum getClass(void) const { return m_class; }
 	void setClass(ClassEnum value) { m_class = value; }
@@ -37,7 +38,8 @@ private:
 	void processLocalServer(void);
 	void processMessage(const Message &message);
 	void updateDNSQuery(void);
-
+	void resetSendMessageCounter(const Message &message);
+	void resendLastMessage(void);
 
 	TMessageHandlerFunction m_messageCallback;
 
@@ -50,5 +52,8 @@ private:
 	String m_lastDNSService;
 	int m_lastDNSCount;
 	long m_dnsCheckTimeout;
+	byte m_resendMessageCount;
+	long m_resendMessageTimeout;
+	Message m_lastMessage;
 };
 

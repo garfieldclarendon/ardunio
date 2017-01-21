@@ -56,7 +56,7 @@ void setup()
   turnout1.setTurnout(TrnNormal);
   turnout2.setTurnout(TrnNormal);
 
-  sendStatusMessage();
+  sendStatusMessage(false);
 
   Serial.println("setup complete");
 }
@@ -64,6 +64,8 @@ void setup()
 void loop() 
 {
 	controller.process();
+	sendHeartbeatMessage();
+
 	ConfigDownload.process();
 	if (ConfigDownload.downloadComplete())
 	{
@@ -77,7 +79,7 @@ void loop()
 	bool sendMessage = turnout1.process();
 	bool sendMessage2 = turnout2.process();
 	if (sendMessage || sendMessage2)
-		sendStatusMessage();
+		sendStatusMessage(false);
 } 
 
 void loadConfiguration(void)
@@ -91,12 +93,12 @@ void loadConfiguration(void)
 
 		// Add service to MDNS-SD
 		// These are the services we want to hear FROM
-		MDNS.addService("route", "tcp", LocalServerPort);
-		String device("device");
-		if (controllerConfig.turnout1.turnoutID > 0)
-			MDNS.addService(device + controllerConfig.turnout1.turnoutID, "tcp", LocalServerPort);
-		if (controllerConfig.turnout2.turnoutID > 0)
-			MDNS.addService(device + controllerConfig.turnout2.turnoutID, "tcp", LocalServerPort);
+		//MDNS.addService("route", "tcp", LocalServerPort);
+		//String device("device");
+		//if (controllerConfig.turnout1.turnoutID > 0)
+		//	MDNS.addService(device + controllerConfig.turnout1.turnoutID, "tcp", LocalServerPort);
+		//if (controllerConfig.turnout2.turnoutID > 0)
+		//	MDNS.addService(device + controllerConfig.turnout2.turnoutID, "tcp", LocalServerPort);
 	}
 	else
 	{
@@ -107,14 +109,14 @@ void loadConfiguration(void)
 
 void downloadConfig(void)
 {
-	// Key should be the ControllerID and a single letter indicating the type of controller:
+	// Key should be the Chip ID and a single letter indicating the type of controller:
 	// T = Turnout controller
 	// P = Panel controller
 	// S = Signal-Block controller
 	// 
 	// The server will use this information to lookup the configuration information for this controller
 	String key;
-	key += controller.getControllerID();
+	key += ESP.getChipId();
 	key += ",T";
 
 	ConfigDownload.downloadConfig((uint8_t *)&controllerConfig, sizeof(TurnoutControllerConfigStruct), key);
@@ -135,18 +137,12 @@ void messageCallback(const Message &message)
 		bool sendStatus1 = turnout1.handleMessage(message);
 		bool sendStatus2 = turnout2.handleMessage(message);
 
-		static bool sysHeatbeatHandled = false;
-		if (sysHeatbeatHandled == false && message.getMessageID() == SYS_HEARTBEAT)
-		{
-			sendStatusMessage();
-			sysHeatbeatHandled = true;
-		}
 		if (sendStatus1 || sendStatus2 || message.getMessageID() == PANEL_STATUS)
-			sendStatusMessage();
+			sendStatusMessage(false);
 	}
 }
 
-void sendStatusMessage(void)
+void sendStatusMessage(bool sendOnce)
 {
 	Message message;
 	Serial.println("----------------------");
@@ -159,6 +155,17 @@ void sendStatusMessage(void)
 	message.setByteValue1(turnout1.getCurrentState());
 	message.setByteValue2(turnout2.getCurrentState());
 
-	controller.sendNetworkMessage(message, "turnout");
+	controller.sendNetworkMessage(message, sendOnce);
 	Serial.println("----------------------");
+}
+
+long heartbeatTimeout = 0;
+void sendHeartbeatMessage(void)
+{
+	long t = millis();
+	if ((t - heartbeatTimeout) > HEARTBEAT_INTERVAL)
+	{
+		heartbeatTimeout = t;
+		sendStatusMessage(true);
+	}
 }
