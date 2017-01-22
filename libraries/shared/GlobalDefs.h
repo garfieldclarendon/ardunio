@@ -2,6 +2,14 @@
 
 const int ControllerVersion = 7;
 
+#ifdef PROJECT_DEBUG
+#define DEBUG_WIFI_MULTI(...) Serial.printf( __VA_ARGS__ )
+#endif
+
+#ifndef PROJECT_DEBUG
+#define DEBUG_WIFI_MULTI(...)
+#endif
+
 #define MAX_PANEL_MODULES 8
 #define MAX_ROUTE_ENTRIES 5
 #define MAX_PANEL_OUTPUTS 8

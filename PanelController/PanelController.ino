@@ -19,11 +19,13 @@
 #include "ConfigDownload.h"
 
 #define MAX_ACTIVE_ROUTES 10
-#define activeRouteTimeout 3000 
+#define activeRouteTimeout 7000 
+#define MAX_ACTIVE_ROUTE_RETRY 5
 
 struct ActiveRoute
 {
 	long timeout;
+	byte tryCount;
 	PanelRouteStruct route;
 };
 typedef struct ActiveRoute ActiveRoute;
@@ -244,6 +246,9 @@ void checkActiveRoutes(void)
 			message.setMessageClass(ClassRoute);
 			controller.sendNetworkMessage(message);
 			activeRoutes[x].timeout = t;
+			activeRoutes[x].tryCount++;
+			if (activeRoutes[x].tryCount >= MAX_ACTIVE_ROUTE_RETRY)
+				activeRoutes[x].route.routeID = 0;
 		}
 	}
 }
