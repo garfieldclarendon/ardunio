@@ -38,14 +38,10 @@ void ConfigDownloadClass::downloadConfig(uint8_t *buffer, size_t bufferSize, con
 	m_bufferSize = bufferSize;
 	m_key = key;
 
-	Serial.print("downloadConfig.  Buffer Size: ");
-	Serial.println(bufferSize);
+	DEBUG_PRINT("downloadConfig.  Buffer Size: %d\n", bufferSize);
 	if (m_controller->getControllerID() != -1 && m_controller->getServerPort() > 0)
 	{
-		Serial.print("downloadConfig on: ");
-		Serial.print(m_controller->getServerAddress().toString());
-		Serial.print(":");
-		Serial.println(m_controller->getServerPort());
+		DEBUG_PRINT("downloadConfig on: %s:%d\n", m_controller->getServerAddress().toString().c_str(), m_controller->getServerPort());
 
 		m_webSocket.begin(m_controller->getServerAddress().toString().c_str(), m_controller->getServerPort());
 		//webSocket.setAuthorization("user", "Password"); // HTTP Basic Authorization
@@ -53,7 +49,7 @@ void ConfigDownloadClass::downloadConfig(uint8_t *buffer, size_t bufferSize, con
 	}
 	else
 	{
-		Serial.println("Server address/port not set!  Server may be off line.");
+		DEBUG_PRINT("Server address/port not set!  Server may be off line.\n");
 		m_serverNotSet = true;
 	}
 }
@@ -63,11 +59,11 @@ void ConfigDownloadClass::webSocketEvent(WStype_t type, uint8_t * payload, size_
 	switch (type)
 	{
 	case WStype_DISCONNECTED:
-		Serial.printf("[WSc] Disconnected!\n");
+		DEBUG_PRINT("[WSc] Disconnected!\n");
 		break;
 	case WStype_CONNECTED:
 	{
-		Serial.printf("[WSc] Connected to url: %s\n", payload);
+		DEBUG_PRINT("[WSc] Connected to url: %s\n", payload);
 
 		// Send message to server when Connected containing the controllerID of this controller and
 		// a letter indicating the type of controller:
@@ -78,11 +74,11 @@ void ConfigDownloadClass::webSocketEvent(WStype_t type, uint8_t * payload, size_
 	break;
 	case WStype_TEXT:
 	{
-		Serial.printf("[WSc] get text: %s\n", payload);
+		DEBUG_PRINT("[WSc] get text: %s\n", payload);
 		break;
 	}
 	case WStype_BIN:
-		Serial.printf("[WSc] get binary length: %d of %d\n", length, m_this->m_bufferSize);
+		DEBUG_PRINT("[WSc] get binary length: %d of %d\n", length, m_this->m_bufferSize);
 
 		if (m_this->m_key.length() > 0)
 		{
@@ -92,7 +88,7 @@ void ConfigDownloadClass::webSocketEvent(WStype_t type, uint8_t * payload, size_
 		
 		if (m_this->m_currentPos >= m_this->m_bufferSize)
 		{
-			Serial.println("DOWNLOAD IS FINISHED!!  DISCONNECTING.");
+			DEBUG_PRINT("DOWNLOAD IS FINISHED!!  DISCONNECTING.\n");
 		}
 		break;
 	}

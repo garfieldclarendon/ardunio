@@ -29,56 +29,34 @@ void Controller::setup(TMessageHandlerFunction messageCallback, ClassEnum contro
 
 	setupNetwork();
 
-	Serial.println("------------------------");
-	Serial.printf (" ControllerID: %d \r\n", m_controllerID);
-	Serial.println("------------------------");
-	Serial.printf(" Serial #: %d\r\n", ESP.getChipId());
-	Serial.println("------------------------");
+	DEBUG_PRINT("------------------------\n");
+	DEBUG_PRINT(" ControllerID: %d \r\n", m_controllerID);
+	DEBUG_PRINT("------------------------\n");
+	DEBUG_PRINT(" Serial #: %d\r\n", ESP.getChipId());
+	DEBUG_PRINT("------------------------\n");
 }
 
 void Controller::setupNetwork(void)
 {
-	Serial.printf("Connecting to %s ", ssid);
+	DEBUG_PRINT("Connecting to %s ", ssid);
 	
-//	String name("gcmrr_");
-//	name += ESP.getChipId();
-//	WiFi.hostname(name);
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(ssid, password);
 	
 	while (WiFi.waitForConnectResult() != WL_CONNECTED)
 	{
 		delay(1000);
-		Serial.print(".");
 	}
-	Serial.println(" connected");
-
-	// Set up mDNS responder:
-	// - first argument is the domain name, 
-	//   the fully-qualified domain name is "gcmrr_<chip ID>.local"
-	//   where <chip ID> is the id of this ESP8266 (returned by getChipId())
-	// - second argument is the IP address to advertise
-	//   we send our IP address on the WiFi network
-
-	//if (MDNS.begin(name.c_str())) 
-	//	Serial.println("mDNS responder started.  Name: " + name);
-	//else
-	//	Serial.println("Error setting up MDNS responder!");
+	DEBUG_PRINT(" connected\n");
 
 	if(m_udp.begin(UdpPort))
-		Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), UdpPort);
+		DEBUG_PRINT("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), UdpPort);
 	else
-		Serial.println("Error starting UDP!");
-
-	// Start TCP server
-//	m_server.begin();
-//	Serial.println("TCP server started");
+		DEBUG_PRINT("Error starting UDP!\n");
 }
 
 void Controller::process(void)
 {
-//	MDNS.update();
-//	processLocalServer();
 	resendLastMessage();
 	int packetSize = m_udp.parsePacket();
 	if (packetSize >= sizeof(MessageStruct))
@@ -91,7 +69,7 @@ void Controller::process(void)
 
 void Controller::processMessage(const Message &message)
 {
-//	Serial.printf("NEW MESSAGE! MessageID %d\n", message.getMessageID());
+//	DEBUG_PRINT("NEW MESSAGE! MessageID %d\n", message.getMessageID());
 	if (message.getMessageID() == SYS_SET_CONTROLLER_ID && message.getLValue() == ESP.getChipId())
 	{
 		handleSetControllerIDMessage(message);
@@ -118,15 +96,14 @@ void Controller::processMessage(const Message &message)
 
 void Controller::downloadFirmwareUpdate(void)
 {
-	Serial.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+	DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 	String updateUrl;
 	updateUrl = "http://";
 	updateUrl += getServerAddress().toString();
 	updateUrl += ":82/firmware?ControllerType=";
 	updateUrl += m_class;
-	Serial.print("Checking for firmware update at: ");
-	Serial.println(updateUrl);
-	Serial.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+	DEBUG_PRINT("Checking for firmware update at: %s\n", updateUrl.c_str());
+	DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 	ESPhttpUpdate.update(updateUrl);
 
 	if (ESPhttpUpdate.getLastError() != 0)
@@ -135,12 +112,9 @@ void Controller::downloadFirmwareUpdate(void)
 
 void Controller::sendUdpBroadcastMessage(const Message &message)
 {
-	//Serial.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-	//Serial.print("MessageSize: ");
-	//Serial.println(sizeof(MessageStruct));
-	//Serial.print("MessageID: ");
-	//Serial.println(message.getMessageID());
-	//Serial.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+	//DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	//DEBUG_PRINT("MessageSize: %d  MessageID: %d\n", sizeof(MessageStruct), message.getMessageID());
+	//DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
 	IPAddress broadcastIp;
 	broadcastIp = ~WiFi.subnetMask() | WiFi.gatewayIP();
@@ -181,98 +155,9 @@ void Controller::resendLastMessage(void)
 	}
 }
 
-/*
-void Controller::sendNetworkMessage(const Message &message, int deviceID)
-{
-	String deviceName("device");
-	deviceName += deviceID; 
-	int n = MDNS.queryService(deviceName, "tcp"); // Send out query for a specific device
-	if (n > 0)
-	{
-		WiFiClient client;
-
-		for (int count = 0; count < n; count++)
-		{
-			Serial.print("Connecting to: ");
-			Serial.println(MDNS.hostname(count));
-			if (client.connect(MDNS.IP(count), LocalServerPort))
-			{
-				Serial.println("Sending message");
-				client.write(message.getRef(), sizeof(MessageStruct));
-			}
-			else
-			{
-				Serial.print("connection failed.  Failed to connect to: ");
-				Serial.println(MDNS.hostname(count));
-			}
-		}
-	}
-	else
-	{
-		Serial.println("query for turnout services returned 0");
-	}
-}
-
-void Controller::sendNetworkMessage(const Message &message, const String &service)
-{
-	//Serial.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-	//Serial.print("MessageSize: ");
-	//Serial.println(sizeof(MessageStruct));
-	Serial.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-	if (m_lastDNSService != service)
-	{
-		m_lastDNSService = service;
-	}
-	updateDNSQuery();
-
-	if (m_lastDNSCount > 0)
-	{
-		for (int count = 0; count < m_lastDNSCount; count++)
-		{
-			Serial.print("Connecting to: ");
-			Serial.println(MDNS.hostname(count));
-			
-			WiFiClient client;
-			client.setNoDelay(true);
-			if (client.connect(MDNS.IP(count), LocalServerPort))
-			{
-//				Serial.println("Sending message");
-				client.write(message.getRef(), sizeof(MessageStruct));
-			}
-			else
-			{
-				Serial.print("connection failed.  Failed to connect to: ");
-				Serial.println(MDNS.hostname(count));
-			}
-		}
-	}
-	else
-	{
-		Serial.println("query for services returned 0 for: " + service);
-	}
-
-	if (m_serverPort > 0)
-	{
-		WiFiClient client;
-
-		client.setNoDelay(true);
-		if (client.connect(m_serverAddress, m_serverPort + 2))
-		{
-			Serial.println("Sending message to server");
-			client.write(message.getRef(), sizeof(MessageStruct));
-		}
-		else
-		{
-			m_serverPort = 0;
-			Serial.println("Server connection failed");
-		}
-	}
-//	Serial.println("Finished Sending message");
-}
-*/
 void Controller::handleSetControllerIDMessage(const Message &message)
 {
-	Serial.printf("NEW ControllerID Message! New ControllerID %d\n", message.getControllerID());
+	DEBUG_PRINT("NEW ControllerID Message! New ControllerID %d\n", message.getControllerID());
 	m_controllerID = message.getControllerID();
 	EEPROM.put(CONTROLLER_ID_ADDRESS, m_controllerID);
 	EEPROM.commit();
@@ -283,7 +168,7 @@ void Controller::handleServerHeartbeatMessage(const Message &message)
 	if (message.getField(0) > 0)
 	{
 		if (m_serverPort == 0)
-			Serial.printf("handleServerHeartbeatMessage Server Address: %d.%d.%d.%d\n", message.getField(0), message.getField(1), message.getField(2), message.getField(3));
+			DEBUG_PRINT("handleServerHeartbeatMessage Server Address: %d.%d.%d.%d\n", message.getField(0), message.getField(1), message.getField(2), message.getField(3));
 
 		IPAddress address(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
 		m_serverPort = message.getField(4);
@@ -291,7 +176,7 @@ void Controller::handleServerHeartbeatMessage(const Message &message)
 
 		if ((m_controllerID < 0 || m_controllerID == 0) && m_serverPort > 0)
 		{
-			Serial.println("NEW CONTROLLER!  SEND NEW CONTROLLER MESSAGE");
+			DEBUG_PRINT("NEW CONTROLLER!  SEND NEW CONTROLLER MESSAG\n");
 			Message message;
 			message.setControllerID(-1);
 			message.setMessageID(SYS_NEW_CONTROLLER);
@@ -312,17 +197,16 @@ bool Controller::checkEEPROM(byte signature)
 	if (EEPROM.read(0) == signature)
 	{
 		EEPROM.get(CONTROLLER_ID_ADDRESS, m_controllerID);
-		Serial.println("CONFIGURATION DATA IS VALID!");
-		Serial.println("----------------------------");
-		Serial.println(m_controllerID);
-		Serial.println("----------------------------");
+		DEBUG_PRINT("CONFIGURATION DATA IS VALID!\n");
+		DEBUG_PRINT("----------------------------\n%d\n", m_controllerID);
+		DEBUG_PRINT("----------------------------\n");
 	}
 	else
 	{
-		Serial.println("--------------------------------");
-		Serial.println("CONFIGURATION DATA IS INVALID!!!");
-		Serial.println("--------------------------------");
-		Serial.println("--------------------------------");
+		DEBUG_PRINT("--------------------------------\n");
+		DEBUG_PRINT("CONFIGURATION DATA IS INVALID!!!\n");
+		DEBUG_PRINT("--------------------------------\n");
+		DEBUG_PRINT("--------------------------------\n");
 		valid = false;
 		m_controllerID = -1;
 		EEPROM.put(CONTROLLER_ID_ADDRESS, m_controllerID);
@@ -344,7 +228,7 @@ void Controller::processLocalServer(void)
 		{
 			return;
 		}
-		Serial.println("New client");
+		DEBUG_PRINT("New client\n");
 
 		// Wait for data from client to become available
 		while (client.connected() && client.available() < sizeof(MessageStruct))
@@ -354,22 +238,9 @@ void Controller::processLocalServer(void)
 
 		if (client.available() >= sizeof(MessageStruct))
 			client.read((uint8_t *)message.getRef(), sizeof(MessageStruct));
-		Serial.println("Done with client");
+		DEBUG_PRINT("Done with client\n");
 	}
 	if (message.isValid())
 		processMessage(message);
 
-}
-
-void Controller::updateDNSQuery(void)
-{
-	long t = millis();
-	static bool firstTime = true;
-	if (firstTime || ((t - m_dnsCheckTimeout) > 10000 && m_lastDNSService.length() > 0))
-	{
-		Serial.println("updateDNSQuery");
-		m_dnsCheckTimeout = t;
-		m_lastDNSCount = MDNS.queryService(m_lastDNSService, "tcp");
-		firstTime = false;
-	}
 }

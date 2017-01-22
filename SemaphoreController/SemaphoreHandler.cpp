@@ -62,13 +62,13 @@ void SemaphoreHandler::setSignal(SignalAspect newState)
 {
 	if (newState.getRedMode() == SignalAspect::On || newState.getRedMode() == SignalAspect::Flashing)
 	{
-		Serial.println("SETTING SIGNAL TO RED");
+		DEBUG_PRINT("SETTING SIGNAL TO RED\n");
 		digitalWrite(m_motorAPin, 1);
 		digitalWrite(m_motorBPin, 0);
 	}
 	else if (newState.getGreenMode() == SignalAspect::On || newState.getGreenMode() == SignalAspect::Flashing)
 	{
-		Serial.println("SETTING SIGNAL TO GREEN");
+		DEBUG_PRINT("SETTING SIGNAL TO GREEN\n");
 		digitalWrite(m_motorAPin, 0);
 		digitalWrite(m_motorBPin, 1);
 	}

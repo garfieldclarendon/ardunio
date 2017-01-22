@@ -61,15 +61,11 @@ bool TurnoutHandler::handleMessage(const Message &message)
 			newState = (TurnoutState)message.getByteValue1();
 		if(message.getIntValue2() == m_config.turnoutID)
 			newState = (TurnoutState)message.getByteValue2();
-		Serial.print("handleMessage:  setTurnout for deviceID: ");
-		Serial.println(m_config.turnoutID);
-		Serial.print("New State:  ");
-		Serial.println(newState);
+		DEBUG_PRINT("handleMessage:  setTurnout for deviceID: %d\nNew State: %d\n", m_config.turnoutID, newState);
 	}
 	else if (message.getMessageID() == PANEL_ACTIVATE_ROUTE)
 	{
-		Serial.print("handleMessage:  setTurnout for routeID: ");
-		Serial.println(message.getDeviceID());
+		DEBUG_PRINT("handleMessage:  setTurnout for routeID: %d\n", message.getDeviceID());
 		newState = getTurnoutStateForRoute(message.getDeviceID());
 	}
 	if (newState != TrnUnknown)
@@ -132,13 +128,13 @@ void TurnoutHandler::setTurnout(TurnoutState newState)
 {
 	if (newState == TrnDiverging || newState == TrnToDiverging)
 	{
-		Serial.println("SETTING TURNOUT TO DIVERGING");
+		DEBUG_PRINT("SETTING TURNOUT TO DIVERGING\n");
 		digitalWrite(m_motorAPin, 1);
 		digitalWrite(m_motorBPin, 0);
 	}
 	else if (newState == TrnNormal || newState == TrnToNormal)
 	{
-		Serial.println("SETTING TURNOUT TO NORMAL");
+		DEBUG_PRINT("SETTING TURNOUT TO NORMAL\n");
 		digitalWrite(m_motorAPin, 0);
 		digitalWrite(m_motorBPin, 1);
 	}

@@ -37,10 +37,19 @@ SignalControllerConfigStruct controllerConfig;
 
 void setup() 
 {
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("setup");
-  
+#ifdef PROJECT_DEBUG
+	Serial.begin(115200);
+#else
+	Serial.begin(74880);
+	Serial.println();
+	Serial.println();
+	Serial.println("Starting up in release mode");
+	Serial.printf("Semaphone Controller Version: %d\n\n\n", ControllerVersion);
+	Serial.flush();
+	Serial.end();
+#endif
+	DEBUG_PRINT("setup\n");
+
   memset(&controllerConfig, 0, sizeof(SignalControllerConfigStruct));
   EEPROM.begin(4096);
 
@@ -49,17 +58,12 @@ void setup()
   loadConfiguration();
   controller.setup(messageCallback, ClassSemaphore);
 
-  // Add service to MDNS-SD
-  // These are the services we want to hear FROM
-  //MDNS.addService("turnout", "tcp", LocalServerPort);
-  //MDNS.addService("block", "tcp", LocalServerPort);
-
   signal1.setup(motor1_pinA, motor1_pinB, normal1_pin, diverge1_pin);
   signal2.setup(motor2_pinA, motor2_pinB, normal2_pin, diverge2_pin);
 
   sendStatusMessage(false);
 
-  Serial.println("setup complete");
+  DEBUG_PRINT("setup complete\n");
 }
 
 void loop() 
@@ -69,7 +73,7 @@ void loop()
 	if (ConfigDownload.downloadComplete())
 	{
 		ConfigDownload.reset();
-		Serial.printf("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
+		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
 		EEPROM.put(SEMAPHORE_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
 		loadConfiguration();
@@ -87,7 +91,7 @@ void loadConfiguration(void)
 	{  
 		EEPROM.get(SEMAPHORE_CONFIG_ADDRESS, controllerConfig);
 
-		Serial.printf("loadConfiguration:  SignalID's: %d, %d\n", controllerConfig.signal1.signalID, controllerConfig.signal2.signalID);
+		DEBUG_PRINT("loadConfiguration:  SignalID's: %d, %d\n", controllerConfig.signal1.signalID, controllerConfig.signal2.signalID);
 		signal1.setConfig(controllerConfig.signal1);
 		signal2.setConfig(controllerConfig.signal2);
 	}
@@ -141,7 +145,7 @@ void messageCallback(const Message &message)
 
 void sendStatusMessage(bool sendOnce)
 {
-	Serial.println("Sending status message.");
+	DEBUG_PRINT("Sending status message.\n");
 
 	Message message;
 	message.setMessageID(SIG_STATUS);

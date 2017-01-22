@@ -20,8 +20,6 @@ public:
 
 	int getControllerID(void) const { return m_controllerID;  }
 	void process(void);
-//	void sendNetworkMessage(const Message &message, int deviceID);
-//	void sendNetworkMessage(const Message &message, const String &service);
 	void sendNetworkMessage(const Message &message, bool sendOnce = false);
 	void sendUdpBroadcastMessage(const Message &message);
 	ClassEnum getClass(void) const { return m_class; }
@@ -37,7 +35,6 @@ private:
 	void downloadFirmwareUpdate(void);
 	void processLocalServer(void);
 	void processMessage(const Message &message);
-	void updateDNSQuery(void);
 	void resetSendMessageCounter(const Message &message);
 	void resendLastMessage(void);
 

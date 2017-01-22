@@ -34,9 +34,18 @@ TurnoutControllerConfigStruct controllerConfig;
 
 void setup() 
 {
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("setup");
+#ifdef PROJECT_DEBUG
+	Serial.begin(115200);
+#else
+	Serial.begin(74880);
+	Serial.println();
+	Serial.println();
+	Serial.println("Starting up in release mode");
+	Serial.printf("Turnout Controller Version: %d\n\n\n", ControllerVersion);
+	Serial.flush();
+	Serial.end();
+#endif
+	DEBUG_PRINT("setup\n");
 
   memset(&controllerConfig, 0, sizeof(TurnoutControllerConfigStruct));
   EEPROM.begin(512);
@@ -58,7 +67,7 @@ void setup()
 
   sendStatusMessage(false);
 
-  Serial.println("setup complete");
+  DEBUG_PRINT("setup complete\n");
 }
 
 void loop() 
@@ -70,7 +79,7 @@ void loop()
 	if (ConfigDownload.downloadComplete())
 	{
 		ConfigDownload.reset();
-		Serial.printf("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
+		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
 		EEPROM.put(TURNOUT_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
 		loadConfiguration();
@@ -90,15 +99,6 @@ void loadConfiguration(void)
 
 		turnout1.setConfig(controllerConfig.turnout1);
 		turnout2.setConfig(controllerConfig.turnout2);
-
-		// Add service to MDNS-SD
-		// These are the services we want to hear FROM
-		//MDNS.addService("route", "tcp", LocalServerPort);
-		//String device("device");
-		//if (controllerConfig.turnout1.turnoutID > 0)
-		//	MDNS.addService(device + controllerConfig.turnout1.turnoutID, "tcp", LocalServerPort);
-		//if (controllerConfig.turnout2.turnoutID > 0)
-		//	MDNS.addService(device + controllerConfig.turnout2.turnoutID, "tcp", LocalServerPort);
 	}
 	else
 	{
@@ -145,8 +145,8 @@ void messageCallback(const Message &message)
 void sendStatusMessage(bool sendOnce)
 {
 	Message message;
-	Serial.println("----------------------");
-	Serial.println("Sending status message");
+	DEBUG_PRINT("----------------------\n");
+	DEBUG_PRINT("Sending status message\n");
 
 	message = turnout1.createMessage(turnout1.getCurrentState());
 	message.setControllerID(controller.getControllerID());
@@ -156,7 +156,7 @@ void sendStatusMessage(bool sendOnce)
 	message.setByteValue2(turnout2.getCurrentState());
 
 	controller.sendNetworkMessage(message, sendOnce);
-	Serial.println("----------------------");
+	DEBUG_PRINT("----------------------\n");
 }
 
 long heartbeatTimeout = 0;

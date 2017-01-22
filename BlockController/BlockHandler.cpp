@@ -18,7 +18,7 @@ bool BlockHandler::process(void)
 	bool ret = false;
 	byte raw = digitalRead(m_blockPin);
 	long t = millis();
-//	Serial.println(raw); 
+//	DEBUG_PRINT("%d\n", raw); 
 
 	if (raw == m_lastRead && raw != m_current && (t - m_currentTimeout) > 2000)
 	{
@@ -28,16 +28,13 @@ bool BlockHandler::process(void)
 		if (m_current == LOW)
 		{
 			m_currentState = Occupied;
-			Serial.println("Occupied TRUE");
-			Serial.println("-------------------------------");
-			Serial.print(" ");
-			Serial.println(raw); 
-			Serial.println("-------------------------------");
+			DEBUG_PRINT("Occupied TRUE\n");
+			DEBUG_PRINT("-------------------------------\n%d\n", raw);
+			DEBUG_PRINT("-------------------------------");
 		}
 		else
 		{
-			Serial.println("Occupied FALSE");
-			Serial.println(raw);
+			DEBUG_PRINT("Occupied FALSE %d\n", raw);
 			m_currentState = Empty;
 		}
 		ret = true;

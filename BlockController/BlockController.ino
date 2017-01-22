@@ -23,7 +23,7 @@ const int BLOCK_CONFIG_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
 
 WiFiClient Tcp;
 
-Controller controller;
+Controller controller(LocalServerPort);
 BlockHandler block1;
 BlockHandler block2;
 BlockControllerConfigStruct controllerConfig;
@@ -32,10 +32,19 @@ long currentHeartbeatTimeout = 0;
 
 void setup() 
 {
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("setup");
-  
+#ifdef PROJECT_DEBUG
+	Serial.begin(115200);
+#else
+	Serial.begin(74880);
+	Serial.println();
+	Serial.println();
+	Serial.println("Starting up in release mode");
+	Serial.printf("Block Controller Version: %d\n\n\n", ControllerVersion);
+	Serial.flush();
+	Serial.end();
+#endif
+	DEBUG_PRINT("setup\n");
+
   memset(&controllerConfig, 0, sizeof(BlockControllerConfigStruct));
   EEPROM.begin(512);
 
@@ -47,7 +56,7 @@ void setup()
   block1.setup(block1Pin);
   block2.setup(block2Pin);
 
-  Serial.println("setup complete");
+  DEBUG_PRINT("setup complete\n");
 }
 
 void loop() 
@@ -57,7 +66,7 @@ void loop()
 	if (ConfigDownload.downloadComplete())
 	{
 		ConfigDownload.reset();
-		Serial.printf("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
+		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
 		EEPROM.put(BLOCK_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
 		loadConfiguration();
@@ -77,7 +86,7 @@ void loadConfiguration(void)
 	{  
 		EEPROM.get(BLOCK_CONFIG_ADDRESS, controllerConfig);
 
-		Serial.printf("loadConfiguration:  BlockID's: %d, %d\n", controllerConfig.block1.blockID, controllerConfig.block2.blockID);
+		DEBUG_PRINT("loadConfiguration:  BlockID's: %d, %d\n", controllerConfig.block1.blockID, controllerConfig.block2.blockID);
 		block1.setConfig(controllerConfig.block1);
 		block2.setConfig(controllerConfig.block2);
 	}

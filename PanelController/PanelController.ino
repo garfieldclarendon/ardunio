@@ -82,25 +82,29 @@ void messageCallback(const Message &message)
 
 void setup() 
 {
+#ifdef PROJECT_DEBUG
 	Serial.begin(115200);
+#else
+	Serial.begin(74880);
 	Serial.println();
-	Serial.println("setup");
+	Serial.println();
+	Serial.println("Starting up in release mode");
+	Serial.printf("Panel Controller Version: %d\n\n\n", ControllerVersion);
+	Serial.flush();
+	Serial.end();
+#endif
+	DEBUG_PRINT("setup\n");
 
 	memset(&activeRoutes, 0, sizeof(ActiveRoute) * MAX_ACTIVE_ROUTES);
 	EEPROM.begin(4096);
 
 	bool result = SPIFFS.begin();
-	Serial.println("SPIFFS opened: " + result);
+	DEBUG_PRINT("SPIFFS opened: %d\n", result);
 
 	ConfigDownload.init(&controller);
 
 	loadConfiguration();
 	controller.setup(messageCallback, ClassPanel);
-
-    // Add service to MDNS-SD
-    // These are the services we want to hear FROM
-    MDNS.addService("turnout", "tcp", LocalServerPort);
-    MDNS.addService("block", "tcp", LocalServerPort);
 
 	// If totalRoutes is less than 1, then this panel hasn't been configured yet.
 	if (totalRoutes < 1)
@@ -114,12 +118,12 @@ void setup()
 
 	sendStatusMessage(false);
 
-	Serial.println("setup complete");
+	DEBUG_PRINT("setup complete\n");
 }
 
 void setupHardware(void)
 {
-	Serial.println("setup hardware");
+	DEBUG_PRINT("setup hardware\n");
 	Wire.begin(); //creates a Wire object
 
 	attachInterrupt(interruptPin, buttonPressedInterrupt, RISING);
@@ -127,7 +131,7 @@ void setupHardware(void)
 
 void buttonPressedInterrupt(void)
 {
-	Serial.println("buttonPressedInterrupt");
+	DEBUG_PRINT("buttonPressedInterrupt\n");
 	buttonPressed = true;
 }
 
@@ -173,7 +177,7 @@ void loop()
 
 void addActiveRoute(int routeID)
 {
-	Serial.println("ADD ACTIVE ROUTE");
+	DEBUG_PRINT("ADD ACTIVE ROUTE\n");
 	for (byte x = 0; x < MAX_ACTIVE_ROUTES; x++)
 	{
 		if (activeRoutes[x].route.routeID == 0)
@@ -190,14 +194,13 @@ void addActiveRoute(int routeID)
 				File f = SPIFFS.open(fileName,"r");
 				if (f)
 				{
-					Serial.print("Reading route file: ");
-					Serial.println(f.name());
+					DEBUG_PRINT("Reading route file: %s\n", f.name());
 
 					f.read((uint8_t*)&route, sizeof(PanelRouteStruct));
 					activeRoutes[x].route = route;
 					activeRoutes[x].timeout = millis();
-					Serial.print("ADD ACTIVE ROUTE: ");
-					Serial.println(route.routeID);
+					activeRoutes[x].tryCount = 0;
+					DEBUG_PRINT("ADD ACTIVE ROUTE: %d\n", route.routeID);
 				}
 				break;
 			}
@@ -224,12 +227,18 @@ void updateActiveRoutes(int turnoutID, TurnoutState newState)
 
 			if (allAreSet)
 			{
-				Serial.print("REMOVE ACTIVE ROUTE: ");
-				Serial.println(activeRoutes[x].route.routeID);
-				activeRoutes[x].route.routeID = 0;
+				DEBUG_PRINT("REMOVE ACTIVE ROUTE: %d\n", activeRoutes[x].route.routeID);
+				clearActiveRouteEntry(x);
 			}
 		}
 	}
+}
+
+void clearActiveRouteEntry(byte index)
+{
+	activeRoutes[index].route.routeID = 0;
+	activeRoutes[index].tryCount = 0;
+	activeRoutes[index].timeout = 0;
 }
 
 void checkActiveRoutes(void)
@@ -239,7 +248,7 @@ void checkActiveRoutes(void)
 	{
 		if (activeRoutes[x].route.routeID > 0 && t - activeRoutes[x].timeout > activeRouteTimeout)
 		{
-			Serial.println("Active Route timeout!  Sending route message");
+			DEBUG_PRINT("Active Route timeout!  Sending route message\n");
 			Message message;
 			message.setDeviceID(activeRoutes[x].route.routeID);
 			message.setMessageID(PANEL_ACTIVATE_ROUTE);
@@ -248,7 +257,7 @@ void checkActiveRoutes(void)
 			activeRoutes[x].timeout = t;
 			activeRoutes[x].tryCount++;
 			if (activeRoutes[x].tryCount >= MAX_ACTIVE_ROUTE_RETRY)
-				activeRoutes[x].route.routeID = 0;
+				clearActiveRouteEntry(x);
 		}
 	}
 }
@@ -261,30 +270,28 @@ void loadConfiguration(void)
 
 		// Get the number of modules connected to this controller.
 		// There's always at least one....the module built into the controller
-		Serial.println("Getting the module configuration: ");
+		DEBUG_PRINT("Getting the module configuration: \n");
 		memset(&config, 0, sizeof(PanelControllerConfigStruct));
 		EEPROM.get(MODULE_CONFIG_BASE_ADDRESS, config);
-		Serial.print("Setting each module's coinfiguration.  Total modules: ");
-		Serial.println(config.mdouleCount);
+		DEBUG_PRINT("Setting each module's coinfiguration.  Total modules: %d\n", config.mdouleCount);
 
 		totalModules = config.mdouleCount;
 		//The panel module has one module built in so make sure the totalModules is set to at least 1
 		if (totalModules <= 0 || totalModules > 7)
 			totalModules = 1;
 		// Get the configuration information for each connected module
-		Serial.print("Setting each module's coinfiguration.  Total modules: ");
-		Serial.println(totalModules);
+		DEBUG_PRINT("Setting each module's coinfiguration.  Total modules: %d\n", totalModules);
 		for (byte x = 0; x < totalModules; x++)
 		{
 			modules[x].setConfiguration(config.moduleConfigs[x]);
 		}
 		loadRouteConfig();
 
-		Serial.println("DONE GETTING CONFIGURATION");
+		DEBUG_PRINT("DONE GETTING CONFIGURATION\n");
 	}
 	else
 	{
-		Serial.println("EEPROM not set.  Initializing to 0");
+		DEBUG_PRINT("EEPROM not set.  Initializing to 0\n");
 		// This controller has not been configured yet or the configuration is no longer valid, 
 		// write default values to memory
 		PanelControllerConfigStruct config;
@@ -302,14 +309,13 @@ void loadConfiguration(void)
 
 void loadRouteConfig(void)
 {
-	Serial.println("Loading route configs");
+	DEBUG_PRINT("Loading route configs\n");
 	// Get all of the routeID's referenced by this controller.  The routes are too large to hold in memory so
 	// we store just the routeID in an array.  The index of the routeID in the array indicates the index of the route in the EEPROM
-	Serial.println("Getting the Panel Route configuration");
+	DEBUG_PRINT("Getting the Panel Route configuration\n");
 	RouteMap::init();
 	EEPROM.get(MODULE_ROUTE_BASE_ADDRESS, totalRoutes);
-	Serial.print("TOTAL ROUTES: ");
-	Serial.println(totalRoutes);
+	DEBUG_PRINT("TOTAL ROUTES: %d\n", totalRoutes);
 	PanelRouteStruct route;
 	Dir dir = SPIFFS.openDir("");
 	while (dir.next()) 
@@ -317,12 +323,10 @@ void loadRouteConfig(void)
 		File f = dir.openFile("r");
 		if (f)
 		{
-			Serial.print("Reading route file: ");
-			Serial.println(f.name());
+			DEBUG_PRINT("Reading route file: %s\n", f.name());
 
 			f.read((uint8_t*)&route, sizeof(PanelRouteStruct));
-			Serial.print("RouteID: ");
-			Serial.println(route.routeID);
+			DEBUG_PRINT("RouteID: %d\n", route.routeID);
 			RouteMap::addRoute(route.routeID);
 		}
 	}	
@@ -330,12 +334,10 @@ void loadRouteConfig(void)
 
 void saveModuleConfig(void)
 {
-	Serial.println("Saving module configuration to EEPROM");
+	DEBUG_PRINT("Saving module configuration to EEPROM\n");
 	if (controllerConfig != NULL)
 	{
-		Serial.println("Saving module configuration to EEPROM!!!!!!!");
-		Serial.println(controllerConfig->mdouleCount);
-		Serial.println(controllerConfig->moduleConfigs[0].inputs[0].id);
+		DEBUG_PRINT("Saving module configuration to EEPROM!!!!!!!\nTotal Modules: %d\n", controllerConfig->mdouleCount);
 
 		EEPROM.put(MODULE_CONFIG_BASE_ADDRESS, *controllerConfig);
 		EEPROM.commit();
@@ -346,13 +348,10 @@ void saveModuleConfig(void)
 
 void saveRouteConfig(void)
 {
-	Serial.println("Saving route configuration to SPIFFS");
+	DEBUG_PRINT("Saving route configuration to SPIFFS\n");
 	if (routeConfigDownload != NULL)
 	{
-		Serial.println("Saving route configuration to SPIFFS!!!!!!!");
-		Serial.println(routeConfigDownload->count);
-		Serial.println(routeConfigDownload->routes[0].routeID);
-		Serial.println(MODULE_ROUTE_BASE_ADDRESS + sizeof(PanelControllerRouteConfigStruct));
+		DEBUG_PRINT("Saving route configuration to SPIFFS!!!!!!!\nCount: %d\n", routeConfigDownload->count);
 
 		EEPROM.put(MODULE_ROUTE_BASE_ADDRESS, routeConfigDownload->count);
 		EEPROM.commit();
@@ -361,7 +360,7 @@ void saveRouteConfig(void)
 		totalRoutes = 0; 
 		delete routeConfigDownload;
 		routeConfigDownload = NULL;
-		Serial.print("Saving route configuration to SPIFFS!!");
+		DEBUG_PRINT("Done saving route configuration to SPIFFS!!\n");
 	}
 }
 
@@ -376,8 +375,7 @@ void saveRoutesToFiles(void)
 
 		if (f) 
 		{
-			Serial.print("Saving route: ");
-			Serial.println(fileName);
+			DEBUG_PRINT("Saving route: %s\n", fileName.c_str());
 
 			f.write((const uint8_t *)&routeConfigDownload->routes[x], sizeof(PanelRouteStruct));
 			f.close();
@@ -419,7 +417,7 @@ void downloadConfig(void)
 
 void sendStatusMessage(bool sendOnce)
 {
-	Serial.println("Sending status message");
+	DEBUG_PRINT("Sending status message\n");
 
 	Message message;
 	message.setMessageID(PANEL_STATUS);

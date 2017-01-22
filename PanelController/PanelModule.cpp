@@ -44,8 +44,7 @@ void PanelModuleClass::setup(byte address)
 {
 	m_moduleAddress = BASE_ADDRESS + address;
 
-	Serial.print("setup module: ");
-	Serial.println(address);
+	DEBUG_PRINT("setup module: %d\n", address);
 
 	// set port A to output
 	expanderWrite(IODIRA, 00);
@@ -96,10 +95,7 @@ Message PanelModuleClass::process(bool buttonPressed)
 	byte buttons = expanderRead(GPIOB);
 	if (buttons != m_inputs)
 	{
-		Serial.print("Module::process  Module Address: ");
-		Serial.println(m_moduleAddress - BASE_ADDRESS);
-		Serial.print("Button values: ");
-		Serial.println(buttons, HEX);
+		DEBUG_PRINT("Module::process  Module Address: %d\nButton values: %02x\n", m_moduleAddress - BASE_ADDRESS, buttons);
 		m_inputs = buttons;
 
 		for (byte index = 0; index < MAX_PANEL_INPUTS; index++)
@@ -121,12 +117,7 @@ Message PanelModuleClass::process(bool buttonPressed)
 
 Message PanelModuleClass::handleButtonPressed(byte buttonIndex)
 {
-	Serial.print("Module::handleButtonPressed  Module Address: ");
-	Serial.println(m_moduleAddress - BASE_ADDRESS);
-	Serial.print("Button index: ");
-	Serial.println(buttonIndex);
-	Serial.print("RouteID: ");
-	Serial.println(m_configuration.inputs[buttonIndex].id);
+	DEBUG_PRINT("Module::handleButtonPressed  Module Address: %d\nButton index: %d\nRouteID:%d\n", m_moduleAddress - BASE_ADDRESS, buttonIndex, m_configuration.inputs[buttonIndex].id);
 
 	Message message;
 
@@ -165,10 +156,7 @@ void PanelModuleClass::processBlockMessage(const Message &message)
 	byte newState = message.getField(0);
 	int itemID = message.getDeviceID();
 
-	Serial.print("Block Status Message for: ");
-	Serial.print(itemID);
-	Serial.print(" New State: ");
-	Serial.println(newState);
+	DEBUG_PRINT("Block Status Message for: %d New State: %d\n", itemID, newState);
 
 	updateOutputs(itemID, newState);
 }
@@ -180,10 +168,7 @@ void PanelModuleClass::processSwitchTurnoutMessage(const Message &message)
 	int turnoutID1 = message.getIntValue1();
 	int turnoutID2 = message.getIntValue2();
 
-	Serial.print("Turnout Status Message for: ");
-	Serial.print(turnoutID1);
-	Serial.print(" New State: ");
-	Serial.println(newState1);
+	DEBUG_PRINT("Turnout Status Message for: %d New State: %d\n", turnoutID1, newState1);
 
 	updateOutputs(turnoutID1, newState1);
 	updateOutputs(turnoutID2, newState2);
@@ -198,17 +183,12 @@ void PanelModuleClass::updateOutputs(int itemID, byte newState)
 			if (m_configuration.outputs[index].flashingValue == newState)
 			{
 				//Serial.print(index);
-				//Serial.println(" Adding to blinking pins");
+				//DEBUG_PRINT("%d Adding to blinking pins", index);
 				addBlinkingPin(index);
 			}
 			else
 			{
-				Serial.println("Index");
-				Serial.println(index);
-				Serial.println("State:");
-				Serial.println(newState);
-				Serial.println("OnValue");
-				Serial.println(m_configuration.outputs[index].onValue);
+				DEBUG_PRINT("Index %1 State: %2 OnValue: %3\n", index, newState, m_configuration.outputs[index].onValue);
 				removeBlinkingPin(index);
 				bitWrite(m_outputs, index, m_configuration.outputs[index].onValue == newState);
 			}

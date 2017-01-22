@@ -1,13 +1,12 @@
 #pragma once
+//#define PROJECT_DEBUG
 
 const int ControllerVersion = 7;
 
 #ifdef PROJECT_DEBUG
-#define DEBUG_WIFI_MULTI(...) Serial.printf( __VA_ARGS__ )
-#endif
-
-#ifndef PROJECT_DEBUG
-#define DEBUG_WIFI_MULTI(...)
+#define DEBUG_PRINT(...) Serial.printf( __VA_ARGS__ )
+#else
+#define DEBUG_PRINT(...) // nothing to do here
 #endif
 
 #define MAX_PANEL_MODULES 8
