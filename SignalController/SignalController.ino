@@ -28,7 +28,7 @@ const int SIGNAL_CONFIG_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
 
 WiFiClient Tcp;
 
-Controller controller;
+Controller controller(LocalServerPort);
 SignalHandler signal1;
 SignalHandler signal2;
 SignalControllerConfigStruct controllerConfig;
@@ -37,10 +37,19 @@ long currentHeartbeatTimeout = 0;
 
 void setup() 
 {
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("setup");
-  
+#ifdef PROJECT_DEBUG
+	Serial.begin(115200);
+#else
+	Serial.begin(74880);
+	Serial.println();
+	Serial.println();
+	Serial.println("Starting up in release mode");
+	Serial.printf("Signal Controller Version: %d\n\n\n", ControllerVersion);
+	Serial.flush();
+	Serial.end();
+#endif
+	DEBUG_PRINT("setup\n");
+
   memset(&controllerConfig, 0, sizeof(SignalControllerConfigStruct));
   EEPROM.begin(4096);
 
@@ -52,7 +61,7 @@ void setup()
   signal1.setup(signal1RedPin, signal1YellowPin, signal1GreenPin);
   signal2.setup(signal2RedPin, signal2YellowPin, signal2GreenPin);
 
-  Serial.println("setup complete");
+  DEBUG_PRINT("setup complete"\n);
 }
 
 void loop() 
@@ -62,7 +71,7 @@ void loop()
 	if (ConfigDownload.downloadComplete())
 	{
 		ConfigDownload.reset();
-		Serial.printf("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
+		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
 		EEPROM.put(SIGNAL_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
 		loadConfiguration();
@@ -82,7 +91,7 @@ void loadConfiguration(void)
 	{  
 		EEPROM.get(SIGNAL_CONFIG_ADDRESS, controllerConfig);
 
-		Serial.printf("loadConfiguration:  SignalID's: %d, %d\n", controllerConfig.signal1.signalID, controllerConfig.signal2.signalID);
+		DEBUG_PRINT("loadConfiguration:  SignalID's: %d, %d\n", controllerConfig.signal1.signalID, controllerConfig.signal2.signalID);
 		signal1.setConfig(controllerConfig.signal1);
 		signal2.setConfig(controllerConfig.signal2);
 	}

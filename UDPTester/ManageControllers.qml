@@ -141,6 +141,7 @@ Item {
 
                     Component {
                         id: list
+
                         ControllerList {
                             id: controllerList
                             model: controllerModel
@@ -173,12 +174,26 @@ Item {
                 }
             }
 
-            Loader {
-                id: detailLoader
+            ColumnLayout {
                 Layout.preferredWidth: mainItem.width * .35 - 10
-                anchors.margins: ui.margin
-                Layout.fillHeight: true
                 Layout.fillWidth: true
+                ControllerActions {
+                    id: controllerActions
+                    enabled: stackView.currentItem ? stackView.currentItem.controllerID > 0 : false
+                    controllerID: stackView.currentItem && stackView.currentItem.controllerID ? stackView.currentItem.controllerID : 0
+                    anchors.margins: ui.margin
+                    Layout.fillWidth: true
+                    onEditClicked: {
+                        showEdit(stackView.currentItem.currentIndex);
+                    }
+                }
+
+                Loader {
+                    id: detailLoader
+                    anchors.margins: ui.margin
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                }
             }
         }
         ParallelAnimation {

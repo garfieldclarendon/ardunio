@@ -7,6 +7,7 @@ Item {
     property alias model: listView.model
     property int controllerID: 0
     property int currentControllerClass
+    property alias currentIndex: listView.currentIndex
 
     signal editClicked(int index);
 
@@ -20,7 +21,7 @@ Item {
 //            border.width: 1
 //            border.color: "lightgrey"
             width: parent.width
-            height: getSize()
+            height: sizeClosed
 
             function getClassName(classID)
             {
@@ -33,27 +34,17 @@ Item {
                 else if(classID === 3)
                     return "Route";
                 else if(classID === 4)
-                    return "Signal/Block";
+                    return "Signal";
                 else if(classID === 5)
-                    return "System";
+                    return "Semaphore";
                 else if(classID === 6)
+                    return "Block";
+                else if(classID === 7)
+                    return "System";
+                else if(classID === 8)
                     return "Application";
 
                 return "";
-            }
-
-            function getSize()
-            {
-                if(!ListView.isCurrentItem)
-                {
-                    doClose.start();
-                    fontRestore.start();
-                    return sizeClosed;
-                }
-
-                doOpen.start();
-                fontExpand.start();
-                return sizeOpen;
             }
 
             MouseArea {
@@ -79,7 +70,7 @@ Item {
                         id: controllerNameText
                         text: controllerName
                         font.bold: true
-                        font.pointSize: ui.applyFontRatio(ui.baseFontSize)
+                        font.pointSize: ui.applyFontRatio(ui.baseFontSize + 4)
                         anchors.margins: ui.margin
                         Layout.minimumWidth:  ui.applyRatio(300)
                         color: "blue"
@@ -112,71 +103,6 @@ Item {
                     text: '<b>Serail #:</b> ' + serialNumber
                     anchors.margins: ui.margin
                 }
-                Rectangle {
-                    width: ui.applyRatio(490)
-                    height: ui.applyRatio(40)
-                    visible: wraper.ListView.isCurrentItem
-                    color: "lightgrey"
-                    border.color: "grey"
-                    border.width: 1
-                    radius: ui.applyRatio(10)
-                    RowLayout {
-                        anchors.centerIn: parent
-                        spacing: ui.margin
-                        Button {
-                            id: editButton
-                            text: "Edit"
-                            onClicked: {
-                                console.debug("Edit Button Clicked!!");
-                                editClicked(index);
-                             }
-                        }
-                        Button {
-                            id: resetButton
-                            text: "Reset"
-                            onClicked: {
-                                console.debug("Reset Button Clicked!!");
-                                broadcaster.sendResetCommand(id);
-                            }
-                        }
-                        Button {
-                            id: sendConfig
-                            text: "Send Config"
-                            onClicked: {
-                                console.debug("Send Config Button Clicked!!");
-                                broadcaster.sendConfigData(id);
-                            }
-                        }
-                        Button {
-                            id: updateFirmware
-                            text: "Update Firmware"
-                            onClicked: {
-                                console.debug("Update Firmware Button Clicked!!");
-                                broadcaster.sendDownloadFirmware(id);
-                            }
-                        }
-                    }
-                }
-            }
-            ParallelAnimation {
-                id: doOpen
-                running: false
-                NumberAnimation { target: wraper; easing.type: Easing.OutSine; property: "height"; to: sizeOpen; duration: 500; }
-            }
-            ParallelAnimation {
-                id: doClose
-                running: false
-                NumberAnimation { target: wraper; easing.type: Easing.OutSine; property: "height"; to: sizeClosed; duration: 500; }
-            }
-            ParallelAnimation {
-                id: fontExpand
-                running: false
-                NumberAnimation { target: controllerNameText; easing.type: Easing.OutSine; property: "font.pointSize"; to: ui.applyFontRatio(ui.baseFontSize + 4); duration: 500; }
-            }
-            ParallelAnimation {
-                id: fontRestore
-                running: false
-                NumberAnimation { target: controllerNameText; easing.type: Easing.OutSine; property: "font.pointSize"; to: ui.applyFontRatio(ui.baseFontSize); duration: 500; }
             }
         }
     }
@@ -188,6 +114,7 @@ Item {
         spacing: ui.applyRatio(2)
         delegate: modelDelegate
         focus: true
+        highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
     }
 }
 

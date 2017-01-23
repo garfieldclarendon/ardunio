@@ -33,7 +33,7 @@ Item {
                 {
                     id: classID
                     currentIndex: classID > 0 ? classID : editModel.getData(index, "controllerClass")
-                    model: ["Unknown", "Turnout", "Panel", "Route", "Signal", "Block", "System", "Application"]
+                    model: ["Unknown", "Turnout", "Panel", "Route", "Signal", "Semaphore", "Block", "System", "Application"]
                     Layout.fillWidth: true
                 }
                 Text { text: "Serial #:"; font.bold: true  }

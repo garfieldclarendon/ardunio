@@ -10,5 +10,6 @@
         <file>EditPanelModule.qml</file>
         <file>NewController.qml</file>
         <file>LookupController.qml</file>
+        <file>ControllerActions.qml</file>
     </qresource>
 </RCC>

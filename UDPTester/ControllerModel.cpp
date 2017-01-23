@@ -7,6 +7,7 @@
 #include "Database.h"
 #include "MessageBroadcaster.h"
 #include "TcpServer.h"
+#include "GlobalDefs.h"
 
 ControllerModel::ControllerModel(QObject *parent)
     : QSortFilterProxyModel(parent), m_tableModel(NULL), m_filterByOnline(-1)
@@ -137,7 +138,7 @@ void ControllerModel::timerProc()
     while (i.hasNext())
     {
         i.next();
-        if(QDateTime::currentDateTime().toTime_t() - i.value() > 15)
+        if(QDateTime::currentDateTime().toTime_t() - i.value() > HEARTBEAT_INTERVAL * 2)
         {
             if(m_onlineStatusMap[i.key()] != "?")
             {

@@ -2,6 +2,8 @@
 #include <QUrl>
 #include <QtCore/QUrlQuery>
 #include <QFile>
+#include <QCoreApplication>
+#include <QDir>
 
 #include "UpdateServer.h"
 
@@ -44,20 +46,21 @@ void UpdateServer::readClient()
             QString controllerType(query.queryItemValue("ControllerType"));
 
             QString fileName;
-            QString path;
+            QString path = QCoreApplication::applicationDirPath();
+            QDir::setCurrent(path);
 //            path = "C:/Users/John/Documents/Arduino/";
-            path = "C:/Users/Jreil/OneDrive/Documents/Arduino/";
+            path = "../../Builds/";
             QString returnCode("200 OK");
             if(controllerType == "1")
-                fileName = path + "TurnoutController/Release/TurnoutController.ino.bin";
+                fileName = path + "TurnoutController/TurnoutController.ino.bin";
             else if(controllerType == "2")
-                fileName = path + "PanelController/Release/PanelController.ino.bin";
+                fileName = path + "PanelController/PanelController.ino.bin";
             else if(controllerType == "4")
-                fileName = path + "SignalController/Release/SignalController.ino.bin";
+                fileName = path + "SignalController/SignalController.ino.bin";
             else if(controllerType == "5")
-                fileName = path + "SemaphoreController/Release/SemaphoreController.ino.bin";
+                fileName = path + "SemaphoreController/SemaphoreController.ino.bin";
             else if(controllerType == "6")
-                fileName = path + "BlockController/Release/BlockController.ino.bin";
+                fileName = path + "BlockController/BlockController.ino.bin";
 
             // PROCESS //
             QByteArray fileData;

@@ -22,7 +22,7 @@ void UI::init()
     qreal dpi = qApp->primaryScreen()->physicalDotsPerInch();
     m_ratio = qMin(height/refHeight, width/refWidth);
     m_ratioFont = qMin(height*refDpi/(dpi*refHeight), width*refDpi/(dpi*refWidth));
-    m_baseFontSize = QGuiApplication::font().pixelSize() > 0 ? QGuiApplication::font().pixelSize() : 8;
+    m_baseFontSize = QGuiApplication::font().pointSize() > 0 ? QGuiApplication::font().pointSize() : 8;
 
     qDebug("-----------------------------------------------------------------");
     qDebug(QString("init  DPI: %1 Width %2  Height %3  Font: %4").arg(dpi).arg(width).arg(height).arg(m_baseFontSize).toLatin1());
@@ -33,8 +33,8 @@ int UI::applyFontRatio(const int value)
 {
     if(m_ratio == 0.0)
         init();
-    int s = QGuiApplication::font().pointSize();
-    qDebug(QString("VALUE IS %1 ratio is %2 = %3").arg(value).arg(m_ratioFont).arg(value * m_ratioFont).toLatin1());
+//    int s = QGuiApplication::font().pointSize();
+//    qDebug(QString("VALUE IS %1 ratio is %2 = %3").arg(value).arg(m_ratioFont).arg(value * m_ratioFont).toLatin1());
     return value;
 }
 /*
