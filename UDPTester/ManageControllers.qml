@@ -101,7 +101,8 @@ Item {
             anchors.margins: ui.margin
 
             ColumnLayout {
-                Layout.preferredWidth: mainItem.width - ((resetAllButton.width * 4) + ui.applyRatio(175))
+                Layout.maximumWidth: Math.min(mainItem.width * .5, 500)
+                Layout.minimumWidth: 500
                 anchors.margins: ui.margin
 
                 NewController {
@@ -174,7 +175,6 @@ Item {
             }
 
             ColumnLayout {
-//                Layout.preferredWidth: Math.max(mainItem.width * .35 - ui.applyRatio(10), resetAllButton * 4 + ui.applyRatio(15))
                 Layout.fillWidth: true
                 ControllerActions {
                     id: controllerActions
@@ -186,7 +186,6 @@ Item {
                         showEdit(stackView.currentItem.currentIndex);
                     }
                 }
-
                 Loader {
                     id: detailLoader
                     anchors.margins: ui.margin

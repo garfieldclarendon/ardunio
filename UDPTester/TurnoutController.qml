@@ -1,11 +1,11 @@
 import QtQuick 2.5
-import QtQuick.Controls 2.1
+import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import Utils 1.0
 
 Rectangle {
     id: outerRect
-   property int currentControllerID: 0
+    property int currentControllerID: 0
 
     TurnoutModel {
         id: turnoutModel
@@ -14,7 +14,6 @@ Rectangle {
 
     radius: 20
     border.color: "grey"
-
     Component {
         id: turnoutDelegate
          GroupBox {

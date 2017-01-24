@@ -1,5 +1,5 @@
 import QtQuick 2.5
-import QtQuick.Controls 2.1
+import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import Utils 1.0
 
@@ -7,8 +7,8 @@ Item {
     property int controllerID: 0
     signal editClicked()
 
-    width: resetButton.width + editButton.width + sendConfig.width + updateFirmware.width + ui.applyRatio(10)
-    height: resetButton.height + ui.applyRatio(15)
+    implicitWidth: resetButton.width + editButton.width + sendConfig.width + updateFirmware.width + ui.applyRatio(20)
+    implicitHeight: resetButton.height + ui.applyRatio(15)
 
     Rectangle {
         anchors.fill: parent
