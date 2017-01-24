@@ -60,7 +60,6 @@ Item {
             }
             ColumnLayout {
                 spacing: ui.margin
-                //width: parent.width
                 anchors.fill: parent
                 anchors.margins: ui.margin
                 RowLayout {
@@ -72,8 +71,8 @@ Item {
                         font.bold: true
                         font.pointSize: ui.applyFontRatio(ui.baseFontSize + 4)
                         anchors.margins: ui.margin
-                        Layout.minimumWidth:  ui.applyRatio(300)
                         color: "blue"
+                        Layout.fillWidth: true
                     }
                     Text {
                         text: '<b>Status:</b> ' + currentStatus

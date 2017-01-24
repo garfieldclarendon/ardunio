@@ -101,7 +101,7 @@ Item {
             anchors.margins: ui.margin
 
             ColumnLayout {
-                Layout.preferredWidth: mainItem.width * .55
+                Layout.preferredWidth: mainItem.width - ((resetAllButton.width * 4) + ui.applyRatio(175))
                 anchors.margins: ui.margin
 
                 NewController {
@@ -149,7 +149,6 @@ Item {
                                 showEdit(index);
                              }
                             onControllerIDChanged: {
-                                console.debug();
                                 if(currentControllerClass === 1)
                                 {
                                     detailLoader.setSource("TurnoutController.qml",
@@ -175,7 +174,7 @@ Item {
             }
 
             ColumnLayout {
-                Layout.preferredWidth: mainItem.width * .35 - 10
+//                Layout.preferredWidth: Math.max(mainItem.width * .35 - ui.applyRatio(10), resetAllButton * 4 + ui.applyRatio(15))
                 Layout.fillWidth: true
                 ControllerActions {
                     id: controllerActions

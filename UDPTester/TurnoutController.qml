@@ -20,7 +20,7 @@ Rectangle {
          GroupBox {
             id: wraper
             width: outerRect.width - ui.applyRatio(35)
-            height: ui.applyRatio(60)
+            height: (activate.height * 2) + ui.applyRatio(10) + (buttonLayout.spacing * 2) + (ui.margin * 2)
 //            title: itemName
 //            clip: true
 //            border.color: "grey"
@@ -81,6 +81,11 @@ Rectangle {
                          }
                     }
                     ColumnLayout {
+                        id: buttonLayout
+                        Rectangle {
+                            id: buffer1
+                            Layout.fillHeight: true
+                        }
                         Button {
                             id: activate
                             text: "Activate"
@@ -96,6 +101,10 @@ Rectangle {
                             onClicked: {
                                 console.debug("Action button clicked");
                             }
+                        }
+                        Rectangle {
+                            id: buffer2
+                            Layout.fillHeight: true
                         }
                     }
                 }

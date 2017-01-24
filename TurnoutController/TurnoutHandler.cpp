@@ -71,10 +71,13 @@ bool TurnoutHandler::handleMessage(const Message &message)
 	if (newState != TrnUnknown)
 	{
 		setTurnout(newState);
-		if (newState == TrnNormal)
-			m_currentState = TrnToNormal;
-		else
-			m_currentState = TrnToDiverging;
+		if (m_currentState != newState)
+		{
+			if (newState == TrnNormal)
+				m_currentState = TrnToNormal;
+			else
+				m_currentState = TrnToDiverging;
+		}
 		ret = true;
 	}
 	

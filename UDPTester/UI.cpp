@@ -1,12 +1,15 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QFont>
+#include <QFontInfo>
 
 #include "UI.h"
 
 const qreal refDpi = 162.;
 const qreal refHeight = 962.;
 const qreal refWidth = 1080.;
+const int refHeight2 = 13;
+int refDiff = 0;
 
 UI::UI(QObject *parent)
     :QObject(parent), m_ratio(0.0), m_ratioFont(0.0), m_margin(5), m_baseFontSize(0)
@@ -22,10 +25,15 @@ void UI::init()
     qreal dpi = qApp->primaryScreen()->physicalDotsPerInch();
     m_ratio = qMin(height/refHeight, width/refWidth);
     m_ratioFont = qMin(height*refDpi/(dpi*refHeight), width*refDpi/(dpi*refWidth));
-    m_baseFontSize = QGuiApplication::font().pointSize() > 0 ? QGuiApplication::font().pointSize() : 8;
+    m_baseFontSize = QFontInfo(QGuiApplication::font()).pointSize();
 
+    QFontMetrics fm(QGuiApplication::font());
+    int tmpRefHeight = fm.height();
+    int tmpRefWidth = fm.width('W');
+
+    refDiff = refHeight2 - tmpRefHeight;
     qDebug("-----------------------------------------------------------------");
-    qDebug(QString("init  DPI: %1 Width %2  Height %3  Font: %4").arg(dpi).arg(width).arg(height).arg(m_baseFontSize).toLatin1());
+    qDebug(QString("init  DPI: %1 Width %2  Height %3  refDiff %4  Font: %5").arg(dpi).arg(width).arg(tmpRefHeight).arg(refDiff).arg(m_baseFontSize).toLatin1());
     qDebug("-----------------------------------------------------------------");
 }
 
@@ -37,6 +45,13 @@ int UI::applyFontRatio(const int value)
 //    qDebug(QString("VALUE IS %1 ratio is %2 = %3").arg(value).arg(m_ratioFont).arg(value * m_ratioFont).toLatin1());
     return value;
 }
+
+
+int UI::applyRatio(const int value)
+{
+    int ret = refDiff + value;
+    return ret;
+}
 /*
 int UI::applyRatio(const int value)
 {
@@ -47,8 +62,7 @@ int UI::applyRatio(const int value)
 //    qDebug(QString("applyRation: %1 to %2").arg(value).arg(ret).toLatin1());
     return ret;
 }
-*/
-
+/*
 int UI::applyRatio(const int value)
 {
     int maxSize = 0;
@@ -81,3 +95,4 @@ int UI::applyRatio(const int value)
 
         return qRound(newSize);
 }
+*/
