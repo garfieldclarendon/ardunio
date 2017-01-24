@@ -101,7 +101,7 @@ Item {
             anchors.margins: ui.margin
 
             ColumnLayout {
-                Layout.maximumWidth: Math.min(mainItem.width * .5, 500)
+                Layout.maximumWidth: Math.min(mainItem.width * .40, 500)
                 Layout.minimumWidth: 500
                 anchors.margins: ui.margin
 

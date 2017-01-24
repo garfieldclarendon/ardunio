@@ -19,7 +19,7 @@ Rectangle {
          GroupBox {
             id: wraper
             width: outerRect.width - ui.applyRatio(35)
-            height: (activate.height * 2) + ui.applyRatio(10) + (buttonLayout.spacing * 2) + (ui.margin * 2)
+            height: (activate.height * 2) + ui.applyRatio(25) + (buttonLayout.spacing * 2) + (ui.margin * 2)
 //            title: itemName
 //            clip: true
 //            border.color: "grey"
@@ -88,7 +88,7 @@ Rectangle {
                         Button {
                             id: activate
                             text: "Activate"
-                            enabled: true //currentState != "?" && id > 0
+                            enabled: true
                             onClicked: {
                                 console.debug("current state: " + currentState);
                                 broadcaster.sendMessage(102, currentControllerID, id, 1, 0, id, 0, currentState === "1" ? 2 : 1, 0);
