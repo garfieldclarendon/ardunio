@@ -9,6 +9,7 @@ PanelInputModel::PanelInputModel(QObject *parent)
     Database db;
     m_tableModel = new QSqlTableModel(this, db.getDatabase());
     m_tableModel->setTable("panelInputEntry");
+    m_tableModel->setSort(m_tableModel->fieldIndex("pinIndex"), Qt::AscendingOrder);
     m_tableModel->select();
 
     this->setSourceModel(m_tableModel);
