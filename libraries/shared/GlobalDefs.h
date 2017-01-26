@@ -1,5 +1,5 @@
 #pragma once
-//#define PROJECT_DEBUG
+#define PROJECT_DEBUG
 
 const int ControllerVersion = 7;
 

@@ -1,11 +1,11 @@
 #pragma once
-#include <WiFiServer.h>
 #include <WiFiUdp.h>
 #include <functional>
 #include <IPAddress.h>
 
 #include "Message.h"
 #include "GlobalDefs.h"
+#include "ManageWiFi.h"
 
 class Controller
 {
@@ -26,10 +26,10 @@ public:
 	void setClass(ClassEnum value) { m_class = value; }
 	IPAddress getServerAddress(void) const { return m_serverAddress;  }
 	byte getServerPort(void) const { return m_serverPort;  }
+	bool getWiFiReconnected(void) const { return m_wifiManager.getIsReconnected(); }
 
 private:
 	void setupNetwork(void);
-	void setupMesh(void);
 	void handleSetControllerIDMessage(const Message &message);
 	void handleServerHeartbeatMessage(const Message &message);
 	void downloadFirmwareUpdate(void);
@@ -41,7 +41,6 @@ private:
 	TMessageHandlerFunction m_messageCallback;
 
 	WiFiUDP m_udp;
-	WiFiServer m_server;
 	short m_controllerID;
 	ClassEnum m_class;
 	IPAddress m_serverAddress;
@@ -52,5 +51,6 @@ private:
 	byte m_resendMessageCount;
 	long m_resendMessageTimeout;
 	Message m_lastMessage;
+	ManageWiFi m_wifiManager;
 };
 

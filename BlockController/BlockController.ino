@@ -62,6 +62,10 @@ void setup()
 void loop() 
 {
 	controller.process();
+
+	if (controller.getWiFiReconnected())
+		sendHeartbeat(true);
+
 	ConfigDownload.process();
 	if (ConfigDownload.downloadComplete())
 	{

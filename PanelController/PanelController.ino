@@ -138,6 +138,10 @@ void buttonPressedInterrupt(void)
 void loop() 
 {
 	controller.process();
+
+	if (controller.getWiFiReconnected())
+		sendStatusMessage(false);
+
 	sendHeartbeatMessage();
 
 	ConfigDownload.process();

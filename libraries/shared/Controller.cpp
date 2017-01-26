@@ -11,7 +11,7 @@
 #include <ESP8266httpUpdate.h>
 
 Controller::Controller(int localServerPort)
-	: m_server(localServerPort), m_controllerID(-1), m_class(ClassUnknown), m_serverPort(0), m_lastDNSCount(0), m_dnsCheckTimeout(0)
+	: m_controllerID(-1), m_class(ClassUnknown), m_serverPort(0), m_lastDNSCount(0), m_dnsCheckTimeout(0)
 {
 	m_lastDNSService = "turnout";
 }
@@ -27,6 +27,8 @@ void Controller::setup(TMessageHandlerFunction messageCallback, ClassEnum contro
 	m_class = controllerClass;
 	m_messageCallback = messageCallback;
 
+//	m_wifiManager.setup("GCMRR_");
+	m_wifiManager.setupWifi("Belkin", password);
 	setupNetwork();
 
 	DEBUG_PRINT("------------------------\n");
@@ -38,17 +40,6 @@ void Controller::setup(TMessageHandlerFunction messageCallback, ClassEnum contro
 
 void Controller::setupNetwork(void)
 {
-	DEBUG_PRINT("Connecting to %s ", ssid);
-	
-	WiFi.mode(WIFI_STA);
-	WiFi.begin(ssid, password);
-	
-	while (WiFi.waitForConnectResult() != WL_CONNECTED)
-	{
-		delay(1000);
-	}
-	DEBUG_PRINT(" connected\n");
-
 	if(m_udp.begin(UdpPort))
 		DEBUG_PRINT("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), UdpPort);
 	else
@@ -57,6 +48,7 @@ void Controller::setupNetwork(void)
 
 void Controller::process(void)
 {
+	m_wifiManager.process();
 	resendLastMessage();
 	int packetSize = m_udp.parsePacket();
 	if (packetSize >= sizeof(MessageStruct))
@@ -216,31 +208,31 @@ bool Controller::checkEEPROM(byte signature)
 
 	return valid;
 }
-
-void Controller::processLocalServer(void)
-{
-	Message message;
-	// Check if a client has connected
-	if (m_server.hasClient())
-	{
-		WiFiClient client = m_server.available();
-		if (!client)
-		{
-			return;
-		}
-		DEBUG_PRINT("New client\n");
-
-		// Wait for data from client to become available
-		while (client.connected() && client.available() < sizeof(MessageStruct))
-		{
-			delay(1);
-		}
-
-		if (client.available() >= sizeof(MessageStruct))
-			client.read((uint8_t *)message.getRef(), sizeof(MessageStruct));
-		DEBUG_PRINT("Done with client\n");
-	}
-	if (message.isValid())
-		processMessage(message);
-
-}
+//
+//void Controller::processLocalServer(void)
+//{
+//	Message message;
+//	// Check if a client has connected
+//	if (m_server.hasClient())
+//	{
+//		WiFiClient client = m_server.available();
+//		if (!client)
+//		{
+//			return;
+//		}
+//		DEBUG_PRINT("New client\n");
+//
+//		// Wait for data from client to become available
+//		while (client.connected() && client.available() < sizeof(MessageStruct))
+//		{
+//			delay(1);
+//		}
+//
+//		if (client.available() >= sizeof(MessageStruct))
+//			client.read((uint8_t *)message.getRef(), sizeof(MessageStruct));
+//		DEBUG_PRINT("Done with client\n");
+//	}
+//	if (message.isValid())
+//		processMessage(message);
+//
+//}

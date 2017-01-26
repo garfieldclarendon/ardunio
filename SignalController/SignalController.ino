@@ -14,6 +14,7 @@
 #include "SignalHandler.h"
 #include "ConfigStructures.h"
 #include "DeviceState.h"
+#include "GlobalDefs.h"
 
 // Signal pin assignments
 const int signal1RedPin = 4;
@@ -61,12 +62,16 @@ void setup()
   signal1.setup(signal1RedPin, signal1YellowPin, signal1GreenPin);
   signal2.setup(signal2RedPin, signal2YellowPin, signal2GreenPin);
 
-  DEBUG_PRINT("setup complete"\n);
+  DEBUG_PRINT("setup complete\n");
 }
 
 void loop() 
 {
 	controller.process();
+
+	if (controller.getWiFiReconnected())
+		sendHeartbeat(true);
+
 	ConfigDownload.process();
 	if (ConfigDownload.downloadComplete())
 	{
