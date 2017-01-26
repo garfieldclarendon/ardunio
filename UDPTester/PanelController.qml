@@ -15,20 +15,20 @@ Rectangle {
     Component {
         id: panelDelegate
 
-        Item {
+        GroupBox {
             id: wraper
             clip: true
             width: outerRect.width - ui.applyRatio(25)
             height: ui.applyRatio(100)
-//            border.color: "grey"
-//            border.width: 1
-//            color: id > 0 ? "white" : "lightgrey"
 
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
                     console.debug("Mouse Clicked!")
-                    listView.currentIndex = index
+//                    stackView.item.currentIndex = index;
+                }
+                onDoubleClicked: {
+                    showPanelModuleDetails(id);
                 }
             }
             ColumnLayout {
@@ -81,13 +81,33 @@ Rectangle {
         }
     }
 
-    ListView {
+    function showPanelModuleDetails(id)
+    {
+        stackView.push({item:"qrc:/PanelModuleDetails.qml", properties:{panelID:id}})
+//        stackView.push({item:"qrc:/EditController.qml"})
+    }
+
+    StackView {
+        id: stackView
+        clip:true
         anchors.fill: parent
-        anchors.margins: ui.margin
-        id: listView
-        model: panelModel
-        delegate: panelDelegate
-        spacing: ui.applyRatio(2)
-        focus: true
+
+        Component {
+            id: list
+
+            ListView {
+                anchors.fill: parent
+                anchors.margins: ui.margin
+                id: listView
+                model: panelModel
+                delegate: panelDelegate
+                spacing: ui.applyRatio(2)
+                focus: true
+            }
+        }
+
+        Component.onCompleted: {
+            stackView.push(list);
+        }
     }
 }
