@@ -64,7 +64,7 @@ void loop()
 	controller.process();
 
 	if (controller.getWiFiReconnected())
-		sendHeartbeat(true);
+		sendStatusMessage(true);
 
 	ConfigDownload.process();
 	if (ConfigDownload.downloadComplete())
@@ -79,9 +79,9 @@ void loop()
 	bool sendMessage = block1.process();
 	bool sendMessage2 = block2.process();
 	if (sendMessage || sendMessage2)
-		sendHeartbeat(true);
+		sendStatusMessage(false);
 	else
-		sendHeartbeat(false);
+		sendStatusMessage(false);
 } 
 
 void loadConfiguration(void)
@@ -119,7 +119,11 @@ void downloadConfig(void)
 
 void messageCallback(const Message &message)
 {
-	if (message.getMessageID() == SYS_CONFIG_CHANGED && (message.getControllerID() == 0 || message.getControllerID() == controller.getControllerID()))
+	if (message.getMessageID() == SYS_REQEST_STATUS)
+	{
+		sendStatusMessage(true);
+	}
+	else if (message.getMessageID() == SYS_CONFIG_CHANGED && (message.getControllerID() == 0 || message.getControllerID() == controller.getControllerID()))
 	{
 		downloadConfig();
 	}
@@ -129,28 +133,33 @@ void messageCallback(const Message &message)
 	}
 	else
 	{
-		bool sendHeartbeat1 = block1.handleMessage(message);
-		bool sendHeartbeat2 = block2.handleMessage(message);
+		bool sendStatus1 = block1.handleMessage(message);
+		bool sendStatus2 = block2.handleMessage(message);
 
-		if (sendHeartbeat1 || sendHeartbeat2)
-			sendHeartbeat(true);
+		if (sendStatus1 || sendStatus2)
+			sendStatusMessage(false);
 	}
 }
 
-void sendHeartbeat(bool forceSend)
+void sendHeartbeat(void)
 {
-	Message message;
 	long t = millis();
-	if (forceSend || (t - currentHeartbeatTimeout > heartbeatTimeout))
+	if ((t - currentHeartbeatTimeout > heartbeatTimeout))
 	{
 		currentHeartbeatTimeout = t;
-
-		message.setMessageID(BLOCK_STATUS);
-		message.setControllerID(controller.getControllerID());
-		message.setMessageClass(ClassBlock);
-		message.setDeviceStatus(0, block1.getBlockID(), block1.getCurrentState());
-		message.setDeviceStatus(1, block2.getBlockID(), block2.getCurrentState());
-
-		controller.sendNetworkMessage(message, true);
+		sendStatusMessage(true);
 	}
+}
+
+void sendStatusMessage(bool sendOnce)
+{
+	Message message;
+
+	message.setMessageID(BLOCK_STATUS);
+	message.setControllerID(controller.getControllerID());
+	message.setMessageClass(ClassBlock);
+	message.setDeviceStatus(0, block1.getBlockID(), block1.getCurrentState());
+	message.setDeviceStatus(1, block2.getBlockID(), block2.getCurrentState());
+
+	controller.sendNetworkMessage(message, sendOnce);
 }

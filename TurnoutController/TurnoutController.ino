@@ -157,7 +157,11 @@ void downloadConfig(void)
 
 void messageCallback(const Message &message)
 {
-	if (message.getMessageID() == SYS_CONFIG_CHANGED && (message.getControllerID() == 0 || message.getControllerID() == controller.getControllerID()))
+	if (message.getMessageID() == SYS_REQEST_STATUS)
+	{
+		sendStatusMessage(true);
+	}
+	else if (message.getMessageID() == SYS_CONFIG_CHANGED && (message.getControllerID() == 0 || message.getControllerID() == controller.getControllerID()))
 	{
 		downloadConfig();
 	}
@@ -172,7 +176,7 @@ void messageCallback(const Message &message)
 		bool sendStatus = turnoutModule.handleMessage(message, data);
 		setPins();
 
-		if (sendStatus || message.getMessageID() == PANEL_STATUS)
+		if (sendStatus)
 			sendStatusMessage(false);
 	}
 }

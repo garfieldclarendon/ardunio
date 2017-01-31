@@ -144,7 +144,14 @@ void loop()
 	controller.process();
 
 	if (controller.getWiFiReconnected())
-		sendStatusMessage(false);
+	{
+		Message message;
+		message.setMessageID(SYS_REQEST_STATUS);
+		message.setControllerID(controller.getControllerID());
+		message.setMessageClass(ClassPanel);
+
+		controller.sendNetworkMessage(message, true);
+	}
 
 	sendHeartbeatMessage();
 
