@@ -148,11 +148,9 @@ void sendHeartbeat(bool forceSend)
 		message.setMessageID(BLOCK_STATUS);
 		message.setControllerID(controller.getControllerID());
 		message.setMessageClass(ClassBlock);
-		message.setIntValue1(block1.getBlockID());
-		message.setByteValue1(block1.getCurrentState());
-		message.setIntValue2(block2.getBlockID());
-		message.setByteValue2(block2.getCurrentState());
+		message.setDeviceStatus(0, block1.getBlockID(), block1.getCurrentState());
+		message.setDeviceStatus(1, block2.getBlockID(), block2.getCurrentState());
 
-		controller.sendNetworkMessage(message);
+		controller.sendNetworkMessage(message, true);
 	}
 }

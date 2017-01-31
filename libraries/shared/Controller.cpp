@@ -28,7 +28,8 @@ void Controller::setup(TMessageHandlerFunction messageCallback, ClassEnum contro
 	m_messageCallback = messageCallback;
 
 //	m_wifiManager.setup("GCMRR_");
-	m_wifiManager.setupWifi("Belkin", password);
+	m_wifiManager.setupWifi("wagging", "jr1also12");
+//	m_wifiManager.setupWifi("Belkin", password);
 	setupNetwork();
 
 	DEBUG_PRINT("------------------------\n");
@@ -50,18 +51,77 @@ void Controller::process(void)
 {
 	m_wifiManager.process();
 	resendLastMessage();
-	int packetSize = m_udp.parsePacket();
-	if (packetSize >= sizeof(MessageStruct))
+	processUDP();
+}
+
+void Controller::processUDP(void)
+{
+	static bool signatureFound = false;
+	int packetSize;
+	if (signatureFound)
+		packetSize = m_udp.available();
+	else
+		packetSize = m_udp.parsePacket();
+
+	// Find the start of a valid message.
+	// ...ignore everything else
+	if (packetSize >= 0 && signatureFound == false)
 	{
+		while (m_udp.peek() != 0xEE && (packetSize = m_udp.available()) > 0)
+			m_udp.read();
+		if (m_udp.peek() == 0xEE)
+		{
+			m_udp.read();
+			if (m_udp.peek() == 0xEF)
+			{
+				signatureFound = true;
+				m_udp.read();
+			}
+		}
+	}
+
+	// wait until a full message comes in before processing
+	if (signatureFound)
+	{
+		DEBUG_PRINT("READING MESSAGE!\n");
 		Message message;
-		m_udp.read(message.getRef(), sizeof(MessageStruct));
+		byte size = sizeof(MessageStruct);
+		char *ref = message.getRef();
+		// Skip the signature bytes
+		ref += 2;
+		while (m_udp.available() > 0)
+		{
+			byte b = m_udp.read();
+			if (size <= sizeof(MessageStruct))
+			{
+				*ref = b;
+				size--;
+				ref++;
+			}
+			// If this is the end of message signature, remove any extra
+			// data
+			if (b == 0xEF && m_udp.peek() == 0xEE)
+			{
+				// read the second byte of the end of message signature (0XEE)
+				b = m_udp.read();
+				DEBUG_PRINT("END Signature found!!\n");
+				if (m_udp.available() > 0)
+					b = m_udp.read();
+				// If more data available, read to the next start signature
+				while (m_udp.available() > 0 && b != 0xEE && m_udp.peek() != 0xEF)
+					b = m_udp.read();
+				break;
+			}
+		}
+
 		processMessage(message);
+		signatureFound = false;
 	}
 }
 
 void Controller::processMessage(const Message &message)
 {
-//	DEBUG_PRINT("NEW MESSAGE! MessageID %d\n", message.getMessageID());
+	DEBUG_PRINT("NEW MESSAGE! MessageID %d\n", message.getMessageID());
 	if (message.getMessageID() == SYS_SET_CONTROLLER_ID && message.getLValue() == ESP.getChipId())
 	{
 		handleSetControllerIDMessage(message);

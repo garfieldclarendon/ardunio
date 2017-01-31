@@ -2,6 +2,8 @@
 #define UDPMESSAGE_H
 
 #include <QMap>
+#include "GlobalDefs.h"
+/*
 union PayloadUnion
 {
     quint8 payload[10];
@@ -14,16 +16,38 @@ union PayloadUnion
         quint8 byteValue2;
     } payloadStruct;
 };
+*/
+struct DeviceStatusStruct
+{
+    short id;
+    quint8 status;
+};
+
+union PayloadUnion
+{
+    quint8 payload[MAX_MODULES * 3];
+    struct PayloadSruct
+    {
+        qint32 lValue;
+        qint16 intValue1;
+        qint16 intValue2;
+        quint8 byteValue1;
+        quint8 byteValue2;
+        quint8 unused[MAX_MODULES * 3 - sizeof(qint32) - sizeof(qint16) - sizeof(qint16) - 2];
+    } payloadStruct;
+    DeviceStatusStruct deviceStatus[MAX_MODULES];
+};
+
 struct MessageStruct
 {
-    quint8 startSig;
+    quint8 startSig[2];
     quint8 messageID;
     qint16 deviceID;
     qint16 controllerID;
     quint8 messageVersion;
     quint8 messageClass;
     PayloadUnion payload;
-    quint8 endSig;
+    quint8 endSig[2];
 };
 
 class UDPMessage
@@ -49,6 +73,7 @@ public:
     void setIntValue2(int value) { messageSructure.payload.payloadStruct.intValue2 = value; }
     void setByteValue1(quint8 value) { messageSructure.payload.payloadStruct.byteValue1 = value; }
     void setByteValue2(quint8 value) { messageSructure.payload.payloadStruct.byteValue2 = value; }
+    void setDeviceStatus(quint8 index, quint16 deviceID, quint8 value) { messageSructure.payload.deviceStatus[index].id = deviceID;  messageSructure.payload.deviceStatus[index].status = value; }
 
     quint8 getFieldAsInt(int field) const;
     long getLValue(void) const { return messageSructure.payload.payloadStruct.lValue; }

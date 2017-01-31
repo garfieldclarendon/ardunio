@@ -35,10 +35,12 @@ public slots:
     void sendResetCommand(int controllerID);
     void sendDownloadFirmware(int controllerID);
     void sendMessage(int messageID, int controllerID, int deviceID, int messageClass, long lValue, int intValue1, int intValue2, int byteValue1, int byteValue2);
+    void sendMessage(int messageID, int controllerID, int messageClass, int deviceID, int status);
     void sendUDPMessage(const UDPMessage &message);
 
 protected slots:
-    void processPendingMessages();
+    void processPendingMessages(void);
+    void processUdpBuffer(void);
     void tcpIncomingConnection(void);
     void sendMessageSlot(void);
     void sendHeartbeatSlot(void);
@@ -54,6 +56,7 @@ private:
     QList<UDPMessage> sendList;
     bool m_sendHeartbeat;
     quint16 m_udpPort;
+    QByteArray m_udpBuffer;
 };
 
 #endif // MESSAGEBROADCASTER_H

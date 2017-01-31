@@ -24,7 +24,7 @@ ControllerModel::ControllerModel(QObject *parent)
     QTimer::singleShot(1000, this, SLOT(timerProc()));
 //QTimer::singleShot(5000, this, SLOT(tmpTimerSlot()));
     connect(MessageBroadcaster::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(onNewMessage(UDPMessage)));
-    connect(TcpServer::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(onNewMessage(UDPMessage)));
+//    connect(TcpServer::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(onNewMessage(UDPMessage)));
 }
 
 QHash<int, QByteArray> ControllerModel::roleNames(void) const

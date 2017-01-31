@@ -17,7 +17,7 @@ void TcpClientHandler::readyRead()
         MessageStruct messageStruct;
         socket->read((char *)&messageStruct, sizeof(MessageStruct));
 
-        if(messageStruct.startSig == 255 && messageStruct.endSig == 255)
+        if(messageStruct.startSig[0] == 0xEE && messageStruct.endSig[1] == 0xEE)
         {
 
         }

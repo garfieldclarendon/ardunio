@@ -4,8 +4,10 @@
 UDPMessage::UDPMessage()
 {
     memset(&messageSructure, 0, sizeof(MessageStruct));
-    messageSructure.startSig = 255;
-    messageSructure.endSig = 255;
+    messageSructure.startSig[0] = 0xEE;
+    messageSructure.startSig[1] = 0xEF;
+    messageSructure.endSig[0] = 0xEF;
+    messageSructure.endSig[1] = 0xEE;
     messageSructure.messageVersion = ControllerVersion;
 }
 

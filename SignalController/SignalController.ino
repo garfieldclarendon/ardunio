@@ -126,8 +126,12 @@ void messageCallback(const Message &message)
 {
 	if (message.getMessageID() == TRN_STATUS || message.getMessageID() == BLOCK_STATUS)
 	{
-		DeviceState::setDeviceState(message.getIntValue1(), message.getByteValue1());
-		DeviceState::setDeviceState(message.getIntValue2(), message.getByteValue2());
+		for (byte x = 0; x < MAX_MODULES; x++)
+		{
+			if (message.getDeviceStatusID(x) == 0)
+				break;
+			DeviceState::setDeviceState(message.getDeviceStatusID(x), message.getDeviceStatus(x));
+		}
 	}
 
 	if (message.getMessageID() == SYS_CONFIG_CHANGED && (message.getControllerID() == 0 || message.getControllerID() == controller.getControllerID()))
@@ -158,8 +162,8 @@ void sendHeartbeat(bool forceSend)
 
 		message.setMessageID(SIG_STATUS);
 		message.setControllerID(controller.getControllerID());
-		message.setMessageClass(ClassSemaphore);
+		message.setMessageClass(ClassSignal);
 
-		controller.sendNetworkMessage(message);
+		controller.sendNetworkMessage(message, true);
 	}
 }

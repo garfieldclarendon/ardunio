@@ -163,15 +163,17 @@ void PanelModuleClass::processBlockMessage(const Message &message)
 
 void PanelModuleClass::processSwitchTurnoutMessage(const Message &message)
 {
-	byte newState1 = message.getByteValue1();
-	byte newState2 = message.getByteValue2();
-	int turnoutID1 = message.getIntValue1();
-	int turnoutID2 = message.getIntValue2();
-
-	DEBUG_PRINT("Turnout Status Message for: %d New State: %d\n", turnoutID1, newState1);
-
-	updateOutputs(turnoutID1, newState1);
-	updateOutputs(turnoutID2, newState2);
+	byte newState;
+	int turnoutID;
+	for (byte x = 0; x < MAX_MODULES; x++)
+	{
+		turnoutID = message.getDeviceStatusID(x);
+		newState = message.getDeviceStatus(x);
+		if (turnoutID == 0)
+			break;
+		DEBUG_PRINT("Turnout Status Message for: %d New State: %d\n", turnoutID, newState);
+		updateOutputs(turnoutID, newState);
+	}
 }
 
 void PanelModuleClass::updateOutputs(int itemID, byte newState)

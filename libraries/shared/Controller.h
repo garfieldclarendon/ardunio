@@ -37,6 +37,7 @@ private:
 	void processMessage(const Message &message);
 	void resetSendMessageCounter(const Message &message);
 	void resendLastMessage(void);
+	void processUDP(void);
 
 	TMessageHandlerFunction m_messageCallback;
 

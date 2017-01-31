@@ -11,25 +11,33 @@
 
 #include "ConfigDownload.h"
 #include "Controller.h"
-#include "TurnoutHandler.h"
+#include "TurnoutModule.h"
 #include "ConfigStructures.h"
 
 // Turnout pin assignments
-const int motor1_pinA = 13;
-const int motor1_pinB = 12;
-const int motor2_pinA = 2;
-const int motor2_pinB = 0;
-const int normal2_pin = 4;
-const int diverge2_pin = 5;
-const int normal1_pin = 16;
-const int diverge1_pin = 14;
+const byte motor1_pinA = 13;
+const byte motor1_pinB = 12;
+const byte motor2_pinA = 2;
+const byte motor2_pinB = 0;
+const byte normal2_pin = 4;
+const byte diverge2_pin = 5;
+const byte normal1_pin = 16;
+const byte diverge1_pin = 14;
+
+const byte motor1_logicalPinA = 0;
+const byte motor1_logicalPinB = 1;
+const byte normal1_logicalPin = 2;
+const byte diverge1_logicalPin = 3;
+const byte motor2_logicalPinA = 4;
+const byte motor2_logicalPinB = 5;
+const byte normal2_logicalPin = 6;
+const byte diverge2_logicalPin = 7;
 
 // Configuration EEPROM memory addresses
 const int TURNOUT_CONFIG_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
 
 Controller controller(LocalServerPort);
-TurnoutHandler turnout1;
-TurnoutHandler turnout2;
+TurnoutModule turnoutModule;
 TurnoutControllerConfigStruct controllerConfig;
 
 void setup() 
@@ -47,33 +55,46 @@ void setup()
 #endif
 	DEBUG_PRINT("setup\n");
 
-  memset(&controllerConfig, 0, sizeof(TurnoutControllerConfigStruct));
-  EEPROM.begin(512);
+	setupPins();
 
-  ConfigDownload.init(&controller);
+	memset(&controllerConfig, 0, sizeof(TurnoutControllerConfigStruct));
+	EEPROM.begin(512);
 
-  loadConfiguration();
-  controller.setup(messageCallback, ClassTurnout);
+	ConfigDownload.init(&controller);
 
-  // If the first turnout has not been assigned yet, download the configuration from the server
-  if (turnout1.getTurnoutID() < 1)
-	  downloadConfig();
+	loadConfiguration();
+	controller.setup(messageCallback, ClassTurnout);
+	setPins();
 
-  turnout1.setup(motor1_pinA, motor1_pinB, normal1_pin, diverge1_pin);
-  turnout2.setup(motor2_pinA, motor2_pinB, normal2_pin, diverge2_pin);
+	// If the first turnout has not been assigned yet, download the configuration from the server
+	if (turnoutModule.getTurnoutID(0) < 1)
+		downloadConfig();
 
-  turnout1.setTurnout(TrnNormal);
-  turnout2.setTurnout(TrnNormal);
+	turnoutModule.setup(0, motor1_logicalPinA, motor1_logicalPinB, normal1_logicalPin, diverge1_logicalPin);
+	turnoutModule.setup(1, motor2_logicalPinA, motor2_logicalPinB, normal2_logicalPin, diverge2_logicalPin);
+	turnoutModule.setup();
 
-  sendStatusMessage(false);
+	sendStatusMessage(false);
 
-  DEBUG_PRINT("setup complete\n");
+	DEBUG_PRINT("setup complete\n");
+}
+
+void setupPins(void)
+{
+	pinMode(motor1_pinA, OUTPUT);
+	pinMode(motor2_pinA, OUTPUT);
+	pinMode(motor1_pinB, OUTPUT);
+	pinMode(motor2_pinB, OUTPUT);
+
+	pinMode(normal1_pin, INPUT);
+	pinMode(diverge1_pin, INPUT);
+	pinMode(normal2_pin, INPUT);
+	pinMode(diverge2_pin, INPUT);
 }
 
 void loop() 
 {
 	controller.process();
-	
 	if (controller.getWiFiReconnected())
 		sendStatusMessage(false);
 
@@ -89,11 +110,19 @@ void loop()
 		loadConfiguration();
 	}
 
-	bool sendMessage = turnout1.process();
-	bool sendMessage2 = turnout2.process();
-	if (sendMessage || sendMessage2)
+	processTurnouts();
+}
+
+void processTurnouts(void)
+{
+	byte data(turnoutModule.getCurrentState());
+	readPins(data);
+	
+	bool sendMessage = turnoutModule.process(data);
+	setPins();
+	if (sendMessage)
 		sendStatusMessage(false);
-} 
+}
 
 void loadConfiguration(void)
 {
@@ -101,8 +130,8 @@ void loadConfiguration(void)
 	{  
 		EEPROM.get(TURNOUT_CONFIG_ADDRESS, controllerConfig);
 
-		turnout1.setConfig(controllerConfig.turnout1);
-		turnout2.setConfig(controllerConfig.turnout2);
+		turnoutModule.setConfig(0, controllerConfig.turnout1);
+		turnoutModule.setConfig(1, controllerConfig.turnout2);
 	}
 	else
 	{
@@ -132,16 +161,18 @@ void messageCallback(const Message &message)
 	{
 		downloadConfig();
 	}
-	else if (turnout1.getTurnoutID() < 1 && message.getMessageID() == SYS_HEARTBEAT)
+	else if (turnoutModule.getTurnoutID(0) < 1 && message.getMessageID() == SYS_HEARTBEAT)
 	{
 		downloadConfig();
 	}
 	else
 	{
-		bool sendStatus1 = turnout1.handleMessage(message);
-		bool sendStatus2 = turnout2.handleMessage(message);
+		byte data(turnoutModule.getCurrentState());
+		readPins(data);
+		bool sendStatus = turnoutModule.handleMessage(message, data);
+		setPins();
 
-		if (sendStatus1 || sendStatus2 || message.getMessageID() == PANEL_STATUS)
+		if (sendStatus || message.getMessageID() == PANEL_STATUS)
 			sendStatusMessage(false);
 	}
 }
@@ -152,15 +183,29 @@ void sendStatusMessage(bool sendOnce)
 	DEBUG_PRINT("----------------------\n");
 	DEBUG_PRINT("Sending status message\n");
 
-	message = turnout1.createMessage(turnout1.getCurrentState());
+	message = turnoutModule.createMessage();
 	message.setControllerID(controller.getControllerID());
-	message.setIntValue1(turnout1.getTurnoutID());
-	message.setIntValue2(turnout2.getTurnoutID());
-	message.setByteValue1(turnout1.getCurrentState());
-	message.setByteValue2(turnout2.getCurrentState());
-
 	controller.sendNetworkMessage(message, sendOnce);
 	DEBUG_PRINT("----------------------\n");
+}
+
+void setPins(void)
+{
+	byte data = turnoutModule.getCurrentState();
+//	DEBUG_PRINT("DATA %d\n", data);
+
+	digitalWrite(motor1_pinA, bitRead(data, motor1_logicalPinA));
+	digitalWrite(motor1_pinB, bitRead(data, motor1_logicalPinB));
+	digitalWrite(motor2_pinA, bitRead(data, motor2_logicalPinA));
+	digitalWrite(motor2_pinB, bitRead(data, motor2_logicalPinB));
+}
+
+void readPins(byte &data)
+{
+	bitWrite(data, diverge1_logicalPin, digitalRead(diverge1_pin));
+	bitWrite(data, normal1_logicalPin, digitalRead(normal1_pin));
+	bitWrite(data, diverge2_logicalPin, digitalRead(diverge2_pin));
+	bitWrite(data, normal2_logicalPin, digitalRead(normal2_pin));
 }
 
 long heartbeatTimeout = 0;

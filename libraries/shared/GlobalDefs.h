@@ -9,6 +9,8 @@ const int ControllerVersion = 7;
 #define DEBUG_PRINT(...) // nothing to do here
 #endif
 
+#define MAX_TURNOUTS 2
+#define MAX_MODULES 8
 #define MAX_PANEL_MODULES 8
 #define MAX_ROUTE_ENTRIES 5
 #define MAX_PANEL_OUTPUTS 8
@@ -71,6 +73,7 @@ typedef struct RouteStruct RouteStruct;
 #define SYS_CONFIG_CHANGED 15
 #define SYS_REBOOT_CONTROLLER 16
 #define SYS_DOWNLOAD_FIRMWARE 17
+#define SYS_REQEST_STATUS 18
 
 //Turnout Messages
 #define TRN_STATUS 101

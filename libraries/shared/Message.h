@@ -3,28 +3,36 @@
 #include "Arduino.h"
 #include "GlobalDefs.h"
 
+struct DeviceStatusStruct
+{
+	short id;
+	byte status;
+};
+
 union PayloadUnion
 {
-	byte payload[10];
-	struct PayloadSruct
+	byte payload[MAX_MODULES * 3];
+	struct PayloadStruct
 	{
 		long lValue;
 		short intValue1;
 		short intValue2;
 		byte byteValue1;
 		byte byteValue2;
+		byte unused[MAX_MODULES * 3 - sizeof(long) - sizeof(short) - sizeof(short) - 2];
 	} payloadStruct;
+	DeviceStatusStruct deviceStatus[MAX_MODULES];
 };
 struct MessageStruct
 {
-	byte startSig;
+	byte startSig[2];
 	byte messageID;
 	short  deviceID;
 	short controllerID;
 	byte messageVersion;
 	byte messageClass;
 	PayloadUnion payload;
-	byte endSig;
+	byte endSig[2];
 };
 
 typedef struct MessageStruct MessageStruct;
@@ -35,8 +43,10 @@ class Message
 	  Message(void)
 	  {
 		  memset(&messageStruct, 0, sizeof(MessageStruct));
-		  messageStruct.startSig = 255;
-		  messageStruct.endSig = 255;
+		  messageStruct.startSig[0] = 0xEE;
+		  messageStruct.startSig[1] = 0xEF;
+		  messageStruct.endSig[0] = 0xEF;
+		  messageStruct.endSig[1] = 0xEE;
 		  messageStruct.messageVersion = ControllerVersion;
 	  }
 	  Message(const char *data)
@@ -62,6 +72,7 @@ class Message
 	  void setIntValue2(short value) { messageStruct.payload.payloadStruct.intValue2 = value; }
 	  void setByteValue1(byte value) { messageStruct.payload.payloadStruct.byteValue1 = value; }
 	  void setByteValue2(byte value) { messageStruct.payload.payloadStruct.byteValue2 = value; }
+	  void setDeviceStatus(byte index, short deviceID, byte value) { messageStruct.payload.deviceStatus[index].id = deviceID;  messageStruct.payload.deviceStatus[index].status = value; }
 
 	  char *getRef(void) const { return (char *)&messageStruct;  }
 
@@ -79,6 +90,8 @@ class Message
 	short getIntValue2(void) const { return messageStruct.payload.payloadStruct.intValue2; }
 	byte getByteValue1(void) const { return messageStruct.payload.payloadStruct.byteValue1; }
 	byte getByteValue2(void) const { return messageStruct.payload.payloadStruct.byteValue2; }
+	byte getDeviceStatus(byte index) const { return messageStruct.payload.deviceStatus[index].status; }
+	byte getDeviceStatusID(byte index) const { return messageStruct.payload.deviceStatus[index].id; }
 
 private:
 	MessageStruct messageStruct;

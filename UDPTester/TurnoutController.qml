@@ -91,7 +91,7 @@ Rectangle {
                             enabled: true
                             onClicked: {
                                 console.debug("current state: " + currentState);
-                                broadcaster.sendMessage(102, currentControllerID, id, 1, 0, id, 0, currentState === "1" ? 2 : 1, 0);
+                                broadcaster.sendMessage(102, currentControllerID, 1, id, currentState === "1" ? 3 : 1, 0);
                             }
                         }
                         Button {

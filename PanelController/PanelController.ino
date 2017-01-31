@@ -70,8 +70,12 @@ void messageCallback(const Message &message)
 		{
 			if (message.getMessageID() == TRN_STATUS)
 			{
-				updateActiveRoutes(message.getIntValue1(), (TurnoutState)message.getByteValue1());
-				updateActiveRoutes(message.getIntValue2(), (TurnoutState)message.getByteValue2());
+				for (byte x = 0; x < MAX_MODULES; x++)
+				{
+					if (message.getDeviceStatusID(x) == 0)
+						break;
+					updateActiveRoutes(message.getDeviceStatusID(x), (TurnoutState)message.getDeviceStatus(x));
+				}
 			}
 			returnMessage = modules[x].handleMessage(message);
 			if (returnMessage.isValid())

@@ -10,17 +10,15 @@ public:
   TurnoutHandler(void);
   void setup(byte motorAPin, byte motorBPin, byte normalPin, byte divergePin);
   void setConfig(TurnoutConfigStruct value) { m_config = value;  }
-  bool process(void);
-  bool handleMessage(const Message &message);
+  bool process(byte &data);
   TurnoutState getCurrentState(void) const { return m_currentState;  }
-  void setTurnout(TurnoutState newState);
+  void setTurnout(TurnoutState newState, byte &data);
 
   int getTurnoutID(void) const { return m_config.turnoutID;  }
-  Message createMessage(TurnoutState newState);
+  TurnoutState getTurnoutStateForRoute(int routeID);
 
 private:
-	TurnoutState getTurnoutStateForRoute(int routeID);
-	TurnoutState readCurrentState(void);
+	TurnoutState readCurrentState(byte data);
 
 	TurnoutConfigStruct m_config;
 	byte m_motorAPin;

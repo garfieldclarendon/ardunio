@@ -36,7 +36,10 @@ MessageBroadcaster *MessageBroadcaster::instance()
 void MessageBroadcaster::setupSocket()
 {
     socket = new QUdpSocket(this);
-    socket->bind(m_udpPort, QUdpSocket::ShareAddress);
+    if(socket->bind(m_udpPort, QUdpSocket::ShareAddress))
+        qDebug(QString("UDP CLIENT IS LISTENING ON PORT %1").arg(m_udpPort).toLatin1());
+    else
+        qDebug(QString("ERROR STARTING UDP CLIENT!!!!  %1").arg(socket->errorString()).toLatin1());
 
     connect(socket, SIGNAL(readyRead()),
             this, SLOT(processPendingMessages()));
@@ -89,23 +92,87 @@ void MessageBroadcaster::sendUDPMessage(const UDPMessage &message)
 
 void MessageBroadcaster::processPendingMessages()
 {
-    while (socket->hasPendingDatagrams())
+    int available = socket->pendingDatagramSize();
+    QByteArray buffer;
+    buffer.resize(available);
+    socket->readDatagram(buffer.data(), available);
+    m_udpBuffer.append(buffer);
+
+    processUdpBuffer();
+}
+
+void MessageBroadcaster::processUdpBuffer()
+{
+    static bool signitureFound = false;
+    int structSize = sizeof(MessageStruct);
+
+    while(m_udpBuffer.size() >= structSize)
     {
-        int available = socket->bytesAvailable();
-        int structSize = sizeof(MessageStruct);
-        if(available >= structSize)
+        int available = m_udpBuffer.size();
+        unsigned char byte1(0);
+        unsigned char byte2(0);
+        // Find the start of a valid message.
+        // ...ignore everything else
+        int startIndex = 0;
+        if (signitureFound == false)
         {
+            byte1 = m_udpBuffer[startIndex++];
+            byte2 = m_udpBuffer[startIndex++];
+            while (byte1 != 0xEE && byte2 != 0xEF && startIndex < m_udpBuffer.size())
+            {
+                byte1 = m_udpBuffer[startIndex++];
+                byte2 = m_udpBuffer[startIndex++];
+            }
+            if (byte1 == 0xEE  && byte2 == 0xEF)
+            {
+                signitureFound = true;
+            }
+        }
+        if(signitureFound)
+        {
+            int size = sizeof(MessageStruct);
             MessageStruct datagram;
-            socket->readDatagram((char *)&datagram, sizeof(MessageStruct));
+            memset(&datagram, 0, sizeof(MessageStruct));
+            char *buffer = (char *)&datagram;
+            *buffer = byte1;
+            buffer++;
+            *buffer = byte2;
+            buffer++;
+            bool endFound = false;
+            unsigned char data, nextByte;
+            while(startIndex < m_udpBuffer.size())
+            {
+                data = m_udpBuffer[startIndex];
+                nextByte = m_udpBuffer[startIndex++];
+                if(size <= sizeof(MessageStruct))
+                {
+                    *buffer = data;
+                    size--;
+                    buffer++;
+                }
+                if (data == 0xEF && nextByte == 0xEE) // found end of message signature
+                {
+                    data = m_udpBuffer[startIndex += 2];
+                    endFound = true;
+                    // Now remove any extra data
+                    while (data != 0xEE && startIndex < m_udpBuffer.size())
+                    {
+                        data = m_udpBuffer[startIndex++];
+                    }
+                    if(data == 0xEE)
+                        startIndex--;
+                    break;
+                }
+            }
+
+            m_udpBuffer.remove(0, startIndex);
+available = m_udpBuffer.size();
 
             UDPMessage message(datagram);
             emit newMessage(message);
             QString str(QString("Message: %1, Controller: %2, Device: %3 Version: %4 byteValue1 %5 byteValue2 %6").arg(datagram.messageID).arg(datagram.controllerID).arg(datagram.deviceID).arg(datagram.messageVersion).arg(datagram.payload.payloadStruct.byteValue1).arg(datagram.payload.payloadStruct.byteValue2));
             emit newRawUDPMessage(str);
-        }
-        else
-        {
-            qDebug("HELP!  WRONG SIZE!!!!");
+            signitureFound = false;
         }
     }
 }
@@ -198,5 +265,16 @@ void MessageBroadcaster::sendMessage(int messageID, int controllerID, int device
     message.setByteValue1(byteValue1);
     message.setByteValue2(byteValue2);
 
+    MessageBroadcaster::instance()->sendUDPMessage(message);
+}
+
+void MessageBroadcaster::sendMessage(int messageID, int controllerID, int messageClass, int deviceID, int status)
+{
+    UDPMessage message;
+    message.setMessageID(messageID);
+    message.setControllerID(controllerID);
+    message.setDeviceID(deviceID);
+    message.setMessageClass(messageClass);
+    message.setDeviceStatus(0, deviceID, status);
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }
