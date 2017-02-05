@@ -74,8 +74,6 @@ void setup()
 	turnoutModule.setup(1, motor2_logicalPinA, motor2_logicalPinB, normal2_logicalPin, diverge2_logicalPin);
 	turnoutModule.setup();
 
-	sendStatusMessage(false);
-
 	DEBUG_PRINT("setup complete\n");
 }
 
@@ -94,10 +92,12 @@ void setupPins(void)
 
 void loop() 
 {
+	MDNS.update();
 	controller.process();
 	if (controller.getWiFiReconnected())
+	{
 		sendStatusMessage(false);
-
+	}
 	sendHeartbeatMessage();
 
 	ConfigDownload.process();

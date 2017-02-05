@@ -1,6 +1,8 @@
 #include "ManageWiFi.h"
 #include <ESP8266WiFi.h>
 #include <limits.h>
+#include <ESP8266mDNS.h>
+
 
 ManageWiFi::ManageWiFi(void)
 	: m_reconnected(false)
@@ -110,6 +112,8 @@ void ManageWiFi::process(void)
 				}
 				if (status == WL_CONNECTED)
 					m_reconnected = true;
+					MDNS.begin("GCMRR");
+
 #ifdef PROJECT_DEBUG
 				IPAddress ip;
 				uint8_t * mac;

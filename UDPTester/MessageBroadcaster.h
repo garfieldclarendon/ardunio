@@ -18,12 +18,12 @@ union IP4AddressUnion
 class MessageBroadcaster : public QObject
 {
     Q_OBJECT
-    explicit MessageBroadcaster(QObject *parent = 0);
+    explicit MessageBroadcaster(QObject *parent, bool runAsServer);
 
 public:
 
     void broadcastMessage(const QString &data);
-    static MessageBroadcaster *instance(void);
+    static MessageBroadcaster *instance(bool runAsServer = true);
 
 signals:
     void newMessage(const UDPMessage &message);
@@ -47,6 +47,7 @@ protected slots:
 
 private:
     void setupSocket(void);
+    void setupBonjour(void);
     QHostAddress getLocalAddress(void) const;
 
     static MessageBroadcaster *_this;

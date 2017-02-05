@@ -5,6 +5,7 @@
 #include "ConfigDownload.h"
 #include "Controller.h"
 #include "configstructures.h"
+#include <ESP8266mDNS.h>
 
 ConfigDownloadClass *ConfigDownloadClass::m_this = NULL;
 
@@ -38,12 +39,16 @@ void ConfigDownloadClass::downloadConfig(uint8_t *buffer, size_t bufferSize, con
 	m_bufferSize = bufferSize;
 	m_key = key;
 
+	IPAddress address;
+	int port = -1;
+	if (WiFi.status() == WL_CONNECTED)
+		getServerAddress(address, port);
 	DEBUG_PRINT("downloadConfig.  Buffer Size: %d\n", bufferSize);
-	if (m_controller->getControllerID() != -1 && m_controller->getServerPort() > 0)
+	if (port != -1 && port > 0)
 	{
-		DEBUG_PRINT("downloadConfig on: %s:%d\n", m_controller->getServerAddress().toString().c_str(), m_controller->getServerPort());
+		DEBUG_PRINT("downloadConfig on: %s:%d\n", address.toString().c_str(), port);
 
-		m_webSocket.begin(m_controller->getServerAddress().toString().c_str(), m_controller->getServerPort());
+		m_webSocket.begin(address.toString().c_str(), port);
 		//webSocket.setAuthorization("user", "Password"); // HTTP Basic Authorization
 		m_webSocket.onEvent(ConfigDownloadClass::webSocketEvent);
 	}
@@ -51,6 +56,23 @@ void ConfigDownloadClass::downloadConfig(uint8_t *buffer, size_t bufferSize, con
 	{
 		DEBUG_PRINT("Server address/port not set!  Server may be off line.\n");
 		m_serverNotSet = true;
+	}
+}
+
+void ConfigDownloadClass::getServerAddress(IPAddress &address, int &port)
+{
+	DEBUG_PRINT("Sending mDNS query");
+	int n = MDNS.queryService("gcmrr-config", "tcp"); // Send out query for GCMRR-CONFIG tcp services
+	Serial.println("mDNS query done");
+	if (n == 0)
+	{
+		DEBUG_PRINT("no services found");
+	}
+	else
+	{
+		DEBUG_PRINT("%d service(s) found", n);
+		address = MDNS.IP(0);
+		port = MDNS.port(0);
 	}
 }
 

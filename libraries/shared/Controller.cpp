@@ -104,7 +104,7 @@ void Controller::processUDP(void)
 			{
 				// read the second byte of the end of message signature (0XEE)
 				b = m_udp.read();
-				DEBUG_PRINT("END Signature found!!\n");
+//				DEBUG_PRINT("END Signature found!!\n");
 				if (m_udp.available() > 0)
 					b = m_udp.read();
 				// If more data available, read to the next start signature
@@ -148,18 +148,45 @@ void Controller::processMessage(const Message &message)
 
 void Controller::downloadFirmwareUpdate(void)
 {
-	DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	String updateUrl;
-	updateUrl = "http://";
-	updateUrl += getServerAddress().toString();
-	updateUrl += ":82/firmware?ControllerType=";
-	updateUrl += m_class;
-	DEBUG_PRINT("Checking for firmware update at: %s\n", updateUrl.c_str());
-	DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	ESPhttpUpdate.update(updateUrl);
+	IPAddress address;
+	int port = -1;
 
-	if (ESPhttpUpdate.getLastError() != 0)
-		Serial.println(ESPhttpUpdate.getLastErrorString());
+	if (WiFi.status() == WL_CONNECTED)
+		getServerAddress(address, port);
+	
+	if (port > 0)
+	{
+		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+		String updateUrl;
+		updateUrl = "http://";
+		updateUrl += address.toString() + ":" + port;
+		updateUrl += "/firmware?ControllerType=";
+		updateUrl += m_class;
+		DEBUG_PRINT("Checking for firmware update at: %s\n", updateUrl.c_str());
+		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+		ESPhttpUpdate.update(updateUrl);
+
+		if (ESPhttpUpdate.getLastError() != 0)
+			Serial.println(ESPhttpUpdate.getLastErrorString());
+	}
+}
+
+
+void Controller::getServerAddress(IPAddress &address, int &port)
+{
+	DEBUG_PRINT("Sending mDNS query");
+	int n = MDNS.queryService("gcmrr-firmware", "tcp"); // Send out query for gcmrr-firmware tcp services
+	Serial.println("mDNS query done");
+	if (n == 0)
+	{
+		DEBUG_PRINT("no services found");
+	}
+	else
+	{
+		DEBUG_PRINT("%d service(s) found", n);
+		address = MDNS.IP(0);
+		port = MDNS.port(0);
+	}
 }
 
 void Controller::sendUdpBroadcastMessage(const Message &message)

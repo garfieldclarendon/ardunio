@@ -10,13 +10,26 @@
 #include "MessageBroadcaster.h"
 #include "TcpClientHandler.h"
 #include "GlobalDefs.h"
+#include "bonjourserviceregister.h"
+#include "WebServer.h"
+#include "UpdateServer.h"
 
 MessageBroadcaster *MessageBroadcaster::_this = NULL;
 
-MessageBroadcaster::MessageBroadcaster(QObject *parent)
+MessageBroadcaster::MessageBroadcaster(QObject *parent, bool runAsServer)
     : QObject(parent), socket(NULL), tcpServer(NULL), lastMessageSentTime(0), m_sendHeartbeat(false), m_udpPort(45454)
 {
     setupSocket();
+    if(runAsServer)
+    {
+        setupBonjour();
+
+        WebServer *server = new WebServer(81, this);
+        Q_UNUSED(server);
+
+        UpdateServer *updateServer = new UpdateServer(82, this);
+        Q_UNUSED(updateServer);
+    }
 }
 
 void MessageBroadcaster::broadcastMessage(const QString &data)
@@ -26,11 +39,20 @@ void MessageBroadcaster::broadcastMessage(const QString &data)
     emit newMessage(message);
 }
 
-MessageBroadcaster *MessageBroadcaster::instance()
+MessageBroadcaster *MessageBroadcaster::instance(bool runAsServer)
 {
     if(_this == NULL)
-        _this = new MessageBroadcaster(qApp);
+        _this = new MessageBroadcaster(qApp, runAsServer);
     return _this;
+}
+
+void MessageBroadcaster::setupBonjour(void)
+{
+    BonjourServiceRegister *registrar1 = new BonjourServiceRegister(this);
+    registrar1->registerService(BonjourRecord("GCMRR SERVER CONFIG SERVICE", "_gcmrr-config._tcp", ""), 81);
+
+    BonjourServiceRegister *registrar2 = new BonjourServiceRegister(this);
+    registrar2->registerService(BonjourRecord("GCMRR_SERVER_FIRMWARE SERVICE", "_gcmrr-firmware._tcp", ""), 82);
 }
 
 void MessageBroadcaster::setupSocket()

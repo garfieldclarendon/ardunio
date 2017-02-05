@@ -10,8 +10,6 @@
 #include "TrackTrunout.h"
 #include "ControllerTab.h"
 #include "DeviceTab.h"
-#include "WebServer.h"
-#include "UpdateServer.h"
 #include "MessageBroadcaster.h"
 #include "ControllerWidget.h"
 #include "GlobalDefs.h"
@@ -22,13 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     db.init(QString("%1/RRDatabase.db").arg(QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation).value(0)));
     setupUI();
-
-    WebServer *server = new WebServer(81, this);
-    Q_UNUSED(server);
-    MessageBroadcaster::instance()->enableHeartbeat(true);
-
-    UpdateServer *updateServer = new UpdateServer(82, this);
-    Q_UNUSED(updateServer);
+    MessageBroadcaster::instance(true)->enableHeartbeat(false);
 }
 
 MainWindow::~MainWindow()

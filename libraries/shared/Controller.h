@@ -24,8 +24,6 @@ public:
 	void sendUdpBroadcastMessage(const Message &message);
 	ClassEnum getClass(void) const { return m_class; }
 	void setClass(ClassEnum value) { m_class = value; }
-	IPAddress getServerAddress(void) const { return m_serverAddress;  }
-	byte getServerPort(void) const { return m_serverPort;  }
 	bool getWiFiReconnected(void) const { return m_wifiManager.getIsReconnected(); }
 
 private:
@@ -38,6 +36,7 @@ private:
 	void resetSendMessageCounter(const Message &message);
 	void resendLastMessage(void);
 	void processUDP(void);
+	void getServerAddress(IPAddress &address, int &port);
 
 	TMessageHandlerFunction m_messageCallback;
 

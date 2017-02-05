@@ -26,6 +26,7 @@ class ConfigDownloadClass
 	void reset(void);
 
 private:
+	void getServerAddress(IPAddress &address, int &port);
 	static ConfigDownloadClass *m_this;
 	static void webSocketEvent(WStype_t type, uint8_t * payload, size_t length);
 	WebSocketsClient m_webSocket;

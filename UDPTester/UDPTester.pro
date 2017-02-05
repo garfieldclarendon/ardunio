@@ -34,7 +34,8 @@ SOURCES += main.cpp\
     PanelInputModel.cpp \
     PanelOutputModel.cpp \
     UI.cpp \
-    TcpServer.cpp
+    TcpServer.cpp \
+    bonjourserviceregister.cpp
 
 HEADERS  += MainWindow.h \
     MessageMonitorWidget.h \
@@ -56,7 +57,16 @@ HEADERS  += MainWindow.h \
     PanelInputModel.h \
     PanelOutputModel.h \
     UI.h \
-    TcpServer.h
+    TcpServer.h \
+    BonjourRecord.h \
+    bonjourserviceregister.h
 
 RESOURCES += \
     Resources.qrc
+
+win32 {
+    LIBS+=-ldnssd
+    # Add your path to bonjour here.
+    LIBPATH = "C:/Program Files/Bonjour SDK/Lib/Win32"
+    INCLUDEPATH += "C:/Program Files/Bonjour SDK/Include"
+}
