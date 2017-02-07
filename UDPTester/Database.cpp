@@ -495,6 +495,7 @@ bool Database::createControllerModuleTable()
     ret = query.exec("CREATE TABLE IF NOT EXISTS controllerModule "
               "(id INTEGER primary key, "
               "controllerID INTEGER, "
+              "moduleIndex INTEGER, "
               "moduleName VARCHAR(20))");
     if(ret == false)
     {
@@ -696,8 +697,9 @@ bool Database::createSignalTable()
     QSqlQuery query(db);
     ret = query.exec("CREATE TABLE IF NOT EXISTS signal "
               "(id INTEGER primary key, "
-              "controllerID INTEGER "
-              ")");
+              "controllerModuleID INTEGER, "
+              "signalName VARCHAR(20), "
+              "signalDescription VARCHAR(50))");
     if(ret == false)
     {
         qDebug(query.lastError().text().toLatin1());
@@ -779,14 +781,14 @@ bool Database::createDeviceTable()
     }
     else
     {
-        if(getDBVersion() < CurrentDatabaseVersion)
+        if(getDBVersion() > 0 && CurrentDatabaseVersion <= getDBVersion())
             return true;
 
         int moduleID = -1;
         {
-            db.exec("ALTER TABLE signal RENAME TO signal_old");
-            createSignalTable();
-            db.exec(QString("INSERT controllerModule (id, controllerID, moduleIndex, moduleName) SELECT id, controllerID, panelIndex, panelName FROM panelModule"));
+            ret = db.exec("ALTER TABLE signal RENAME TO signal_old").lastError().isValid() == false;
+            ret = createSignalTable();
+            ret = db.exec(QString("INSERT INTO controllerModule (id, controllerID, moduleIndex, moduleName) SELECT id, controllerID, panelIndex, panelName FROM panelModule")).lastError().isValid() == false;
             QSqlQuery moduleQuery(db);
             ret = moduleQuery.exec("SELECT MAX(id) FROM controllerModule");
             while(moduleQuery.next())
@@ -810,23 +812,26 @@ bool Database::createDeviceTable()
                     if(controllerID != idHold)
                     {
                         idHold = controllerID;
-                        db.exec(QString("INSERT controllerModule (id, controllerID, moduleName, moduleIndex) VALUES(%1, %2, '%3', 0)").arg(moduleID++).arg(controllerID).arg(moduleName));
+                        ret = db.exec(QString("INSERT INTO controllerModule (id, controllerID, moduleName, moduleIndex) VALUES(%1, %2, '%3', 0)").arg(moduleID++).arg(controllerID).arg(moduleName)).lastError().isValid() == false;
                     }
-                    db.exec(QString("INSERT device (id, controllerModuleID, deviceName, deviceDescription) VALUES(%1, %2, '%3', '%4')").arg(itemID).arg(moduleID).arg(moduleName).arg(description));
+                    ret = db.exec(QString("INSERT INTO device (id, controllerModuleID, deviceName, deviceDescription) VALUES(%1, %2, '%3', '%4')").arg(itemID).arg(moduleID).arg(moduleName).arg(description)).lastError().isValid() == false;
                 }
-                // clean up old tables
-                db.exec("DROP TABLE panelModule");
-                db.exec("DELETE layoutItem");
             }
             {
                 QSqlQuery signalQuery(db);
-                ret = signalQuery.exec("SELECT id, controllerID FROM signal ORDER BY controllerID");
+                ret = signalQuery.exec("SELECT id, controllerID FROM signal_old ORDER BY controllerID");
                 while(signalQuery.next())
                 {
+                    int signalID = signalQuery.value("id").toInt();
                     int controllerID = signalQuery.value("controllerID").toInt();
-                    db.exec(QString("INSERT controllerModule (id, controllerID, moduleName, moduleIndex) VALUES(%1, %2, 'Signal', 0)").arg(moduleID++).arg(controllerID));
+                    ret = db.exec(QString("INSERT INTO controllerModule (id, controllerID, moduleName, moduleIndex) VALUES(%1, %2, 'Signal', 0)").arg(moduleID).arg(controllerID)).lastError().isValid() == false;
+                    ret = db.exec(QString("INSERT INTO signal (id, controllerModuleID, signalName) VALUES(%1, %2, 'Signal')").arg(signalID).arg(moduleID++)).lastError().isValid() == false;
                 }
             }
+            // clean up old tables
+            ret = db.exec("DROP TABLE panelModule").lastError().isValid() == false;
+            ret = db.exec("DELETE FROM layoutItem").lastError().isValid() == false;
+            ret = db.exec(QString("DROP TABLE signal_old")).lastError().isValid() == false;
         }
     }
     return ret;
