@@ -9,7 +9,7 @@ Rectangle {
 
     TurnoutModel {
         id: turnoutModel
-        controllerID: currentControllerID
+        controllerModuleID: 4
     }
 
     radius: 20
@@ -54,7 +54,7 @@ Rectangle {
                     Text
                     {
                         id: controllerNameText
-                        text: id > 0 ? itemName : ""
+                        text: id > 0 ? deviceName : ""
                         font.bold: true
                         font.pointSize: ui.applyFontRatio(ui.baseFontSize + 4)
                         anchors.margins: ui.margin
@@ -64,7 +64,7 @@ Rectangle {
                     ColumnLayout {
                         Layout.minimumWidth: ui.applyRatio(100)
                         Text {
-                            text: id > 0 ? '<b>Description:</b> ' + itemDescription : ""
+                            text: id > 0 ? '<b>Description:</b> ' + deviceDescription : ""
                             verticalAlignment: Text.AlignVCenter
                             height: parent.height
                          }
@@ -120,6 +120,9 @@ Rectangle {
         spacing: ui.applyRatio(2)
         focus: true
         clip: true
+    }
+    Component.onCompleted: {
+        broadcaster.sendMessage(18, currentControllerID, 1, 0, 0);
     }
 }
 

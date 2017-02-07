@@ -20,10 +20,10 @@ public slots:
     void socketDisconnected(void);
 
 private:
-    QByteArray getTurnoutConfig(quint32 serialNumber);
+    QByteArray getTurnoutConfig(quint32 serialNumber, int moduleIndex);
     QByteArray getPanelConfig(quint32 serialNumber);
     QByteArray getPanelRouteConfig(quint32 serialNumber);
-    QByteArray getSignalConfig(quint32 serialNumber);
+    QByteArray getSignalConfig(quint32 serialNumber, int moduleIndex);
     QByteArray getBlockConfig(quint32 serialNumber);
 
     QWebSocketServer *m_webServer;

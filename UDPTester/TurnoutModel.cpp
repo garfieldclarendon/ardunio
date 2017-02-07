@@ -7,11 +7,11 @@
 #include "TcpServer.h"
 
 TurnoutModel::TurnoutModel(QObject *parent)
-    : QSortFilterProxyModel(parent), m_controllerID(0)
+    : QSortFilterProxyModel(parent), m_controllerModuleID(0)
 {
     Database db;
     m_tableModel = new QSqlTableModel(this, db.getDatabase());
-    m_tableModel->setTable("layoutItem");
+    m_tableModel->setTable("device");
     m_tableModel->select();
 
     this->setSourceModel(m_tableModel);
@@ -25,9 +25,10 @@ QHash<int, QByteArray> TurnoutModel::roleNames(void) const
     QHash<int, QByteArray> roleNames;
 
     roleNames[Qt::UserRole + 0] = QByteArray("id");
-    roleNames[Qt::UserRole + 1] = QByteArray("itemName");
-    roleNames[Qt::UserRole + 2] = QByteArray("itemDescription");
+    roleNames[Qt::UserRole + 1] = QByteArray("deviceName");
+    roleNames[Qt::UserRole + 2] = QByteArray("deviceDescription");
     roleNames[Qt::UserRole + 3] = QByteArray("currentState");
+    roleNames[Qt::UserRole + 4] = QByteArray("controllerModuleID");
 //    roleNames[Qt::UserRole + 4] = QByteArray("serialNumber");
 //    roleNames[Qt::UserRole + 5] = QByteArray("currentStatus");
 //    roleNames[Qt::UserRole + 6] = QByteArray("version");
@@ -36,11 +37,11 @@ QHash<int, QByteArray> TurnoutModel::roleNames(void) const
 }
 
 
-void TurnoutModel::setControllerID(int value)
+void TurnoutModel::setControllerModuleID(int value)
 {
-    if(m_controllerID != value)
+    if(m_controllerModuleID != value)
     {
-        m_controllerID = value;
+        m_controllerModuleID = value;
         emit controllerIDChanged();
         invalidateFilter();
     }
@@ -53,25 +54,25 @@ QVariant TurnoutModel::data(const QModelIndex &index, int role) const
     QModelIndex i;
     i = this->index(index.row(), m_tableModel->fieldIndex("id"));
     v = QSortFilterProxyModel::data(i, Qt::EditRole);
-    int itemID = QSortFilterProxyModel::data(i, Qt::EditRole).toInt();
+    int deviceID = QSortFilterProxyModel::data(i, Qt::EditRole).toInt();
     if(role >= Qt::UserRole)
     {
         int col = role - Qt::UserRole;
         switch(col)
         {
         case 0:
-            v = itemID;
+            v = deviceID;
             break;
         case 1:
-            i = this->index(index.row(), m_tableModel->fieldIndex("itemName"));
+            i = this->index(index.row(), m_tableModel->fieldIndex("deviceName"));
             v = QSortFilterProxyModel::data(i, Qt::EditRole);
             break;
         case 2:
-            i = this->index(index.row(), m_tableModel->fieldIndex("itemDescription"));
+            i = this->index(index.row(), m_tableModel->fieldIndex("deviceDescription"));
             v = QSortFilterProxyModel::data(i, Qt::EditRole);
             break;
         case 3:
-            v = m_statusMap.value(itemID);
+            v = m_statusMap.value(deviceID);
             break;
         default:
             break;
@@ -93,10 +94,10 @@ bool TurnoutModel::setData(const QModelIndex &index, const QVariant &value, int 
 bool TurnoutModel::filterAcceptsRow(int source_row, const QModelIndex &) const
 {
     bool ret = true;
-    if(m_controllerID > 0)
+    if(m_controllerModuleID > 0)
     {
-        QModelIndex i = m_tableModel->index(source_row, m_tableModel->fieldIndex("controllerID"));
-        if(m_tableModel->data(i, Qt::EditRole).toInt() != m_controllerID)
+        QModelIndex i = m_tableModel->index(source_row, m_tableModel->fieldIndex("controllerModuleID"));
+        if(m_tableModel->data(i, Qt::EditRole).toInt() != m_controllerModuleID)
             ret = false;
     }
     return ret;
@@ -163,9 +164,9 @@ void TurnoutModel::initArrays()
     for(int x = 0; x < m_tableModel->rowCount(); x++)
     {
         QModelIndex i = m_tableModel->index(x, m_tableModel->fieldIndex("id"));
-        int itemID = m_tableModel->data(i, Qt::EditRole).toInt();
+        int deviceID = m_tableModel->data(i, Qt::EditRole).toInt();
 
-        m_statusMap[itemID] = "?";
+        m_statusMap[deviceID] = "?";
     }
 }
 

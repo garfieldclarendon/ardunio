@@ -119,7 +119,7 @@ void downloadConfig(void)
 
 void messageCallback(const Message &message)
 {
-	if (message.getMessageID() == SYS_REQEST_STATUS)
+	if (message.getMessageID() == SYS_REQEST_STATUS && (message.getControllerID() == 0 || message.getControllerID() == controller.getControllerID()))
 	{
 		sendStatusMessage(true);
 	}

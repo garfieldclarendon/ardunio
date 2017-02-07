@@ -47,17 +47,18 @@ bool Database::createDatabase(void)
     {
         if(createClassTable())
             if(createLayoutItemTable())
-                if(createControllerTable())
-                    if(createLayoutItemTable())
-                        if(createRouteTable())
-                            if(createRouteEntryTable())
-                                if(createPanelModuleTable())
-                                    if(createPanelInputEntryTable())
-                                        if(createPanelOutputEntryTable())
-                                            if(createSignalTable())
-                                                if(createSignalAspectCondition())
-                                                    if(createSignalConditionTable())
-                                                        ret = createBlockTable();
+                if(createLayoutItemTypeTable())
+                    if(createControllerTable())
+                        if(createControllerModuleTable())
+                            if(createDeviceTable())
+                                if(createRouteTable())
+                                    if(createRouteEntryTable())
+                                        if(createPanelInputEntryTable())
+                                            if(createPanelOutputEntryTable())
+                                                if(createSignalTable())
+                                                    if(createSignalAspectCondition())
+                                                        if(createSignalConditionTable())
+                                                            ret = createBlockTable();
     }
     else
     {
@@ -94,6 +95,7 @@ int Database::getControllerID(long serialNumber)
 int Database::addController(int controllerClass, const QString &controllerName, const QString &controllerDescription)
 {
     int controllerID(-1);
+    QByteArray config;
 
     if(db.isValid() == false)
         db = QSqlDatabase::database();
@@ -181,7 +183,7 @@ void Database::setDBVersion(int newVersion)
     }
 }
 
-QByteArray Database::getTurnoutConfig(quint32 serialNumber)
+QByteArray Database::getTurnoutConfig(quint32 serialNumber, int moduleIndex)
 {
     TurnoutControllerConfigStruct *configStruct = new TurnoutControllerConfigStruct;
     memset(configStruct, 0, sizeof(TurnoutControllerConfigStruct));
@@ -191,8 +193,7 @@ QByteArray Database::getTurnoutConfig(quint32 serialNumber)
     turnoutIDs[1] = 0;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT layoutItem.id FROM layoutItem JOIN controller ON layoutItem.controllerID = controller.ID WHERE serialNumber = %1").arg(serialNumber));
-//    query.exec(QString("SELECT device.id FROM device JOIN controller ON layoutItem.controllerID = controller.ID WHERE controllerID = %1").arg(serialNumber));
+    query.exec(QString("SELECT device.id FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2").arg(serialNumber).arg(moduleIndex));
     int index = 0;
     while (query.next())
     {
@@ -231,7 +232,7 @@ QByteArray Database::getTurnoutConfig(quint32 serialNumber)
     return config;
 }
 
-QByteArray Database::getSignalConfig(quint32 serialNumber)
+QByteArray Database::getSignalConfig(quint32 serialNumber, int moduleIndex)
 {
     SignalControllerConfigStruct *configStruct = new SignalControllerConfigStruct;
     memset(configStruct, 0, sizeof(SignalControllerConfigStruct));
@@ -241,7 +242,7 @@ QByteArray Database::getSignalConfig(quint32 serialNumber)
     signalIDs[1] = 0;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT signal.id FROM signal JOIN controller ON signal.controllerID = controller.ID WHERE serialNumber = %1").arg(serialNumber));
+    query.exec(QString("SELECT signal.id FROM signal JOIN controllerModule ON signal.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2").arg(serialNumber).arg(moduleIndex));
     int index = 0;
     while (query.next())
     {
@@ -339,45 +340,54 @@ QByteArray Database::getPanelConfig(quint32 serialNumber)
     memset(&panelModuleIDs, 0, sizeof(panelModuleIDs));
     PanelControllerConfigStruct configStruct;
     memset(&configStruct, 0, sizeof(PanelControllerConfigStruct));
+    QByteArray config;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT panelModule.id FROM panelModule JOIN controller ON panelModule.controllerID = controller.ID WHERE serialNumber = %1 ORDER BY panelIndex").arg(serialNumber));
-    int index = 0;
-    while (query.next())
+    bool ret = query.exec(QString("SELECT controllerModule.id FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 ORDER BY moduleIndex").arg(serialNumber));
+    if(ret)
     {
-       panelModuleIDs[index++] = query.value(0).toInt();
-       configStruct.mdouleCount++;
-    }
-
-    for(int x = 0; x < configStruct.mdouleCount; x++)
-    {
+        int index = 0;
+        while (query.next())
         {
-            QSqlQuery inputsQuery(db);
-            inputsQuery.exec(QString("SELECT pinIndex, inputID, inputType FROM panelInputEntry WHERE panelModuleID = %1 ORDER BY pinIndex").arg(panelModuleIDs[x]));
-            int inputIndex = 0;
-            while (inputsQuery.next())
+           panelModuleIDs[index++] = query.value(0).toInt();
+           configStruct.mdouleCount++;
+        }
+
+        for(int x = 0; x < configStruct.mdouleCount; x++)
+        {
             {
-                inputIndex = inputsQuery.value(0).toInt();
-                configStruct.moduleConfigs[x].inputs[inputIndex].id = inputsQuery.value(1).toInt();
-                configStruct.moduleConfigs[x].inputs[inputIndex].inputType = inputsQuery.value(2).toInt();
-//                configStruct.moduleConfigs[x].inputs[inputIndex].value = inputsQuery.value(3).toInt();
-            }
-            QSqlQuery outputsQuery(db);
-            outputsQuery.exec(QString("SELECT pinIndex, itemID, itemType, onValue, flashingValue FROM panelOutputEntry WHERE panelModuleID = %1 ORDER BY pinIndex").arg(panelModuleIDs[x]));
-            int outputIndex = 0;
-            while (outputsQuery.next())
-            {
-                outputIndex = outputsQuery.value(0).toInt();
-                configStruct.moduleConfigs[x].outputs[outputIndex].itemID = outputsQuery.value(1).toInt();
-                configStruct.moduleConfigs[x].outputs[outputIndex].itemType = outputsQuery.value(2).toInt();
-                configStruct.moduleConfigs[x].outputs[outputIndex].onValue = outputsQuery.value(3).toInt();
-                configStruct.moduleConfigs[x].outputs[outputIndex].flashingValue = outputsQuery.value(4).toInt();
+                QSqlQuery inputsQuery(db);
+                inputsQuery.exec(QString("SELECT pinIndex, inputID, inputType FROM panelInputEntry WHERE controllerModuleID = %1 ORDER BY pinIndex").arg(panelModuleIDs[x]));
+                int inputIndex = 0;
+                while (inputsQuery.next())
+                {
+                    inputIndex = inputsQuery.value(0).toInt();
+                    configStruct.moduleConfigs[x].inputs[inputIndex].id = inputsQuery.value(1).toInt();
+                    configStruct.moduleConfigs[x].inputs[inputIndex].inputType = inputsQuery.value(2).toInt();
+    //                configStruct.moduleConfigs[x].inputs[inputIndex].value = inputsQuery.value(3).toInt();
+                }
+                QSqlQuery outputsQuery(db);
+                outputsQuery.exec(QString("SELECT pinIndex, itemID, itemType, onValue, flashingValue FROM panelOutputEntry WHERE panelModuleID = %1 ORDER BY pinIndex").arg(panelModuleIDs[x]));
+                int outputIndex = 0;
+                while (outputsQuery.next())
+                {
+                    outputIndex = outputsQuery.value(0).toInt();
+                    configStruct.moduleConfigs[x].outputs[outputIndex].itemID = outputsQuery.value(1).toInt();
+                    configStruct.moduleConfigs[x].outputs[outputIndex].itemType = outputsQuery.value(2).toInt();
+                    configStruct.moduleConfigs[x].outputs[outputIndex].onValue = outputsQuery.value(3).toInt();
+                    configStruct.moduleConfigs[x].outputs[outputIndex].flashingValue = outputsQuery.value(4).toInt();
+                }
             }
         }
+
+        config = QByteArray((const char *)&configStruct, sizeof(PanelControllerConfigStruct));
+        qDebug(QString("SENDING PANEL CONFIG DATA.  SIZE: %1.  Structure size: %2").arg(config.size()).arg(sizeof(PanelControllerConfigStruct)).toLatin1());
+    }
+    else
+    {
+        QString errorText(query.lastError().text());
     }
 
-    QByteArray config((const char *)&configStruct, sizeof(PanelControllerConfigStruct));
-    qDebug(QString("SENDING PANEL CONFIG DATA.  SIZE: %1.  Structure size: %2").arg(config.size()).arg(sizeof(PanelControllerConfigStruct)).toLatin1());
     return config;
 }
 
@@ -425,7 +435,7 @@ QString Database::getTurnoutName(int turnoutID)
     db.open();
     QSqlQuery query(db);
 
-    bool ret = query.exec(QString("SELECT itemName FROM layoutItem WHERE id = %1").arg(turnoutID));
+    bool ret = query.exec(QString("SELECT deviceName FROM device WHERE id = %1").arg(turnoutID));
 
     if(ret == false)
         qDebug(query.lastError().text().toLatin1());
@@ -447,7 +457,7 @@ int Database::getTurnoutID(const QString &name)
     db.open();
     QSqlQuery query(db);
 
-    bool ret = query.exec(QString("SELECT id FROM layoutItem WHERE itemName = '%1'").arg(name));
+    bool ret = query.exec(QString("SELECT id FROM device WHERE deviceName = '%1'").arg(name));
 
     if(ret == false)
         qDebug(query.lastError().text().toLatin1());
@@ -470,6 +480,22 @@ bool Database::createControllerTable()
               "controllerClass INTEGER, "
               "serialNumber INTEGER, "
               "controllerDescription VARCHAR(50))");
+    if(ret == false)
+    {
+        qDebug(query.lastError().text().toLatin1());
+        emit logError(1, query.lastError().number(), query.lastError().text());
+    }
+    return ret;
+}
+
+bool Database::createControllerModuleTable()
+{
+    bool ret = false;
+    QSqlQuery query(db);
+    ret = query.exec("CREATE TABLE IF NOT EXISTS controllerModule "
+              "(id INTEGER primary key, "
+              "controllerID INTEGER, "
+              "moduleName VARCHAR(20))");
     if(ret == false)
     {
         qDebug(query.lastError().text().toLatin1());
@@ -620,24 +646,6 @@ bool Database::createRouteEntryTable()
     return ret;
 }
 
-bool Database::createPanelModuleTable()
-{
-    bool ret = false;
-    QSqlQuery query(db);
-    ret = query.exec("CREATE TABLE IF NOT EXISTS panelModule "
-              "(id INTEGER primary key, "
-              "controllerID INTEGER, "
-              "panelIndex INTEGER, " // valid entries are 0 through 7
-              "panelName VARCHAR(20)"
-              ")");
-    if(ret == false)
-    {
-        qDebug(query.lastError().text().toLatin1());
-        emit logError(1, query.lastError().number(), query.lastError().text());
-    }
-    return ret;
-}
-
 bool Database::createPanelInputEntryTable()
 {
     bool ret = false;
@@ -753,6 +761,76 @@ bool Database::createBlockTable()
         emit logError(1, query.lastError().number(), query.lastError().text());
     }
     return ret;
+}
+
+bool Database::createDeviceTable()
+{
+    bool ret = false;
+    QSqlQuery query(db);
+    ret = query.exec("CREATE TABLE IF NOT EXISTS device "
+                     "(id INTEGER primary key, "
+                     "controllerModuleID INTEGER, "
+                     "deviceName VARCHAR(20), "
+                     "deviceDescription VARCHAR(50))");
+    if(ret == false)
+    {
+        qDebug(query.lastError().text().toLatin1());
+        emit logError(1, query.lastError().number(), query.lastError().text());
+    }
+    else
+    {
+        if(getDBVersion() < CurrentDatabaseVersion)
+            return true;
+
+        int moduleID = -1;
+        {
+            db.exec("ALTER TABLE signal RENAME TO signal_old");
+            createSignalTable();
+            db.exec(QString("INSERT controllerModule (id, controllerID, moduleIndex, moduleName) SELECT id, controllerID, panelIndex, panelName FROM panelModule"));
+            QSqlQuery moduleQuery(db);
+            ret = moduleQuery.exec("SELECT MAX(id) FROM controllerModule");
+            while(moduleQuery.next())
+                moduleID = moduleQuery.value(0).toInt() + 1;
+        }
+
+        if(moduleID > 0)
+        {
+            QSqlQuery itemQuery(db);
+            ret = itemQuery.exec("SELECT id, controllerID, itemName, itemDescription FROM layoutItem ORDER BY controllerID");
+            if(ret)
+            {
+                int idHold = 0;
+                while(itemQuery.next())
+                {
+                    int itemID = itemQuery.value("id").toInt();
+                    int controllerID = itemQuery.value("controllerID").toInt();
+                    QString moduleName = itemQuery.value("itemName").toString();
+                    QString description = itemQuery.value("itemDescription").toString();
+
+                    if(controllerID != idHold)
+                    {
+                        idHold = controllerID;
+                        db.exec(QString("INSERT controllerModule (id, controllerID, moduleName, moduleIndex) VALUES(%1, %2, '%3', 0)").arg(moduleID++).arg(controllerID).arg(moduleName));
+                    }
+                    db.exec(QString("INSERT device (id, controllerModuleID, deviceName, deviceDescription) VALUES(%1, %2, '%3', '%4')").arg(itemID).arg(moduleID).arg(moduleName).arg(description));
+                }
+                // clean up old tables
+                db.exec("DROP TABLE panelModule");
+                db.exec("DELETE layoutItem");
+            }
+            {
+                QSqlQuery signalQuery(db);
+                ret = signalQuery.exec("SELECT id, controllerID FROM signal ORDER BY controllerID");
+                while(signalQuery.next())
+                {
+                    int controllerID = signalQuery.value("controllerID").toInt();
+                    db.exec(QString("INSERT controllerModule (id, controllerID, moduleName, moduleIndex) VALUES(%1, %2, 'Signal', 0)").arg(moduleID++).arg(controllerID));
+                }
+            }
+        }
+    }
+    return ret;
+
 }
 
 void Database::updateDatabaseSchema(int /*currentVersion*/)

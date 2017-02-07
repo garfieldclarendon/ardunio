@@ -1,3 +1,7 @@
+//#define MDNS_DEBUG_ERR
+//#define MDNS_DEBUG_TX
+//#define MDNS_DEBUG_RX
+
 #include <dummy.h>
 #include <WebSocketsClient.h>
 #include <Hash.h>
@@ -119,8 +123,6 @@ void setup()
 	{
 		modules[x].setup(x);
 	}
-
-	sendStatusMessage(false);
 
 	DEBUG_PRINT("setup complete\n");
 }

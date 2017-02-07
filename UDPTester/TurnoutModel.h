@@ -9,14 +9,14 @@ class QSqlTableModel;
 class TurnoutModel : public QSortFilterProxyModel
 {
     Q_OBJECT
-    Q_PROPERTY(int controllerID READ getControllerID WRITE setControllerID NOTIFY controllerIDChanged)
+    Q_PROPERTY(int controllerModuleID READ getControllerModuleID WRITE setControllerModuleID NOTIFY controllerIDChanged)
 
 public:
     TurnoutModel(QObject *parent = NULL);
     QHash<int, QByteArray> roleNames(void) const;
 
-    void setControllerID(int value);
-    int getControllerID(void) const { return m_controllerID; }
+    void setControllerModuleID(int value);
+    int getControllerModuleID(void) const { return m_controllerModuleID; }
 
 signals:
     void controllerIDChanged(void);
@@ -44,7 +44,7 @@ protected:
 
 private:
     void initArrays(void);
-    int m_controllerID;
+    int m_controllerModuleID;
     QSqlTableModel *m_tableModel;
     QMap<int, QString> m_statusMap;
 

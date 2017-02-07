@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QSqlDatabase>
 
-const int CurrentDatabaseVersion = 2;
+const int CurrentDatabaseVersion = 3;
 
 class Database : public QObject
 {
@@ -26,10 +26,10 @@ public:
     int getDBVersion(void);
     void setDBVersion(int newVersion);
 
-    QByteArray getTurnoutConfig(quint32 serialNumber);
+    QByteArray getTurnoutConfig(quint32 serialNumber, int moduleIndex);
     QByteArray getPanelConfig(quint32 serialNumber);
     QByteArray getPanelRouteConfig(quint32 serialNumber);
-    QByteArray getSignalConfig(quint32 serialNumber);
+    QByteArray getSignalConfig(quint32 serialNumber, int moduleIndex);
     QByteArray getBlockConfig(quint32 serialNumber);
 
     QString getTurnoutName(int turnoutID);
@@ -42,18 +42,19 @@ public slots:
 
 private:
     bool createControllerTable(void);
+    bool createControllerModuleTable(void);
     bool createClassTable(void);
     bool createLayoutItemTypeTable(void);
     bool createLayoutItemTable(void);
     bool createRouteTable(void);
     bool createRouteEntryTable(void);
-    bool createPanelModuleTable(void);
     bool createPanelInputEntryTable(void);
     bool createPanelOutputEntryTable(void);
     bool createSignalTable(void);
     bool createSignalConditionTable(void);
     bool createSignalAspectCondition(void);
     bool createBlockTable(void);
+    bool createDeviceTable(void);
 
     void updateDatabaseSchema(int currentVersion);
 

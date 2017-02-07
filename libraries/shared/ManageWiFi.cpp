@@ -17,6 +17,7 @@ ManageWiFi::~ManageWiFi(void)
 
 void ManageWiFi::setupWifi(const String &prefix, const String &password)
 {
+	DEBUG_PRINT("ManageWiFi::setup.  Prefix: %s\n", prefix.c_str());
 	m_prefix = prefix;
 	m_password = password;
 }
@@ -111,8 +112,10 @@ void ManageWiFi::process(void)
 					status = WiFi.status();
 				}
 				if (status == WL_CONNECTED)
+				{
 					m_reconnected = true;
 					MDNS.begin("GCMRR");
+				}
 
 #ifdef PROJECT_DEBUG
 				IPAddress ip;

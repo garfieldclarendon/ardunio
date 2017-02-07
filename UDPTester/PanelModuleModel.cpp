@@ -8,7 +8,7 @@ PanelModuleModel::PanelModuleModel(QObject *parent)
 {
     Database db;
     m_tableModel = new QSqlTableModel(this, db.getDatabase());
-    m_tableModel->setTable("panelModule");
+    m_tableModel->setTable("controllerModule");
     m_tableModel->select();
 
     this->setSourceModel(m_tableModel);
@@ -20,8 +20,8 @@ QHash<int, QByteArray> PanelModuleModel::roleNames(void) const
 
     roleNames[Qt::UserRole + 0] = QByteArray("id");
     roleNames[Qt::UserRole + 1] = QByteArray("controllerID");
-    roleNames[Qt::UserRole + 2] = QByteArray("panelIndex");
-    roleNames[Qt::UserRole + 3] = QByteArray("panelName");
+    roleNames[Qt::UserRole + 2] = QByteArray("moduleIndex");
+    roleNames[Qt::UserRole + 3] = QByteArray("moduleName");
 
     return roleNames;
 }
@@ -58,11 +58,11 @@ QVariant PanelModuleModel::data(const QModelIndex &index, int role) const
             v = QSortFilterProxyModel::data(i, Qt::EditRole);
             break;
         case 2:
-            i = this->index(index.row(), m_tableModel->fieldIndex("panelIndex"));
+            i = this->index(index.row(), m_tableModel->fieldIndex("moduleIndex"));
             v = QSortFilterProxyModel::data(i, Qt::EditRole);
             break;
         case 3:
-            i = this->index(index.row(), m_tableModel->fieldIndex("panelName"));
+            i = this->index(index.row(), m_tableModel->fieldIndex("modulelName"));
             v = QSortFilterProxyModel::data(i, Qt::EditRole);
             break;
         default:

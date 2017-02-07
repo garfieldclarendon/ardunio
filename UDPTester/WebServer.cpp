@@ -33,11 +33,11 @@ void WebServer::processTextMessage(const QString message)
     QByteArray configData;
     if(parts[1] == "T")
     {
-        configData = getTurnoutConfig(parts[0].toInt());
+        configData = getTurnoutConfig(parts[0].toInt(), parts.value(2).toInt());
     }
     else if(parts[1] == "S")
     {
-        configData = getSignalConfig(parts[0].toInt());
+        configData = getSignalConfig(parts[0].toInt(), parts.value(2).toInt());
     }
     else if(parts[1] == "B")
     {
@@ -77,13 +77,13 @@ void WebServer::socketDisconnected()
     }
 }
 
-QByteArray WebServer::getTurnoutConfig(quint32 serialNumber)
+QByteArray WebServer::getTurnoutConfig(quint32 serialNumber, int moduleIndex)
 {
     qDebug() << "getTurnoutConfig: " << serialNumber;
     QByteArray data;
 
     Database db;
-    data = db.getTurnoutConfig(serialNumber);
+    data = db.getTurnoutConfig(serialNumber, moduleIndex);
 
     return data;
 }
@@ -108,12 +108,12 @@ QByteArray WebServer::getPanelRouteConfig(quint32 serialNumber)
     return data;
 }
 
-QByteArray WebServer::getSignalConfig(quint32 serialNumber)
+QByteArray WebServer::getSignalConfig(quint32 serialNumber, int moduleIndex)
 {
     QByteArray data;
 
     Database db;
-    data = db.getSignalConfig(serialNumber);
+    data = db.getSignalConfig(serialNumber, moduleIndex);
 
     return data;
 }

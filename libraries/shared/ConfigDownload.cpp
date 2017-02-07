@@ -19,6 +19,7 @@ void ConfigDownloadClass::init(Controller *controller)
 {
 	m_controller = controller;
 	m_this = this;
+	m_webSocket.onEvent(ConfigDownloadClass::webSocketEvent);
 }
 
 void ConfigDownloadClass::process(void)
@@ -50,7 +51,6 @@ void ConfigDownloadClass::downloadConfig(uint8_t *buffer, size_t bufferSize, con
 
 		m_webSocket.begin(address.toString().c_str(), port);
 		//webSocket.setAuthorization("user", "Password"); // HTTP Basic Authorization
-		m_webSocket.onEvent(ConfigDownloadClass::webSocketEvent);
 	}
 	else
 	{
@@ -61,16 +61,16 @@ void ConfigDownloadClass::downloadConfig(uint8_t *buffer, size_t bufferSize, con
 
 void ConfigDownloadClass::getServerAddress(IPAddress &address, int &port)
 {
-	DEBUG_PRINT("Sending mDNS query");
+	DEBUG_PRINT("Sending mDNS query\n");
 	int n = MDNS.queryService("gcmrr-config", "tcp"); // Send out query for GCMRR-CONFIG tcp services
-	Serial.println("mDNS query done");
+	DEBUG_PRINT("mDNS query done\n");
 	if (n == 0)
 	{
-		DEBUG_PRINT("no services found");
+		DEBUG_PRINT("no services found\n");
 	}
 	else
 	{
-		DEBUG_PRINT("%d service(s) found", n);
+		DEBUG_PRINT("%d service(s) found\n", n);
 		address = MDNS.IP(0);
 		port = MDNS.port(0);
 	}
@@ -81,7 +81,7 @@ void ConfigDownloadClass::webSocketEvent(WStype_t type, uint8_t * payload, size_
 	switch (type)
 	{
 	case WStype_DISCONNECTED:
-		DEBUG_PRINT("[WSc] Disconnected!\n");
+//		DEBUG_PRINT("[WSc] Disconnected!\n");
 		break;
 	case WStype_CONNECTED:
 	{

@@ -110,15 +110,16 @@ void loadConfiguration(void)
 
 void downloadConfig(void)
 {
-	// Key should be the Chip ID and a single letter indicating the type of controller:
+	// Key should be the Chip ID, single letter indicating the type of controller:
 	// T = Turnout controller
 	// P = Panel controller
 	// S = Signal-Block controller
 	// 
+	// and the moduleIndex.  For this type of controller there is only one module: 0
 	// The server will use this information to lookup the configuration information for this controller
 	String key;
 	key += ESP.getChipId();
-	key += ",S";
+	key += ",S,0";
 
 	ConfigDownload.downloadConfig((uint8_t *)&controllerConfig, sizeof(SignalControllerConfigStruct), key);
 }

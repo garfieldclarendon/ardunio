@@ -39,7 +39,7 @@ Rectangle {
                     Text
                     {
                         id: panelNameText
-                        text: id > 0 ? panelIndex + " " + panelName : index
+                        text: id > 0 ? moduleIndex + " " + moduleName : index
                         font.bold: true
                         font.pointSize: ui.applyFontRatio(ui.baseFontSize + 4)
                         anchors.margins: ui.margin
@@ -49,7 +49,7 @@ Rectangle {
                     ColumnLayout {
                         Layout.minimumWidth: ui.applyRatio(150)
                         Text {
-                            text: id > 0 ? '<b>Index (Address):</b> ' + panelIndex : ""
+                            text: id > 0 ? '<b>Index (Address):</b> ' + moduleIndex : ""
                             verticalAlignment: Text.AlignVCenter
                             height: parent.height
                          }
