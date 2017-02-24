@@ -47,12 +47,12 @@ void DeviceTab::setupModel()
 {
     tableModel = new QSqlRelationalTableModel(this, db.getDatabase());
     tableModel->setTable("device");
-    tableModel->setRelation(1, QSqlRelation("controller", "id", "controllerName"));
+//    tableModel->setRelation(1, QSqlRelation("controller", "id", "controllerName"));
 
-    tableModel->setHeaderData(0, Qt::Horizontal, QObject::tr("ID"));
-    tableModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Controller"));
+    tableModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Description"));
+    tableModel->setHeaderData(1, Qt::Horizontal, QObject::tr("ModuleID"));
     tableModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Name"));
-    tableModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Description"));
+    tableModel->setHeaderData(3, Qt::Horizontal, QObject::tr("ID"));
 
     tableModel->select();
 }

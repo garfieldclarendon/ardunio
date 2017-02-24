@@ -7,6 +7,7 @@
 #include "PanelModuleModel.h"
 #include "PanelInputModel.h"
 #include "PanelOutputModel.h"
+#include "ControllerModuleModel.h"
 
 int main(int argc, char *argv[])
 {
@@ -28,6 +29,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<PanelModuleModel>("Utils", 1, 0, "PanelModuleModel");
     qmlRegisterType<PanelInputModel>("Utils", 1, 0, "PanelInputModel");
     qmlRegisterType<PanelOutputModel>("Utils", 1, 0, "PanelOutputModel");
+    qmlRegisterType<ControllerModuleModel>("Utils", 1, 0, "ControllerModuleModel");
 
     MainWindow w;
     w.show();

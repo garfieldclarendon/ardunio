@@ -84,12 +84,12 @@ void MainWindow::setupUI()
     ControllerTab *controllerTab = new ControllerTab(this);
     tab->addTab(controllerTab, "Controllers");
 
-//    DeviceTab *deviceTab = new DeviceTab(this);
-//    connect(deviceTab, SIGNAL(sendConfig(int)), this, SLOT(sendConfigData(int)));
-//    connect(deviceTab, SIGNAL(resetController(int)), this, SLOT(sendResetCommand(int)));
-//    connect(deviceTab, SIGNAL(sendFirmware(int)), this, SLOT(sendFirmware(int)));
+    DeviceTab *deviceTab = new DeviceTab(this);
+    connect(deviceTab, SIGNAL(sendConfig(int)), this, SLOT(sendConfigData(int)));
+    connect(deviceTab, SIGNAL(resetController(int)), this, SLOT(sendResetCommand(int)));
+    connect(deviceTab, SIGNAL(sendFirmware(int)), this, SLOT(sendFirmware(int)));
 
-//    tab->addTab(deviceTab, "Devices");
+    tab->addTab(deviceTab, "Devices");
 
     this->setCentralWidget(tab);
 }

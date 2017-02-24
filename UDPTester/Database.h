@@ -31,6 +31,8 @@ public:
     QByteArray getPanelRouteConfig(quint32 serialNumber);
     QByteArray getSignalConfig(quint32 serialNumber, int moduleIndex);
     QByteArray getBlockConfig(quint32 serialNumber);
+    QByteArray getMultiControllerConfig(quint32 serialNumber);
+    QByteArray getControllerModuleConfig(quint32 serialNumber, quint32 moduleIndex);
 
     QString getTurnoutName(int turnoutID);
     int getTurnoutID(const QString &name);

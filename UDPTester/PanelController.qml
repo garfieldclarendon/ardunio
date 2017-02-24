@@ -66,6 +66,7 @@ Rectangle {
                             enabled: id > 0 ? true : false
                             onClicked: {
                                 console.debug("Edit button clicked");
+                                broadcaster.sendMessage(221, 0, 2, 5, 0);
                             }
                         }
                         Button {

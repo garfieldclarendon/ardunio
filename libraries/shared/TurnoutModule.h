@@ -9,24 +9,36 @@ class TurnoutModule : public Module
 {
 public:
 	TurnoutModule(void);
-	void setup(void);
-	void setup(byte index, byte motorAPin, byte motorBPin, byte normalPin, byte divergePin);
 	void setConfig(byte index, TurnoutConfigStruct value) { m_turnouts[index].setConfig(value); }
-	byte getTurnoutCount(void) const { return MAX_TURNOUTS;  }
-	bool process(byte &data);
-	bool handleMessage(const Message &message, byte &data);
+	TurnoutConfigStruct getConfig(byte index) const { return  m_turnouts[index].getConfig(); }
 
+	void setup(byte index, byte motorAPin, byte motorBPin, byte normalPin, byte divergePin);
 	TurnoutState getCurrentTurnoutState(byte index) const { return m_turnouts[index].getCurrentState(); }
 	void setTurnout(byte index, TurnoutState newTurnoutState, byte &data);
 
 	int getTurnoutID(byte index) const { return m_turnouts[index].getTurnoutID(); }
 	Message createMessage(void);
-	byte getCurrentState(void) const { return m_currentState; }
+
+	// Module overrides
+	byte getDeviceCount(void) const override { return MAX_TURNOUTS; }
+	short getDeviceID(byte index) const override { return getTurnoutID(index); }
+	byte getDeviceState(byte index) const override { return m_turnouts[index].getCurrentState(); }
+	byte getCurrentState(void) const override { return m_currentState; }
+	void setup(void) override;
+	byte setupWire(byte address) override;
+	bool process(byte &data) override;
+	bool handleMessage(const Message &message, byte &data) override;
+	bool getSendModuleState(void) const override { return true; }
+	void configCallback(const char *key, const char *value) override;
+	const char *getConfigReference(void) const override;
+	int getConfigSize(void) const override;
 
 private:
 	TurnoutState getTurnoutStateForRoute(int routeID);
 	TurnoutHandler m_turnouts[MAX_TURNOUTS];
 
 	byte m_currentState;
+	byte m_currentTurnoutConfig;
+	TurnoutControllerConfigStruct m_config;
 };
 

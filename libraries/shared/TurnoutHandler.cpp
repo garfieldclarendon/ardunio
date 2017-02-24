@@ -2,7 +2,7 @@
 #include "TurnoutHandler.h"
 
 TurnoutHandler::TurnoutHandler(void)
-	: m_motorAPin(0), m_motorBPin(0), m_normalPin(0), m_divergePin(0), m_currentState(TrnUnknown), m_lastState(TrnUnknown), m_currentTimeout(0)
+	: m_motorAPin(0), m_motorBPin(0), m_normalPin(0), m_divergePin(0), m_currentState(TrnUnknown), m_lastState(TrnUnknown), m_currentTimeout(0), m_currentRouteConfig(0)
 {
 	memset(&m_config, 0, sizeof(TurnoutConfigStruct));
 }
@@ -42,6 +42,17 @@ bool TurnoutHandler::process(byte &data)
 	}
 
 	m_lastState = current;
+
+	if (m_currentState == TrnNormal || m_currentState == TrnToNormal || m_currentState == TrnUnknown)
+	{
+		bitWrite(data, m_motorAPin, 0);
+		bitWrite(data, m_motorBPin, 1);
+	}
+	else
+	{
+		bitWrite(data, m_motorAPin, 1);
+		bitWrite(data, m_motorBPin, 0);
+	}
 
 	return ret;
 }
@@ -93,5 +104,26 @@ void TurnoutHandler::setTurnout(TurnoutState newState, byte &data)
 			if (bitRead(data, m_normalPin) != LOW)
 				m_currentState = TrnToNormal;
 		}
+	}
+	DEBUG_PRINT("SETTURNOUT: %d\n", data);
+}
+
+void TurnoutHandler::setConfigValue(const char *key, const char *value)
+{
+	if (strcmp(key, "ID") == 0)
+	{
+		int id = atoi(value);
+		m_config.turnoutID = id;
+	}
+	else if (strcmp(key, "ROUTE") == 0)
+	{
+		int id = atoi(value);
+		m_config.routeEntries[m_currentRouteConfig].routeID = id;
+
+	}
+	else if (strcmp(key, "STATE") == 0)
+	{
+		int state = atoi(value);
+		m_config.routeEntries[m_currentRouteConfig++].state = (TurnoutState)state;
 	}
 }

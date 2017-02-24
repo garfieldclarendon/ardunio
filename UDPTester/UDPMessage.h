@@ -81,6 +81,8 @@ public:
     int getIntValue2(void) const { return messageSructure.payload.payloadStruct.intValue2; }
     quint8 getByteValue1(void) const { return messageSructure.payload.payloadStruct.byteValue1; }
     quint8 getByteValue2(void) const { return messageSructure.payload.payloadStruct.byteValue2; }
+    int getDeviceStatusDeviceID(quint8 index) const { return messageSructure.payload.deviceStatus[index].id; }
+    int getDeviceStatus(quint8 index) const { return messageSructure.payload.deviceStatus[index].status; }
 
     const char *getMessageRef(void) const { return (const char *)&messageSructure; }
 private:

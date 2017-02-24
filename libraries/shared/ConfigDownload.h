@@ -18,25 +18,27 @@ class ConfigDownloadClass
 
 
  public:
+	 typedef std::function<void(const char *key, const char *value)> TConfigCallback;
+
 	 ConfigDownloadClass(void);
 	 void init(Controller *controller);
-	void downloadConfig(uint8_t *buffer, size_t bufferSize, const String &key);
+//	void downloadConfig(uint8_t *buffer, size_t bufferSize, const String &key);
+	 void downloadConfig(const String &key, TConfigCallback callback);
 	void process(void);
-	bool downloadComplete(void) const { return m_buffer != NULL && m_currentPos >= m_bufferSize;  }
 	void reset(void);
 
 private:
 	void getServerAddress(IPAddress &address, int &port);
 	static ConfigDownloadClass *m_this;
 	static void webSocketEvent(WStype_t type, uint8_t * payload, size_t length);
+	void parsePayload(void);
 	WebSocketsClient m_webSocket;
 	Controller *m_controller;
 	String m_key;
-	uint8_t *m_buffer;
-	size_t m_bufferSize;
-	size_t m_currentPos;
+	String m_downloadBuffer;
 	bool m_serverNotSet;
-	long m_lastFirmwareCheckTimeout;
+
+	TConfigCallback m_configCallback;
 };
 
 extern ConfigDownloadClass ConfigDownload;

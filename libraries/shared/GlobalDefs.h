@@ -40,6 +40,7 @@ enum ClassEnum
         ClassSignal,
         ClassSemaphore,
         ClassBlock,
+		ClassMulti,
         ClassSystem,
         ClassApp
 };
@@ -90,3 +91,5 @@ typedef struct RouteStruct RouteStruct;
 #define PANEL_ACTIVATE_ROUTE 221
 #define PANEL_STATUS 222
 
+// Multi Messages
+#define MULTI_STATUS 241

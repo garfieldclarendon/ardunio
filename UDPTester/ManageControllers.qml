@@ -152,12 +152,17 @@ Item {
                             onControllerIDChanged: {
                                 if(currentControllerClass === 1)
                                 {
-                                    detailLoader.setSource("TurnoutController.qml",
+                                    detailLoader.setSource("MultiModule.qml",
                                                                  { "currentControllerID": controllerID });
                                 }
                                 else if(currentControllerClass === 2)
                                 {
                                     detailLoader.setSource("PanelController.qml",
+                                                                 { "currentControllerID": controllerID });
+                                }
+                                else if(currentControllerClass === 7)
+                                {
+                                    detailLoader.setSource("MultiModule.qml",
                                                                  { "currentControllerID": controllerID });
                                 }
                                 else

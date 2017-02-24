@@ -5,11 +5,11 @@ import Utils 1.0
 
 Rectangle {
     id: outerRect
-    property int currentControllerID: 0
+    property int currentControllerModuleID: 0
 
     TurnoutModel {
         id: turnoutModel
-        controllerModuleID: 4
+        controllerModuleID: currentControllerModuleID
     }
 
     radius: 20

@@ -40,8 +40,10 @@ Item {
                 else if(classID === 6)
                     return "Block";
                 else if(classID === 7)
-                    return "System";
+                    return "Multi-Controller";
                 else if(classID === 8)
+                    return "System";
+                else if(classID === 9)
                     return "Application";
 
                 return "";

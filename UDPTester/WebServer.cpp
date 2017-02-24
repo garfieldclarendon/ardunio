@@ -50,9 +50,17 @@ void WebServer::processTextMessage(const QString message)
         else
             configData = getPanelRouteConfig(parts[0].toInt());
     }
+    else if(parts[1] == "M")
+    {
+        configData = getMultiControllerConfig(parts[0].toInt(), -1);
+    }
+    else if(parts[1] == "MM")
+    {
+        configData = getMultiControllerConfig(parts[0].toInt(), parts[2].toInt());
+    }
     if (pClient)
     {
-        pClient->sendBinaryMessage(configData);
+        pClient->sendTextMessage(configData);
         pClient->close();
     }
 }
@@ -126,4 +134,13 @@ QByteArray WebServer::getBlockConfig(quint32 serialNumber)
     data = db.getBlockConfig(serialNumber);
 
     return data;
+}
+
+QByteArray WebServer::getMultiControllerConfig(quint32 serialNumber, quint32 moduleIndex)
+{
+    Database db;
+    if(moduleIndex == -1)
+        return db.getMultiControllerConfig(serialNumber);
+    else
+        return db.getControllerModuleConfig(serialNumber, moduleIndex);
 }

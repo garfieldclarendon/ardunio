@@ -12,5 +12,6 @@
         <file>LookupController.qml</file>
         <file>ControllerActions.qml</file>
         <file>PanelModuleDetails.qml</file>
+        <file>MultiModule.qml</file>
     </qresource>
 </RCC>

@@ -12,7 +12,8 @@ ConfigDownloadClass *ConfigDownloadClass::m_this = NULL;
 ConfigDownloadClass::ConfigDownloadClass(void)
 {
 	m_controller = NULL;
-	reset();
+	m_key = "";
+	m_downloadBuffer = "";
 }
 
 void ConfigDownloadClass::init(Controller *controller)
@@ -25,26 +26,25 @@ void ConfigDownloadClass::init(Controller *controller)
 void ConfigDownloadClass::process(void)
 {
 	m_webSocket.loop();
-	if (m_serverNotSet && m_buffer != NULL)
+	if (m_serverNotSet && m_key.length() > 0)
 	{
 		// retry download
-		downloadConfig(m_buffer, m_bufferSize, m_key);
+		downloadConfig(m_key, m_configCallback);
 	}
 }
 
-void ConfigDownloadClass::downloadConfig(uint8_t *buffer, size_t bufferSize, const String &key)
+void ConfigDownloadClass::downloadConfig(const String &key, TConfigCallback callback)
 {
+	reset();
+	m_configCallback = callback;
 	m_serverNotSet = false;
-	m_currentPos = 0;
-	m_buffer = buffer;
-	m_bufferSize = bufferSize;
 	m_key = key;
 
 	IPAddress address;
 	int port = -1;
 	if (WiFi.status() == WL_CONNECTED)
 		getServerAddress(address, port);
-	DEBUG_PRINT("downloadConfig.  Buffer Size: %d\n", bufferSize);
+	DEBUG_PRINT("downloadConfig.  Key: %s\n", key.c_str());
 	if (port != -1 && port > 0)
 	{
 		DEBUG_PRINT("downloadConfig on: %s:%d\n", address.toString().c_str(), port);
@@ -85,44 +85,80 @@ void ConfigDownloadClass::webSocketEvent(WStype_t type, uint8_t * payload, size_
 		break;
 	case WStype_CONNECTED:
 	{
-		DEBUG_PRINT("[WSc] Connected to url: %s\n", payload);
+		DEBUG_PRINT("[WSc] Connected to url: %s  key is: %s\n", payload, m_this->m_key.c_str());
 
-		// Send message to server when Connected containing the controllerID of this controller and
-		// a letter indicating the type of controller:
+		// Send message to server when Connected containing the key of the desired config data
 		// 
-		if (m_this->m_bufferSize > 0 && m_this->m_buffer != NULL)
+		if (m_this->m_key.length() > 0)
 			m_this->m_webSocket.sendTXT(m_this->m_key);
 	}
 	break;
 	case WStype_TEXT:
 	{
 		DEBUG_PRINT("[WSc] get text: %s\n", payload);
-		break;
-	}
-	case WStype_BIN:
-		DEBUG_PRINT("[WSc] get binary length: %d of %d\n", length, m_this->m_bufferSize);
-
-		if (m_this->m_key.length() > 0)
+		m_this->m_downloadBuffer += (char *)payload;
+		if (m_this->m_downloadBuffer.endsWith("\n"))
 		{
-			memcpy(m_this->m_buffer + m_this->m_currentPos, payload, length);
-			m_this->m_currentPos += length;
-		}
-		
-		if (m_this->m_currentPos >= m_this->m_bufferSize)
-		{
+			m_this->m_key = "";
+			m_this->parsePayload();
 			DEBUG_PRINT("DOWNLOAD IS FINISHED!!  DISCONNECTING.\n");
 		}
 		break;
+	}
+	case WStype_BIN:
+		DEBUG_PRINT("[WSc] get binary length: %d\n", length);
+		break;
+	}
+}
+
+// The following function assumes everything is formatted properly for performance purposes.  The text should be:
+// <key>,<value>;<key>,<value>;....<key>,<value>;\n
+// '\n' denotes the end of the config data
+void ConfigDownloadClass::parsePayload(void)
+{
+	byte x = 0;
+	String key;
+	String value;
+	byte length = m_downloadBuffer.length();
+	char sep = ',';
+
+	for (byte x = 0; x < length; x++)
+	{
+		if (m_downloadBuffer[x] == '\n')
+		{
+			// All done!
+			m_configCallback(NULL, NULL);
+		}
+		if (m_downloadBuffer[x] != sep)
+		{
+			if (sep == ',')
+				key += m_downloadBuffer[x];
+			else
+				value += m_downloadBuffer[x];
+		}
+		else
+		{
+			if (sep == ',')
+			{
+				sep = ';';
+			}
+			else
+			{
+				DEBUG_PRINT("KEY: %s  VALUE %s\n", key.c_str(), value.c_str());
+				m_configCallback(key.c_str(), value.c_str());
+				key = "";
+				value = "";
+				sep = ',';
+			}
+		}
 	}
 }
 
 void ConfigDownloadClass::reset(void)
 {
 	m_key = "";
+	m_downloadBuffer = "";
 	m_webSocket.disconnect();
-	m_buffer = NULL;
-	m_bufferSize = 0;
-	m_currentPos = 0;
 }
 
 ConfigDownloadClass ConfigDownload;

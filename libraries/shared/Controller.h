@@ -25,11 +25,12 @@ public:
 	ClassEnum getClass(void) const { return m_class; }
 	void setClass(ClassEnum value) { m_class = value; }
 	bool getWiFiReconnected(void) const { return m_wifiManager.getIsReconnected(); }
+	void clearFiles(void);
 
 private:
 	void setupNetwork(void);
 	void handleSetControllerIDMessage(const Message &message);
-	void handleServerHeartbeatMessage(const Message &message);
+	void createDeviceID(void);
 	void downloadFirmwareUpdate(void);
 	void processLocalServer(void);
 	void processMessage(const Message &message);
@@ -43,9 +44,6 @@ private:
 	WiFiUDP m_udp;
 	short m_controllerID;
 	ClassEnum m_class;
-	IPAddress m_serverAddress;
-	byte m_serverPort;
-	String m_lastDNSService;
 	int m_lastDNSCount;
 	long m_dnsCheckTimeout;
 	byte m_resendMessageCount;

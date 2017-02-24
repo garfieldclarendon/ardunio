@@ -165,7 +165,7 @@ void MessageBroadcaster::processUdpBuffer()
             while(startIndex < m_udpBuffer.size())
             {
                 data = m_udpBuffer[startIndex];
-                nextByte = m_udpBuffer[startIndex++];
+                nextByte = m_udpBuffer[++startIndex];
                 if(size <= sizeof(MessageStruct))
                 {
                     *buffer = data;

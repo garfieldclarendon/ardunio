@@ -72,7 +72,12 @@ class Message
 	  void setIntValue2(short value) { messageStruct.payload.payloadStruct.intValue2 = value; }
 	  void setByteValue1(byte value) { messageStruct.payload.payloadStruct.byteValue1 = value; }
 	  void setByteValue2(byte value) { messageStruct.payload.payloadStruct.byteValue2 = value; }
-	  void setDeviceStatus(byte index, short deviceID, byte value) { messageStruct.payload.deviceStatus[index].id = deviceID;  messageStruct.payload.deviceStatus[index].status = value; }
+	  void setDeviceStatus(byte index, short deviceID, byte value) 
+	  { 
+		  if (index < 0 || index > MAX_MODULES) 
+			  return; 
+		  messageStruct.payload.deviceStatus[index].id = deviceID;  messageStruct.payload.deviceStatus[index].status = value; 
+	  }
 
 	  char *getRef(void) const { return (char *)&messageStruct;  }
 
@@ -92,7 +97,10 @@ class Message
 	byte getByteValue2(void) const { return messageStruct.payload.payloadStruct.byteValue2; }
 	byte getDeviceStatus(byte index) const { return messageStruct.payload.deviceStatus[index].status; }
 	byte getDeviceStatusID(byte index) const { return messageStruct.payload.deviceStatus[index].id; }
-
+	void resetDeviceStatus(void)
+	{
+		memset(&messageStruct.payload.deviceStatus, 0, sizeof(DeviceStatusStruct) * MAX_MODULES);
+	}
 private:
 	MessageStruct messageStruct;
 };

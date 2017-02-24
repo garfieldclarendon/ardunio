@@ -105,13 +105,13 @@ bool TurnoutModel::filterAcceptsRow(int source_row, const QModelIndex &) const
 
 void TurnoutModel::onNewMessage(const UDPMessage &message)
 {
-    if(message.getMessageID() == TRN_STATUS)
+    if(message.getMessageID() == TRN_STATUS || message.getMessageID() == MULTI_STATUS)
     {
-        if(message.getIntValue1() > 0)
-            m_statusMap[message.getIntValue1()] = QString("%1").arg(message.getByteValue1());
-        if(message.getIntValue2() > 0)
-            m_statusMap[message.getIntValue2()] = QString("%1").arg(message.getByteValue2());
-
+        for(int x = 0; x < MAX_MODULES; x++)
+        {
+            if(message.getDeviceStatusDeviceID(x) > 0)
+                m_statusMap[message.getDeviceStatusDeviceID(x)] = QString("%1").arg(message.getDeviceStatus(x));
+        }
         int rows = rowCount() - 1;
         int cols = columnCount() - 1;
         QModelIndex start = this->index(0, cols);

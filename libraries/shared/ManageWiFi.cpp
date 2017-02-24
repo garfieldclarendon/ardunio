@@ -27,8 +27,10 @@ void ManageWiFi::process(void)
 	m_reconnected = false;
 	int8_t scanResult;
 	wl_status_t status = WiFi.status();
-	if (status == WL_DISCONNECTED || status == WL_NO_SSID_AVAIL || status == WL_IDLE_STATUS || status == WL_CONNECT_FAILED) 
+//	DEBUG_PRINT("[WIFI] process::status %d\n", status);
+	if (status == WL_DISCONNECTED || status == WL_NO_SSID_AVAIL || status == WL_IDLE_STATUS || status == WL_CONNECT_FAILED)
 	{
+//		DEBUG_PRINT("[WIFI] status %d\n", status);
 		scanResult = WiFi.scanComplete();
 		if (scanResult == WIFI_SCAN_RUNNING) 
 		{
@@ -111,11 +113,9 @@ void ManageWiFi::process(void)
 					delay(10);
 					status = WiFi.status();
 				}
+
 				if (status == WL_CONNECTED)
-				{
 					m_reconnected = true;
-					MDNS.begin("GCMRR");
-				}
 
 #ifdef PROJECT_DEBUG
 				IPAddress ip;

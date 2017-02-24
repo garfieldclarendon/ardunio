@@ -6,14 +6,14 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266mDNS.h>
-#include <WiFiClient.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
+#include <FS.h>
+
 
 Controller::Controller(int localServerPort)
-	: m_controllerID(-1), m_class(ClassUnknown), m_serverPort(0), m_lastDNSCount(0), m_dnsCheckTimeout(0)
+	: m_controllerID(-1), m_class(ClassUnknown), m_lastDNSCount(0), m_dnsCheckTimeout(0)
 {
-	m_lastDNSService = "turnout";
 }
 
 Controller::~Controller()
@@ -26,11 +26,15 @@ void Controller::setup(TMessageHandlerFunction messageCallback, ClassEnum contro
 {
 	m_class = controllerClass;
 	m_messageCallback = messageCallback;
+	WiFi.setAutoConnect(false);
+	WiFi.disconnect();
 
 //	m_wifiManager.setup("GCMRR_");
 	m_wifiManager.setupWifi("wagging", "jr1also12");
 //	m_wifiManager.setupWifi("Belkin", password);
 	setupNetwork();
+
+	MDNS.begin("GCMRR");
 
 	DEBUG_PRINT("------------------------\n");
 	DEBUG_PRINT(" ControllerID: %d \r\n", m_controllerID);
@@ -50,6 +54,11 @@ void Controller::setupNetwork(void)
 void Controller::process(void)
 {
 	m_wifiManager.process();
+	if (getWiFiReconnected())
+	{
+		if (m_controllerID == -1)
+			createDeviceID();
+	}
 	resendLastMessage();
 	processUDP();
 }
@@ -125,11 +134,6 @@ void Controller::processMessage(const Message &message)
 	if (message.getMessageID() == SYS_SET_CONTROLLER_ID && message.getLValue() == ESP.getChipId())
 	{
 		handleSetControllerIDMessage(message);
-	}
-	else if (message.getMessageID() == SYS_HEARTBEAT)
-	{
-		handleServerHeartbeatMessage(message);
-		m_messageCallback(message);
 	}
 	else if (message.getMessageID() == SYS_REBOOT_CONTROLLER && (message.getControllerID() == 0 || message.getControllerID() == getControllerID()))
 	{
@@ -242,29 +246,25 @@ void Controller::handleSetControllerIDMessage(const Message &message)
 	EEPROM.commit();
 }
 
-void Controller::handleServerHeartbeatMessage(const Message &message)
+void Controller::createDeviceID(void)
 {
-	if (message.getField(0) > 0)
+	IPAddress address;
+	int port;
+	getServerAddress(address, port);
+
+	DEBUG_PRINT("createDeviceID Server Address: %s:%d\n", address.toString().c_str(), port);
+
+	if ((m_controllerID < 0 || m_controllerID == 0) && port > 0)
 	{
-		if (m_serverPort == 0)
-			DEBUG_PRINT("handleServerHeartbeatMessage Server Address: %d.%d.%d.%d\n", message.getField(0), message.getField(1), message.getField(2), message.getField(3));
+		DEBUG_PRINT("NEW CONTROLLER!  SEND NEW CONTROLLER MESSAG\n");
+		Message message;
+		message.setControllerID(-1);
+		message.setMessageID(SYS_NEW_CONTROLLER);
+		message.setMessageClass(ClassSystem);
+		message.setLValue(ESP.getChipId());
+		message.setByteValue1(m_class);
 
-		IPAddress address(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
-		m_serverPort = message.getField(4);
-		m_serverAddress = address;
-
-		if ((m_controllerID < 0 || m_controllerID == 0) && m_serverPort > 0)
-		{
-			DEBUG_PRINT("NEW CONTROLLER!  SEND NEW CONTROLLER MESSAG\n");
-			Message message;
-			message.setControllerID(-1);
-			message.setMessageID(SYS_NEW_CONTROLLER);
-			message.setMessageClass(ClassSystem);
-			message.setLValue(ESP.getChipId());
-			message.setByteValue1(m_class);
-
-			sendUdpBroadcastMessage(message);
-		}
+		sendUdpBroadcastMessage(message);
 	}
 }
 
@@ -291,35 +291,18 @@ bool Controller::checkEEPROM(byte signature)
 		EEPROM.put(CONTROLLER_ID_ADDRESS, m_controllerID);
 		EEPROM.write(0, signature);
 		EEPROM.commit();
+		clearFiles();
 	}
 
 	return valid;
 }
-//
-//void Controller::processLocalServer(void)
-//{
-//	Message message;
-//	// Check if a client has connected
-//	if (m_server.hasClient())
-//	{
-//		WiFiClient client = m_server.available();
-//		if (!client)
-//		{
-//			return;
-//		}
-//		DEBUG_PRINT("New client\n");
-//
-//		// Wait for data from client to become available
-//		while (client.connected() && client.available() < sizeof(MessageStruct))
-//		{
-//			delay(1);
-//		}
-//
-//		if (client.available() >= sizeof(MessageStruct))
-//			client.read((uint8_t *)message.getRef(), sizeof(MessageStruct));
-//		DEBUG_PRINT("Done with client\n");
-//	}
-//	if (message.isValid())
-//		processMessage(message);
-//
-//}
+
+void Controller::clearFiles(void)
+{
+	Dir dir = SPIFFS.openDir("/");
+
+	while (dir.next())
+	{
+		SPIFFS.remove(dir.fileName());
+	}
+}

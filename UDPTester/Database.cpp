@@ -185,51 +185,42 @@ void Database::setDBVersion(int newVersion)
 
 QByteArray Database::getTurnoutConfig(quint32 serialNumber, int moduleIndex)
 {
-    TurnoutControllerConfigStruct *configStruct = new TurnoutControllerConfigStruct;
-    memset(configStruct, 0, sizeof(TurnoutControllerConfigStruct));
-
     int turnoutIDs[2];
     turnoutIDs[0] = 0;
     turnoutIDs[1] = 0;
+    QString buffer;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT device.id FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2").arg(serialNumber).arg(moduleIndex));
+    query.exec(QString("SELECT device.id FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2 ORDER BY moduleIndex").arg(serialNumber).arg(moduleIndex));
     int index = 0;
     while (query.next())
     {
        turnoutIDs[index++] = query.value(0).toInt();
 
     }
-    configStruct->turnout1.turnoutID = turnoutIDs[0];
-    configStruct->turnout2.turnoutID = turnoutIDs[1];
+    buffer = QString("ID,%1;").arg(turnoutIDs[0]);
 
     QSqlQuery query2(db);
     query2.exec(QString("SELECT routeID, turnoutState FROM routeEntry WHERE turnoutID = %1").arg(turnoutIDs[0]));
-    index = 0;
     while (query2.next())
     {
-        if(index < MAX_ROUTE_ENTRIES)
-        {
-            configStruct->turnout1.routeEntries[index].routeID = query2.value(0).toInt();
-            configStruct->turnout1.routeEntries[index++].state   = (TurnoutState)query2.value(1).toInt();
-        }
+        buffer += QString("ROUTE,%1;STATE,%2;").arg(query2.value(0).toString()).arg(query2.value(1).toString());
     }
 
     QSqlQuery query3(db);
     query3.exec(QString("SELECT routeID, turnoutState FROM routeEntry WHERE turnoutID = %1").arg(turnoutIDs[1]));
-    index = 0;
+    buffer += QString("ID,%1;").arg(turnoutIDs[1]);
     while (query3.next())
     {
         if(index < MAX_ROUTE_ENTRIES)
         {
-            configStruct->turnout2.routeEntries[index].routeID = query3.value(0).toInt();
-            configStruct->turnout2.routeEntries[index++].state   = (TurnoutState)query3.value(1).toInt();
+            buffer += QString("ROUTE,%1;STATE,%2;").arg(query3.value(0).toString()).arg(query3.value(1).toString());
         }
     }
+    buffer += "\n";
+    qDebug(buffer.toLatin1());
 
-    QByteArray config((const char *)configStruct, sizeof(TurnoutControllerConfigStruct));
-    delete configStruct;
-    return config;
+    return buffer.toLatin1();
 }
 
 QByteArray Database::getSignalConfig(quint32 serialNumber, int moduleIndex)
@@ -424,6 +415,42 @@ QByteArray Database::getPanelRouteConfig(quint32 serialNumber)
 
     QByteArray config((const char *)&configStruct, sizeof(PanelControllerRouteConfigStruct));
     return config;
+}
+
+QByteArray Database::getMultiControllerConfig(quint32 serialNumber)
+{
+    QString configData;
+
+    QSqlQuery query(db);
+    query.exec(QString("SELECT moduleClass FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 ORDER BY moduleIndex").arg(serialNumber));
+    int count = 0;
+    while (query.next())
+    {
+        configData += QString("CLASS,%1;").arg(query.value(0).toString());
+        count++;
+    }
+    configData += QString("COUNT,%1;").arg(count) + "\n";
+
+    return configData.toLatin1();
+}
+
+QByteArray Database::getControllerModuleConfig(quint32 serialNumber, quint32 moduleIndex)
+{
+    QString classCode;
+
+    QSqlQuery query(db);
+    query.exec(QString("SELECT moduleClass FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND moduleIndex = %2").arg(serialNumber).arg(moduleIndex));
+    while (query.next())
+    {
+        classCode = query.value(0).toString();
+    }
+    if(classCode == "1")
+        return getTurnoutConfig(serialNumber, moduleIndex);
+    else if(classCode == "2")
+        return getPanelConfig(serialNumber);
+
+    QString configData("\n7");
+    return configData.toLatin1();
 }
 
 QString Database::getTurnoutName(int turnoutID)

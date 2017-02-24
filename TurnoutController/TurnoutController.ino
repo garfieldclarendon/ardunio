@@ -101,14 +101,6 @@ void loop()
 	sendHeartbeatMessage();
 
 	ConfigDownload.process();
-	if (ConfigDownload.downloadComplete())
-	{
-		ConfigDownload.reset();
-		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
-		EEPROM.put(TURNOUT_CONFIG_ADDRESS, controllerConfig);
-		EEPROM.commit();
-		loadConfiguration();
-	}
 
 	processTurnouts();
 }
@@ -140,12 +132,16 @@ void loadConfiguration(void)
 	}
 }
 
+int currentTurnoutConfig = -1;
+int currentRouteConfig = 0;
 void downloadConfig(void)
 {
-	// Key should be the Chip ID, single letter indicating the type of controller:
+	// Key should be the Chip ID and a single letter indicating the type of controller:
 	// T = Turnout controller
 	// P = Panel controller
-	// S = Signal-Block controller
+	// S = Signal
+	// B = Block controller
+	// M = Multi-Module Controller
 	// 
 	// and the moduleIndex.  For this type of controller there is only one module: 0
 	// The server will use this information to lookup the configuration information for this controller
@@ -153,7 +149,26 @@ void downloadConfig(void)
 	key += ESP.getChipId();
 	key += ",T,0";
 
-	ConfigDownload.downloadConfig((uint8_t *)&controllerConfig, sizeof(TurnoutControllerConfigStruct), key);
+	ConfigDownload.downloadConfig(key, configCallback);
+}
+
+void configCallback(const char *key, const char *value)
+{
+	if (key == NULL)
+	{
+		memset(&controllerConfig, 0, sizeof(TurnoutControllerConfigStruct));
+		controllerConfig.turnout1 = turnoutModule.getConfig(0);
+		controllerConfig.turnout2 = turnoutModule.getConfig(1);
+
+		ConfigDownload.reset();
+		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
+		EEPROM.put(TURNOUT_CONFIG_ADDRESS, controllerConfig);
+		EEPROM.commit();
+	}
+	else
+	{
+		turnoutModule.configCallback(key, value);
+	}
 }
 
 void messageCallback(const Message &message)
