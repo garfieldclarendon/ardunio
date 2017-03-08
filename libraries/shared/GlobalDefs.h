@@ -1,5 +1,5 @@
 #pragma once
-#define PROJECT_DEBUG
+#include "Local.h"
 
 const int ControllerVersion = 7;
 
@@ -10,6 +10,8 @@ const int ControllerVersion = 7;
 #endif
 
 #define MAX_TURNOUTS 2
+#define MAX_BLOCKS 2
+#define MAX_SIGNALS 3
 #define MAX_MODULES 8
 #define MAX_PANEL_MODULES 8
 #define MAX_ROUTE_ENTRIES 5
@@ -72,9 +74,10 @@ typedef struct RouteStruct RouteStruct;
 #define SYS_NEW_CONTROLLER 13
 #define SYS_HEARTBEAT 14
 #define SYS_CONFIG_CHANGED 15
-#define SYS_REBOOT_CONTROLLER 16
-#define SYS_DOWNLOAD_FIRMWARE 17
-#define SYS_REQEST_STATUS 18
+#define SYS_RESET_CONFIG 16
+#define SYS_REBOOT_CONTROLLER 17
+#define SYS_DOWNLOAD_FIRMWARE 18
+#define SYS_REQEST_STATUS 19
 
 //Turnout Messages
 #define TRN_STATUS 101

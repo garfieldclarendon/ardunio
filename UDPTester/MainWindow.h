@@ -20,6 +20,7 @@ protected:
     void setupUI(void);
 
 private:
+    void createControllerTab(QTabWidget *tab);
     Database db;
 
     // QWidget interface

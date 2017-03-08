@@ -1,13 +1,16 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.2
-import QtQuick.Window 2.2
 import Utils 1.0
 
-
-Item {
+Rectangle {
     id: mainItem
+    color: systemPalette.window
     anchors.margins: ui.margin
+
+    SystemPalette {
+        id: systemPalette
+    }
 
     ControllerModel {
         id: controllerModel
@@ -139,35 +142,43 @@ Item {
                     clip:true
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-
+                    property bool allowAddNew: false
+                    onAllowAddNewChanged: {
+                        controllerActions.enableAddModule = allowAddNew;
+                        console.debug("ControllerList::onAllowAddNewChanged: " + allowAddNew);
+                    }
                     Component {
                         id: list
 
                         ControllerList {
                             id: controllerList
+
                             model: controllerModel
                             onEditClicked: {
                                 showEdit(index);
                              }
+
                             onControllerIDChanged: {
+                                console.debug("onControllerIDChanged - SerialNumber: " + currentSerialNumber);
                                 if(currentControllerClass === 1)
                                 {
                                     detailLoader.setSource("MultiModule.qml",
-                                                                 { "currentControllerID": controllerID });
+                                                           { "currentControllerID": controllerID, "currentControllerClass": currentControllerClass, "serialNumber": currentSerialNumber});
                                 }
                                 else if(currentControllerClass === 2)
                                 {
                                     detailLoader.setSource("PanelController.qml",
-                                                                 { "currentControllerID": controllerID });
+                                                                 { "currentControllerID": controllerID, "serialNumber": currentSerialNumber });
                                 }
                                 else if(currentControllerClass === 7)
                                 {
                                     detailLoader.setSource("MultiModule.qml",
-                                                                 { "currentControllerID": controllerID });
+                                                           { "currentControllerID": controllerID, "currentControllerClass": currentControllerClass, "serialNumber": currentSerialNumber });
                                 }
                                 else
                                 {
-                                    detailLoader.source = "";
+                                    detailLoader.setSource("MultiModule.qml",
+                                                                 { "currentControllerID": controllerID, "currentControllerClass": currentControllerClass, "serialNumber": currentSerialNumber });
                                 }
                             }
                         }
@@ -183,12 +194,58 @@ Item {
                 Layout.fillWidth: true
                 ControllerActions {
                     id: controllerActions
+                    enableAddModule: true
+                    enableAddDevice: true
                     enabled: stackView.currentItem ? stackView.currentItem.controllerID > 0 : false
-                    controllerID: stackView.currentItem && stackView.currentItem.controllerID ? stackView.currentItem.controllerID : 0
+                    controllerID: stackView.currentItem && stackView.currentItem.controllerID > 0 ? stackView.currentItem.controllerID : 0
+                    serialNumber: stackView.currentItem && stackView.currentItem.currentSerialNumber > 0 ? stackView.currentItem.currentSerialNumber : 0
                     anchors.margins: ui.margin
                     Layout.fillWidth: true
+                    onAddModuleClicked:  {
+                        var component = Qt.createComponent("NewModuleWindow.qml");
+                        if(component)
+                        {
+                             var win = component.createObject(mainItem);
+                             win.classCode = stackView.currentItem.currentControllerClass
+                             win.newModuleComplete.connect(newModuleComplete);
+                             win.show();
+                        }
+                        else
+                        {
+                            console.debug("FAILED TO CREATE NewModuleWidnow");
+                        }
+                    }
+                    onAddDeviceClicked: {
+                        var component = Qt.createComponent("NewDeviceWindow.qml");
+                        if(component)
+                        {
+                             var win = component.createObject(mainItem);
+                             win.newDeviceComplete.connect(newDeviceComplete);
+                             win.show();
+                        }
+                        else
+                        {
+                            console.debug("FAILED TO CREATE NewDeviceWidnow");
+                        }
+                    }
+
                     onEditClicked: {
                         showEdit(stackView.currentItem.currentIndex);
+                    }
+                    onEnableAddModuleChanged: {
+                        console.debug("ControllerActions::onEnableAddModuleChanged + " );
+                    }
+
+                    function newModuleComplete(moduleName, classCode, cancelled)
+                    {
+                        if(!cancelled)
+                            detailLoader.item.addNewModule(moduleName, -1, classCode);
+                    }
+
+                    function newDeviceComplete(deviceName, moduleID, moduleIndex, cancelled)
+                    {
+                        if(!cancelled)
+                            detailLoader.item.addNewDevice(deviceName, moduleID, -1);
                     }
                 }
                 Loader {
@@ -196,6 +253,15 @@ Item {
                     anchors.margins: ui.margin
                     Layout.fillHeight: true
                     Layout.fillWidth: true
+                    onLoaded: {
+                        binder.target = detailLoader.item;
+                        console.debug("detailLoader::onLoaded");
+                    }
+                }
+                Binding {
+                    id: binder
+                    property: "allowNewModule"
+                    value: stackView.allowAddNew
                 }
             }
         }

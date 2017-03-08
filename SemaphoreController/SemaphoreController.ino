@@ -8,6 +8,7 @@
 #include <WiFiClient.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
+#include <FS.h>
 
 #include "ConfigDownload.h"
 #include "Controller.h"
@@ -53,6 +54,9 @@ void setup()
   memset(&controllerConfig, 0, sizeof(SignalControllerConfigStruct));
   EEPROM.begin(4096);
 
+  bool result = SPIFFS.begin();
+  DEBUG_PRINT("SPIFFS opened: %d\n", result);
+
   ConfigDownload.init(&controller);
 
   loadConfiguration();
@@ -76,14 +80,6 @@ void loop()
 	sendHeartbeatMessage();
 
 	ConfigDownload.process();
-	if (ConfigDownload.downloadComplete())
-	{
-		ConfigDownload.reset();
-		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
-		EEPROM.put(SEMAPHORE_CONFIG_ADDRESS, controllerConfig);
-		EEPROM.commit();
-		loadConfiguration();
-	}
 
 	bool sendMessage = signal1.process();
 	bool sendMessage2 = signal2.process();
@@ -105,23 +101,109 @@ void loadConfiguration(void)
 	{
 		EEPROM.put(SEMAPHORE_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
+
+		signal1.setConfig(controllerConfig.signal1);
+		signal2.setConfig(controllerConfig.signal2);
 	}
 }
 
 void downloadConfig(void)
 {
-	// Key should be the Chip ID, single letter indicating the type of controller:
+	// Key should be the Chip ID and a single letter indicating the type of controller:
 	// T = Turnout controller
 	// P = Panel controller
-	// S = Signal-Block controller
+	// S = Signal
+	// B = Block controller
+	// M = Multi-Module Controller
 	// 
 	// and the moduleIndex.  For this type of controller there is only one module: 0
 	// The server will use this information to lookup the configuration information for this controller
+	memset(&controllerConfig, 0, sizeof(SignalControllerConfigStruct));
+
+	ConfigDownload.reset();
 	String key;
 	key += ESP.getChipId();
 	key += ",S,0";
 
-	ConfigDownload.downloadConfig((uint8_t *)&controllerConfig, sizeof(SignalControllerConfigStruct), key);
+	ConfigDownload.downloadConfig(key, configCallback);
+}
+
+byte currentSignalConfig = -1;
+byte currentAspectIndex = 0;
+byte currentConditionIndex = 0;
+void configCallback(const char *key, const char *value)
+{
+	if (key == NULL)
+	{
+		ConfigDownload.reset(); 
+		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
+		EEPROM.put(SEMAPHORE_CONFIG_ADDRESS, controllerConfig);
+		EEPROM.commit();
+		loadConfiguration();
+	}
+	else
+	{
+		if (strcmp(key, "ID") == 0)
+		{
+			currentAspectIndex = -1;
+			currentSignalConfig++;
+			if (currentSignalConfig == 1)
+				controllerConfig.signal1.signalID = atoi(value);
+			else
+				controllerConfig.signal2.signalID = atoi(value);
+		}
+		else if (strcmp(key, "ASPECT") == 0)
+		{
+			currentAspectIndex++;
+			currentConditionIndex = -1;
+		}
+		else if (strcmp(key, "RED") == 0)
+		{
+			if (currentSignalConfig == 1)
+				controllerConfig.signal1.conditions[currentAspectIndex].aspect.redMode = atoi(value);
+			else
+				controllerConfig.signal2.conditions[currentAspectIndex].aspect.redMode = atoi(value);
+		}
+		else if (strcmp(key, "YELLOW") == 0)
+		{
+			if (currentSignalConfig == 1)
+				controllerConfig.signal1.conditions[currentAspectIndex].aspect.yellowMode = atoi(value);
+			else
+				controllerConfig.signal2.conditions[currentAspectIndex].aspect.yellowMode = atoi(value);
+		}
+		else if (strcmp(key, "GREEN") == 0)
+		{
+			if (currentSignalConfig == 1)
+				controllerConfig.signal1.conditions[currentAspectIndex].aspect.greenMode = atoi(value);
+			else
+				controllerConfig.signal2.conditions[currentAspectIndex].aspect.greenMode = atoi(value);
+		}
+		else if (strcmp(key, "CONDITIONS") == 0)
+		{
+			currentConditionIndex++;
+		}
+		else if (strcmp(key, "DEVICEID") == 0)
+		{
+			if (currentSignalConfig == 1)
+				controllerConfig.signal1.conditions[currentAspectIndex].conditions[currentConditionIndex].deviceID = atoi(value);
+			else
+				controllerConfig.signal2.conditions[currentAspectIndex].conditions[currentConditionIndex].deviceID = atoi(value);
+		}
+		else if (strcmp(key, "OERAND") == 0)
+		{
+			if (currentSignalConfig == 1)
+				controllerConfig.signal1.conditions[currentAspectIndex].conditions[currentConditionIndex].operand = atoi(value);
+			else
+				controllerConfig.signal2.conditions[currentAspectIndex].conditions[currentConditionIndex].operand = atoi(value);
+		}
+		else if (strcmp(key, "STATE") == 0)
+		{
+			if (currentSignalConfig == 1)
+				controllerConfig.signal1.conditions[currentAspectIndex].conditions[currentConditionIndex++].deviceState = atoi(value);
+			else
+				controllerConfig.signal2.conditions[currentAspectIndex].conditions[currentConditionIndex++].deviceState = atoi(value);
+		}
+	}
 }
 
 void messageCallback(const Message &message)
@@ -135,14 +217,22 @@ void messageCallback(const Message &message)
 			DeviceState::setDeviceState(message.getDeviceStatusID(x), message.getDeviceStatus(x));
 		}
 	}
-
-	if (message.getMessageID() == SYS_CONFIG_CHANGED && (message.getControllerID() == 0 || message.getControllerID() == controller.getControllerID()))
+	else if (message.getMessageID() == SYS_SET_CONTROLLER_ID && message.getLValue() == ESP.getChipId())
+	{
+		downloadConfig();
+	}
+	else if (message.getMessageID() == SYS_CONFIG_CHANGED && (message.getControllerID() == 0 || message.getControllerID() == controller.getControllerID()))
 	{
 		downloadConfig();
 	}
 	else if (signal1.getSignalID() < 1 && message.getMessageID() == SYS_HEARTBEAT)
 	{
 		downloadConfig();
+	}
+	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getLValue() == ESP.getChipId())
+	{
+		memset(&controllerConfig, 0, sizeof(SignalControllerConfigStruct));
+		loadConfiguration();
 	}
 	else
 	{

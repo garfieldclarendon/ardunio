@@ -30,7 +30,7 @@ public:
     QByteArray getPanelConfig(quint32 serialNumber);
     QByteArray getPanelRouteConfig(quint32 serialNumber);
     QByteArray getSignalConfig(quint32 serialNumber, int moduleIndex);
-    QByteArray getBlockConfig(quint32 serialNumber);
+    QByteArray getBlockConfig(quint32 serialNumber, int moduleIndex);
     QByteArray getMultiControllerConfig(quint32 serialNumber);
     QByteArray getControllerModuleConfig(quint32 serialNumber, quint32 moduleIndex);
 

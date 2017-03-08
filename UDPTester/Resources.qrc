@@ -13,5 +13,7 @@
         <file>ControllerActions.qml</file>
         <file>PanelModuleDetails.qml</file>
         <file>MultiModule.qml</file>
+        <file>NewModuleWindow.qml</file>
+        <file>NewDeviceWindow.qml</file>
     </qresource>
 </RCC>

@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     UI.cpp \
     TcpServer.cpp \
     bonjourserviceregister.cpp \
-    ControllerModuleModel.cpp
+    ControllerModuleModel.cpp \
+    ControllerModuleWidget.cpp
 
 HEADERS  += MainWindow.h \
     MessageMonitorWidget.h \
@@ -61,7 +62,8 @@ HEADERS  += MainWindow.h \
     TcpServer.h \
     BonjourRecord.h \
     bonjourserviceregister.h \
-    ControllerModuleModel.h
+    ControllerModuleModel.h \
+    ControllerModuleWidget.h
 
 RESOURCES += \
     Resources.qrc

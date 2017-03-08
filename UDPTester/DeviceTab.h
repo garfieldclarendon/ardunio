@@ -27,6 +27,7 @@ public slots:
     void sendConfigClicked(void);
     void resetClicked(void);
     void sendFirmware(void);
+    void setModuleID(int moduleID, int controllerID);
 
 private:
     void setupUI(void);
@@ -38,6 +39,8 @@ private:
     QPushButton *addButton;
     QPushButton *deleteButton;
     QPushButton *saveButton;
+    int controllerModuleID;
+    int controllerID;
 };
 
 #endif // DEVICETAB_H

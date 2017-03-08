@@ -12,22 +12,22 @@
 #include "ConfigDownload.h"
 #include "Controller.h"
 #include "ConfigStructures.h"
-#include "BlockHandler.h"
+#include "BlockModule.h"
 
 // Block pin assignments
-const int block1Pin = 4;// 13;
-const int block2Pin = 13;// 4;
+const byte block1Pin = 13; // 4;
+const byte block2Pin = 4;// 13;
+const byte block1LEDPin = 12;
+const byte block2LEDPin = 5;
+const byte logicalBlock1Pin = 0;
+const byte logicalBlock2Pin = 1;
 
 // Configuration EEPROM memory addresses
 const int BLOCK_CONFIG_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
 
-WiFiClient Tcp;
-
 Controller controller(LocalServerPort);
-BlockHandler block1;
-BlockHandler block2;
+BlockModule module;
 BlockControllerConfigStruct controllerConfig;
-const long heartbeatTimeout = 5 * 1000;
 long currentHeartbeatTimeout = 0;
 
 void setup() 
@@ -48,13 +48,21 @@ void setup()
   memset(&controllerConfig, 0, sizeof(BlockControllerConfigStruct));
   EEPROM.begin(512);
 
+  pinMode(block1Pin, INPUT);
+  pinMode(block2Pin, INPUT);
+  pinMode(block1LEDPin, OUTPUT);
+  pinMode(block2LEDPin, OUTPUT);
+
+  digitalWrite(block1LEDPin, LOW);
+  digitalWrite(block2LEDPin, LOW);
+
   ConfigDownload.init(&controller);
 
   loadConfiguration();
   controller.setup(messageCallback, ClassBlock);
 
-  block1.setup(block1Pin);
-  block2.setup(block2Pin);
+  module.setup(0, logicalBlock1Pin);
+  module.setup(1, logicalBlock2Pin);
 
   DEBUG_PRINT("setup complete\n");
 }
@@ -67,21 +75,24 @@ void loop()
 		sendStatusMessage(true);
 
 	ConfigDownload.process();
-	if (ConfigDownload.downloadComplete())
-	{
-		ConfigDownload.reset();
-		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
-		EEPROM.put(BLOCK_CONFIG_ADDRESS, controllerConfig);
-		EEPROM.commit();
-		loadConfiguration();
-	}
 
-	bool sendMessage = block1.process();
-	bool sendMessage2 = block2.process();
-	if (sendMessage || sendMessage2)
+	byte data(module.getCurrentState());
+	readPins(data);
+//	DEBUG_PRINT("after readPins: %d\n", data);
+
+	if (module.process(data))
 		sendStatusMessage(false);
+
+	if (module.getDeviceState(0) == BlockHandler::Occupied)
+		digitalWrite(block1LEDPin, HIGH);
 	else
-		sendStatusMessage(false);
+		digitalWrite(block1LEDPin, LOW);
+	if (module.getDeviceState(1) == BlockHandler::Occupied)
+		digitalWrite(block2LEDPin, HIGH);
+	else
+		digitalWrite(block2LEDPin, LOW);
+
+	sendHeartbeat();
 } 
 
 void loadConfiguration(void)
@@ -91,30 +102,38 @@ void loadConfiguration(void)
 		EEPROM.get(BLOCK_CONFIG_ADDRESS, controllerConfig);
 
 		DEBUG_PRINT("loadConfiguration:  BlockID's: %d, %d\n", controllerConfig.block1.blockID, controllerConfig.block2.blockID);
-		block1.setConfig(controllerConfig.block1);
-		block2.setConfig(controllerConfig.block2);
+		module.setConfig(0, controllerConfig.block1);
+		module.setConfig(1, controllerConfig.block2);
 	}
 	else
 	{
 		EEPROM.put(BLOCK_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
+
+		module.setConfig(0, controllerConfig.block1);
+		module.setConfig(1, controllerConfig.block2);
 	}
 }
 
 void downloadConfig(void)
 {
-	// Key should be the ControllerID and a single letter indicating the type of controller:
+	if (controller.getControllerID() < 1)
+		controller.createControllerID();
+
+	// Key should be the Chip ID and a single letter indicating the type of controller:
 	// T = Turnout controller
 	// P = Panel controller
-	// S = Signal controller
+	// S = Signal
 	// B = Block controller
-	//
+	// M = Multi-Module Controller
+	// 
+	// and the moduleIndex.  For this type of controller there is only one module: 0
 	// The server will use this information to lookup the configuration information for this controller
 	String key;
-	key += controller.getControllerID();
-	key += ",B";
+	key += ESP.getChipId();
+	key += ",B,0";
 
-	ConfigDownload.downloadConfig((uint8_t *)&controllerConfig, sizeof(BlockControllerConfigStruct), key);
+	ConfigDownload.downloadConfig(key, configCallback);
 }
 
 void messageCallback(const Message &message)
@@ -127,16 +146,20 @@ void messageCallback(const Message &message)
 	{
 		downloadConfig();
 	}
-	else if (block1.getBlockID() < 1 && message.getMessageID() == SYS_HEARTBEAT)
+	else if (module.getDeviceID(0) < 1 && message.getMessageID() == SYS_HEARTBEAT)
 	{
 		downloadConfig();
 	}
+	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getLValue() == ESP.getChipId())
+	{
+		memset(&controllerConfig, 0, sizeof(BlockControllerConfigStruct));
+		loadConfiguration();
+	}
 	else
 	{
-		bool sendStatus1 = block1.handleMessage(message);
-		bool sendStatus2 = block2.handleMessage(message);
-
-		if (sendStatus1 || sendStatus2)
+		byte data(module.getCurrentState());
+		readPins(data);
+		if (module.handleMessage(message, data))
 			sendStatusMessage(false);
 	}
 }
@@ -144,7 +167,7 @@ void messageCallback(const Message &message)
 void sendHeartbeat(void)
 {
 	long t = millis();
-	if ((t - currentHeartbeatTimeout > heartbeatTimeout))
+	if ((t - currentHeartbeatTimeout > HEARTBEAT_INTERVAL))
 	{
 		currentHeartbeatTimeout = t;
 		sendStatusMessage(true);
@@ -153,13 +176,39 @@ void sendHeartbeat(void)
 
 void sendStatusMessage(bool sendOnce)
 {
+	DEBUG_PRINT("sendStatusMessage.  Block1: %d  Block2:  %d\n", module.getDeviceState(0), module.getDeviceState(1));
 	Message message;
 
 	message.setMessageID(BLOCK_STATUS);
 	message.setControllerID(controller.getControllerID());
 	message.setMessageClass(ClassBlock);
-	message.setDeviceStatus(0, block1.getBlockID(), block1.getCurrentState());
-	message.setDeviceStatus(1, block2.getBlockID(), block2.getCurrentState());
+	message.setDeviceStatus(0, controllerConfig.block1.blockID, module.getDeviceState(0));
+	message.setDeviceStatus(1, controllerConfig.block2.blockID, module.getDeviceState(1));
 
 	controller.sendNetworkMessage(message, sendOnce);
+}
+
+void configCallback(const char *key, const char *value)
+{
+	if (key == NULL)
+	{
+		memset(&controllerConfig, 0, sizeof(BlockControllerConfigStruct));
+		controllerConfig.block1 = module.getConfig(0);
+		controllerConfig.block2 = module.getConfig(1);
+
+		ConfigDownload.reset();
+		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
+		EEPROM.put(BLOCK_CONFIG_ADDRESS, controllerConfig);
+		EEPROM.commit();
+	}
+	else
+	{
+		module.configCallback(key, value);
+	}
+}
+
+void readPins(byte &data)
+{
+	bitWrite(data, logicalBlock1Pin, digitalRead(block1Pin));
+	bitWrite(data, logicalBlock2Pin, digitalRead(block2Pin));
 }

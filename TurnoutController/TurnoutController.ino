@@ -26,10 +26,10 @@ const byte diverge1_pin = 14;
 
 const byte motor1_logicalPinA = 0;
 const byte motor1_logicalPinB = 1;
-const byte normal1_logicalPin = 2;
-const byte diverge1_logicalPin = 3;
-const byte motor2_logicalPinA = 4;
-const byte motor2_logicalPinB = 5;
+const byte normal1_logicalPin = 4;
+const byte diverge1_logicalPin = 5;
+const byte motor2_logicalPinA = 2;
+const byte motor2_logicalPinB = 3;
 const byte normal2_logicalPin = 6;
 const byte diverge2_logicalPin = 7;
 
@@ -62,17 +62,13 @@ void setup()
 
 	ConfigDownload.init(&controller);
 
-	loadConfiguration();
 	controller.setup(messageCallback, ClassTurnout);
-	setPins();
-
-	// If the first turnout has not been assigned yet, download the configuration from the server
-	if (turnoutModule.getTurnoutID(0) < 1)
-		downloadConfig();
+	loadConfiguration();
 
 	turnoutModule.setup(0, motor1_logicalPinA, motor1_logicalPinB, normal1_logicalPin, diverge1_logicalPin);
 	turnoutModule.setup(1, motor2_logicalPinA, motor2_logicalPinB, normal2_logicalPin, diverge2_logicalPin);
 	turnoutModule.setup();
+	setPins();
 
 	DEBUG_PRINT("setup complete\n");
 }
@@ -92,7 +88,6 @@ void setupPins(void)
 
 void loop() 
 {
-	MDNS.update();
 	controller.process();
 	if (controller.getWiFiReconnected())
 	{
@@ -111,9 +106,12 @@ void processTurnouts(void)
 	readPins(data);
 	
 	bool sendMessage = turnoutModule.process(data);
-	setPins();
+//	setPins();
 	if (sendMessage)
+	{
+		setPins();
 		sendStatusMessage(false);
+	}
 }
 
 void loadConfiguration(void)
@@ -122,6 +120,7 @@ void loadConfiguration(void)
 	{  
 		EEPROM.get(TURNOUT_CONFIG_ADDRESS, controllerConfig);
 
+		DEBUG_PRINT("LOAD TURNOUT1: %d TURNOUT2: %d \n", controllerConfig.turnout1.turnoutID, controllerConfig.turnout2.turnoutID);
 		turnoutModule.setConfig(0, controllerConfig.turnout1);
 		turnoutModule.setConfig(1, controllerConfig.turnout2);
 	}
@@ -129,6 +128,9 @@ void loadConfiguration(void)
 	{
 		EEPROM.put(TURNOUT_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
+
+		turnoutModule.setConfig(0, controllerConfig.turnout1);
+		turnoutModule.setConfig(1, controllerConfig.turnout2);
 	}
 }
 
@@ -156,12 +158,10 @@ void configCallback(const char *key, const char *value)
 {
 	if (key == NULL)
 	{
-		memset(&controllerConfig, 0, sizeof(TurnoutControllerConfigStruct));
-		controllerConfig.turnout1 = turnoutModule.getConfig(0);
-		controllerConfig.turnout2 = turnoutModule.getConfig(1);
-
 		ConfigDownload.reset();
 		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
+		memcpy(&controllerConfig, turnoutModule.getConfigReference(), turnoutModule.getConfigSize());
+		DEBUG_PRINT("SAVING TURNOUT1: %d TURNOUT2: %d \n",controllerConfig.turnout1.turnoutID, controllerConfig.turnout2.turnoutID);
 		EEPROM.put(TURNOUT_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
 	}
@@ -181,19 +181,27 @@ void messageCallback(const Message &message)
 	{
 		downloadConfig();
 	}
-	else if (turnoutModule.getTurnoutID(0) < 1 && message.getMessageID() == SYS_HEARTBEAT)
+	else if (message.getMessageID() == SYS_SET_CONTROLLER_ID && message.getLValue() == ESP.getChipId())
 	{
 		downloadConfig();
+	}
+	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getLValue() == ESP.getChipId())
+	{
+		memset(&controllerConfig, 0, sizeof(TurnoutControllerConfigStruct));
+		loadConfiguration();
 	}
 	else
 	{
 		byte data(turnoutModule.getCurrentState());
 		readPins(data);
 		bool sendStatus = turnoutModule.handleMessage(message, data);
-		setPins();
+//		setPins();
 
 		if (sendStatus)
+		{
+			setPins();
 			sendStatusMessage(false);
+		}
 	}
 }
 
@@ -215,9 +223,13 @@ void setPins(void)
 //	DEBUG_PRINT("DATA %d\n", data);
 
 	digitalWrite(motor1_pinA, bitRead(data, motor1_logicalPinA));
+	DEBUG_PRINT("Morotr1_A %d\n", bitRead(data, motor1_logicalPinA));
 	digitalWrite(motor1_pinB, bitRead(data, motor1_logicalPinB));
+	DEBUG_PRINT("Morotr1_B %d\n", bitRead(data, motor1_logicalPinB));
 	digitalWrite(motor2_pinA, bitRead(data, motor2_logicalPinA));
+	DEBUG_PRINT("Morotr2_A %d\n", bitRead(data, motor2_logicalPinA));
 	digitalWrite(motor2_pinB, bitRead(data, motor2_logicalPinB));
+	DEBUG_PRINT("Morotr2_B %d\n", bitRead(data, motor2_logicalPinB));
 }
 
 void readPins(byte &data)

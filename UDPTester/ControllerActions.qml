@@ -5,14 +5,30 @@ import Utils 1.0
 
 Item {
     property int controllerID: 0
+    property int serialNumber: 0
+    property bool enableAddModule: false
+    property bool enableAddDevice: false
     signal editClicked()
+    signal addModuleClicked()
+    signal addDeviceClicked()
 
     implicitWidth: resetButton.width + editButton.width + sendConfig.width + updateFirmware.width + ui.applyRatio(20)
     implicitHeight: resetButton.height + ui.applyRatio(15)
 
+    onControllerIDChanged: {
+        console.debug("onControllerIDChanged:  New ID: " + controllerID);
+    }
+
+    onSerialNumberChanged: {
+        console.debug("onSerialNumberChanged: " + serialNumber);
+    }
+
+    SystemPalette {
+        id: systemPalette
+    }
     Rectangle {
         anchors.fill: parent
-//        color: "lightgrey"
+        color: systemPalette.window
         border.color: "grey"
         border.width: 1
         radius: ui.applyRatio(10)
@@ -45,11 +61,37 @@ Item {
                 }
             }
             Button {
+                id: resetConfig
+                text: "Reset Config"
+                onClicked: {
+                    console.debug("Rest Config Button Clicked!! Serial Number: " + serialNumber);
+                    broadcaster.sendMessage(16, controllerID, 0, 0, serialNumber, 0, 0, 0, 0);
+                }
+            }
+            Button {
                 id: updateFirmware
                 text: "Update Firmware"
                 onClicked: {
                     console.debug("Update Firmware Button Clicked!!");
                     broadcaster.sendDownloadFirmware(controllerID);
+                }
+            }
+            Button {
+                id: addModule
+                text: "Add Module"
+                enabled: enableAddModule
+                onClicked: {
+                    console.debug("Add Module Button Clicked!!");
+                    addModuleClicked();
+                }
+            }
+            Button {
+                id: addDevice
+                text: "Add Device"
+                enabled: enableAddDevice
+                onClicked: {
+                    console.debug("Add Device Button Clicked!!");
+                    addDeviceClicked();
                 }
             }
         }

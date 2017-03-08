@@ -9,7 +9,13 @@ class TurnoutModule : public Module
 {
 public:
 	TurnoutModule(void);
-	void setConfig(byte index, TurnoutConfigStruct value) { m_turnouts[index].setConfig(value); }
+	void setConfig(byte index, TurnoutConfigStruct value) 
+	{ 
+		if (index == 0)
+			m_config.turnout1 = value;
+		else if (index == 1)
+			m_config.turnout2 = value;
+	}
 	TurnoutConfigStruct getConfig(byte index) const { return  m_turnouts[index].getConfig(); }
 
 	void setup(byte index, byte motorAPin, byte motorBPin, byte normalPin, byte divergePin);
@@ -32,6 +38,7 @@ public:
 	void configCallback(const char *key, const char *value) override;
 	const char *getConfigReference(void) const override;
 	int getConfigSize(void) const override;
+	TurnoutControllerConfigStruct getControllerConfigStruct(void) const { return m_config;  }
 
 private:
 	TurnoutState getTurnoutStateForRoute(int routeID);

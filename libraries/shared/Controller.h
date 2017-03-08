@@ -26,11 +26,11 @@ public:
 	void setClass(ClassEnum value) { m_class = value; }
 	bool getWiFiReconnected(void) const { return m_wifiManager.getIsReconnected(); }
 	void clearFiles(void);
+	void createControllerID(void);
 
 private:
 	void setupNetwork(void);
 	void handleSetControllerIDMessage(const Message &message);
-	void createDeviceID(void);
 	void downloadFirmwareUpdate(void);
 	void processLocalServer(void);
 	void processMessage(const Message &message);
@@ -38,6 +38,7 @@ private:
 	void resendLastMessage(void);
 	void processUDP(void);
 	void getServerAddress(IPAddress &address, int &port);
+	void resetConfiguration(void);
 
 	TMessageHandlerFunction m_messageCallback;
 

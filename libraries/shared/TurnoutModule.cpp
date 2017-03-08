@@ -6,13 +6,13 @@ TurnoutModule::TurnoutModule(void)
 
 {
 	memset(&m_config, 0, sizeof(TurnoutControllerConfigStruct));
+	m_turnouts[0].setConfig(&m_config.turnout1);
+	m_turnouts[1].setConfig(&m_config.turnout2);
 }
 
 void TurnoutModule::setup(void)
 {
-	m_turnouts[0].setConfig(m_config.turnout1);
-	m_turnouts[1].setConfig(m_config.turnout2);
-
+	m_currentState = 0;
 	m_turnouts[0].setTurnout(TrnNormal, m_currentState);
 	m_turnouts[1].setTurnout(TrnNormal, m_currentState);
 }
@@ -139,10 +139,8 @@ Message TurnoutModule::createMessage(void)
 
 	message.setMessageID(TRN_STATUS);
 	message.setMessageClass(ClassTurnout);
-	message.setIntValue1(getTurnoutID(0));
-	message.setIntValue2(getTurnoutID(1));
-	message.setByteValue1(m_turnouts[0].getCurrentState());
-	message.setByteValue2(m_turnouts[1].getCurrentState());
+	message.setDeviceStatus(0, getTurnoutID(0), m_turnouts[0].getCurrentState());
+	message.setDeviceStatus(1, getTurnoutID(1), m_turnouts[1].getCurrentState());
 
 	return message;
 }
@@ -157,6 +155,8 @@ void TurnoutModule::configCallback(const char *key, const char *value)
 	if (strcmp(key, "ID") == 0)
 	{
 		m_currentTurnoutConfig++;
+		if (m_currentTurnoutConfig == MAX_TURNOUTS)
+			m_currentTurnoutConfig = 0; 
 	}
 	m_turnouts[m_currentTurnoutConfig].setConfigValue(key, value);
 	m_config.turnout1 = m_turnouts[0].getConfig();

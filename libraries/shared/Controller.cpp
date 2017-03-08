@@ -1,6 +1,5 @@
 #include "Controller.h"
 #include "GlobalDefs.h"
-#include "ssid.h"
 
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
@@ -29,9 +28,7 @@ void Controller::setup(TMessageHandlerFunction messageCallback, ClassEnum contro
 	WiFi.setAutoConnect(false);
 	WiFi.disconnect();
 
-//	m_wifiManager.setup("GCMRR_");
-	m_wifiManager.setupWifi("wagging", "jr1also12");
-//	m_wifiManager.setupWifi("Belkin", password);
+	m_wifiManager.setupWifi(ssidPrefix, password);
 	setupNetwork();
 
 	MDNS.begin("GCMRR");
@@ -54,11 +51,6 @@ void Controller::setupNetwork(void)
 void Controller::process(void)
 {
 	m_wifiManager.process();
-	if (getWiFiReconnected())
-	{
-		if (m_controllerID == -1)
-			createDeviceID();
-	}
 	resendLastMessage();
 	processUDP();
 }
@@ -134,6 +126,7 @@ void Controller::processMessage(const Message &message)
 	if (message.getMessageID() == SYS_SET_CONTROLLER_ID && message.getLValue() == ESP.getChipId())
 	{
 		handleSetControllerIDMessage(message);
+		m_messageCallback(message);
 	}
 	else if (message.getMessageID() == SYS_REBOOT_CONTROLLER && (message.getControllerID() == 0 || message.getControllerID() == getControllerID()))
 	{
@@ -143,6 +136,16 @@ void Controller::processMessage(const Message &message)
 	else if (message.getMessageID() == SYS_DOWNLOAD_FIRMWARE && (message.getByteValue1() == (byte)getClass() || message.getControllerID() == 0 || message.getControllerID() == getControllerID()))
 	{
 		downloadFirmwareUpdate();
+	}
+	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getLValue() == ESP.getChipId())
+	{
+		DEBUG_PRINT("RESET CONFIG MESSAGE!\n");
+		resetConfiguration();
+		m_messageCallback(message);
+	}
+	else if (message.getMessageID() == SYS_CONFIG_CHANGED && getControllerID() < 1)
+	{
+		createControllerID();
 	}
 	else
 	{
@@ -178,16 +181,16 @@ void Controller::downloadFirmwareUpdate(void)
 
 void Controller::getServerAddress(IPAddress &address, int &port)
 {
-	DEBUG_PRINT("Sending mDNS query");
+	DEBUG_PRINT("Sending mDNS query\n");
 	int n = MDNS.queryService("gcmrr-firmware", "tcp"); // Send out query for gcmrr-firmware tcp services
-	Serial.println("mDNS query done");
+	DEBUG_PRINT("mDNS query done\n");
 	if (n == 0)
 	{
-		DEBUG_PRINT("no services found");
+		DEBUG_PRINT("no services found\n");
 	}
 	else
 	{
-		DEBUG_PRINT("%d service(s) found", n);
+		DEBUG_PRINT("%d service(s) found\n", n);
 		address = MDNS.IP(0);
 		port = MDNS.port(0);
 	}
@@ -244,15 +247,16 @@ void Controller::handleSetControllerIDMessage(const Message &message)
 	m_controllerID = message.getControllerID();
 	EEPROM.put(CONTROLLER_ID_ADDRESS, m_controllerID);
 	EEPROM.commit();
+	DEBUG_PRINT("NEW ControllerID SAVED!!\n");
 }
 
-void Controller::createDeviceID(void)
+void Controller::createControllerID(void)
 {
 	IPAddress address;
 	int port;
 	getServerAddress(address, port);
 
-	DEBUG_PRINT("createDeviceID Server Address: %s:%d\n", address.toString().c_str(), port);
+	DEBUG_PRINT("createControllerID Server Address: %s:%d\n", address.toString().c_str(), port);
 
 	if ((m_controllerID < 0 || m_controllerID == 0) && port > 0)
 	{
@@ -299,10 +303,25 @@ bool Controller::checkEEPROM(byte signature)
 
 void Controller::clearFiles(void)
 {
-	Dir dir = SPIFFS.openDir("/");
+	DEBUG_PRINT("CLEAR FILES!\n");
+	Dir dir = SPIFFS.openDir("");
 
 	while (dir.next())
 	{
+		DEBUG_PRINT("DELETING FILE %s\n", dir.fileName().c_str());
 		SPIFFS.remove(dir.fileName());
 	}
+}
+
+void Controller::resetConfiguration(void)
+{
+	DEBUG_PRINT("Reset Configuration!\n");
+
+	m_controllerID = -1;
+	byte signature(0);
+
+	EEPROM.put(CONTROLLER_ID_ADDRESS, m_controllerID);
+	EEPROM.write(0, signature);
+	EEPROM.commit();
+	clearFiles();
 }

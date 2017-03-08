@@ -185,38 +185,30 @@ void Database::setDBVersion(int newVersion)
 
 QByteArray Database::getTurnoutConfig(quint32 serialNumber, int moduleIndex)
 {
-    int turnoutIDs[2];
-    turnoutIDs[0] = 0;
-    turnoutIDs[1] = 0;
+    int turnoutIDs[MAX_TURNOUTS];
+    memset(&turnoutIDs, 0, sizeof(int[MAX_TURNOUTS]));
     QString buffer;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT device.id FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2 ORDER BY moduleIndex").arg(serialNumber).arg(moduleIndex));
+    query.exec(QString("SELECT device.id FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2 ORDER BY controllerModule.moduleIndex").arg(serialNumber).arg(moduleIndex));
     int index = 0;
     while (query.next())
     {
        turnoutIDs[index++] = query.value(0).toInt();
 
     }
-    buffer = QString("ID,%1;").arg(turnoutIDs[0]);
-
-    QSqlQuery query2(db);
-    query2.exec(QString("SELECT routeID, turnoutState FROM routeEntry WHERE turnoutID = %1").arg(turnoutIDs[0]));
-    while (query2.next())
+    for(int x = 0; x < MAX_TURNOUTS; x++)
     {
-        buffer += QString("ROUTE,%1;STATE,%2;").arg(query2.value(0).toString()).arg(query2.value(1).toString());
-    }
+        buffer += QString("ID,%1;").arg(turnoutIDs[x]);
 
-    QSqlQuery query3(db);
-    query3.exec(QString("SELECT routeID, turnoutState FROM routeEntry WHERE turnoutID = %1").arg(turnoutIDs[1]));
-    buffer += QString("ID,%1;").arg(turnoutIDs[1]);
-    while (query3.next())
-    {
-        if(index < MAX_ROUTE_ENTRIES)
+        QSqlQuery query2(db);
+        query2.exec(QString("SELECT routeID, turnoutState FROM routeEntry WHERE turnoutID = %1").arg(turnoutIDs[x]));
+        while (query2.next())
         {
-            buffer += QString("ROUTE,%1;STATE,%2;").arg(query3.value(0).toString()).arg(query3.value(1).toString());
+            buffer += QString("ROUTE,%1;STATE,%2;").arg(query2.value(0).toString()).arg(query2.value(1).toString());
         }
     }
+
     buffer += "\n";
     qDebug(buffer.toLatin1());
 
@@ -225,12 +217,10 @@ QByteArray Database::getTurnoutConfig(quint32 serialNumber, int moduleIndex)
 
 QByteArray Database::getSignalConfig(quint32 serialNumber, int moduleIndex)
 {
-    SignalControllerConfigStruct *configStruct = new SignalControllerConfigStruct;
-    memset(configStruct, 0, sizeof(SignalControllerConfigStruct));
+    QString buffer;
 
-    int signalIDs[2];
-    signalIDs[0] = 0;
-    signalIDs[1] = 0;
+    int signalIDs[MAX_SIGNALS];
+    memset(&signalIDs, 0, sizeof(int[MAX_SIGNALS]));
 
     QSqlQuery query(db);
     query.exec(QString("SELECT signal.id FROM signal JOIN controllerModule ON signal.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2").arg(serialNumber).arg(moduleIndex));
@@ -240,98 +230,70 @@ QByteArray Database::getSignalConfig(quint32 serialNumber, int moduleIndex)
        signalIDs[index++] = query.value(0).toInt();
 
     }
-    configStruct->signal1.signalID = signalIDs[0];
-    configStruct->signal2.signalID = signalIDs[1];
 
-    QSqlQuery query2(db);
-    query2.exec(QString("SELECT id, redMode, yellowMode, greenMode FROM signalAspectCondition WHERE signalID = %1 ORDER BY sortIndex").arg(signalIDs[0]));
-    index = 0;
-    while (query2.next())
+    for(int x = 0; x < MAX_SIGNALS; x++)
     {
-        if(index < MAX_SIGNAL_CONDITIONS)
-        {
-            int aspectID = query2.value(0).toInt();
-            configStruct->signal1.conditions[index].aspect.redMode = query2.value(1).toInt();
-            configStruct->signal1.conditions[index].aspect.yellowMode = query2.value(2).toInt();
-            configStruct->signal1.conditions[index].aspect.greenMode = query2.value(3).toInt();
+        if(signalIDs[x] == 0)
+            continue;
 
-            QSqlQuery query3(db);
-            query3.exec(QString("SELECT deviceID, conditionOperand, deviceState FROM signalCondition WHERE signalAspectConditionID = %1 ORDER BY sortIndex").arg(aspectID));
-            int conditionIndex = 0;
-            while (query3.next())
+        buffer += QString("ID,%1;").arg(signalIDs[x]);
+
+        QSqlQuery query2(db);
+        query2.exec(QString("SELECT id, redMode, yellowMode, greenMode FROM signalAspectCondition WHERE signalID = %1 ORDER BY sortIndex").arg(signalIDs[x]));
+        index = 0;
+        while (query2.next())
+        {
+            if(index < MAX_SIGNAL_CONDITIONS)
             {
-                if(index < MAX_SIGNAL_CONDITIONS)
+                int aspectID = query2.value(0).toInt();
+                buffer += QString("ASPECT,%1;").arg(aspectID);
+                buffer += QString("RED,%1;YELLOW,%2;GREEN,%3;").arg(query2.value(1).toString()).arg(query2.value(2).toString()).arg(query2.value(3).toString());
+                buffer += QString("CONDITIONS,0;");
+
+                QSqlQuery query3(db);
+                query3.exec(QString("SELECT deviceID, conditionOperand, deviceState FROM signalCondition WHERE signalAspectConditionID = %1 ORDER BY sortIndex").arg(aspectID));
+                while (query3.next())
                 {
-                    configStruct->signal1.conditions[index].conditions[conditionIndex].deviceID = query3.value(0).toInt();
-                    configStruct->signal1.conditions[index].conditions[conditionIndex].operand = query3.value(1).toInt();
-                    configStruct->signal1.conditions[index].conditions[conditionIndex++].deviceState = query3.value(2).toInt();
+                    if(index < MAX_SIGNAL_CONDITIONS)
+                    {
+                        buffer += QString("DEVICEID,%1;OERAND,%2;STATE,%3;").arg(query3.value(0).toString()).arg(query3.value(1).toString()).arg(query3.value(2).toString());
+                    }
                 }
+                index++;
             }
-            index++;
         }
     }
 
-    QSqlQuery query4(db);
-    query4.exec(QString("SELECT id, redMode, yellowMode, greenMode FROM signalAspectCondition WHERE signalID = %1 ORDER BY sortIndex").arg(signalIDs[1]));
-    index = 0;
-    while (query4.next())
-    {
-        if(index < MAX_SIGNAL_CONDITIONS)
-        {
-            int aspectID = query4.value(0).toInt();
-            configStruct->signal2.conditions[index].aspect.redMode = query4.value(1).toInt();
-            configStruct->signal2.conditions[index].aspect.yellowMode = query4.value(2).toInt();
-            configStruct->signal2.conditions[index].aspect.greenMode = query4.value(3).toInt();
+    buffer += "\n";
+    qDebug(buffer.toLatin1());
 
-            QSqlQuery query5(db);
-            query5.exec(QString("SELECT deviceID, conditionOperand, deviceState FROM signalCondition signalAspectConditionID = %1 ORDER BY sortIndex").arg(aspectID));
-            int conditionIndex = 0;
-            while (query5.next())
-            {
-                if(index < MAX_SIGNAL_CONDITIONS)
-                {
-                    configStruct->signal2.conditions[index].conditions[conditionIndex].deviceID = query5.value(0).toInt();
-                    configStruct->signal2.conditions[index].conditions[conditionIndex].operand = query5.value(1).toInt();
-                    configStruct->signal2.conditions[index].conditions[conditionIndex++].deviceState = query5.value(2).toInt();
-                }
-            }
-            index++;
-        }
-    }
-
-    QByteArray config((const char *)configStruct, sizeof(SignalControllerConfigStruct));
-    delete configStruct;
-    return config;
+    return buffer.toLatin1();
 }
 
-QByteArray Database::getBlockConfig(quint32 serialNumber)
+QByteArray Database::getBlockConfig(quint32 serialNumber, int moduleIndex)
 {
-    BlockControllerConfigStruct *configStruct = new BlockControllerConfigStruct;
-    memset(configStruct, 0, sizeof(BlockControllerConfigStruct));
+    QString buffer;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT block.id FROM block JOIN controller ON block.controllerID = controller.ID WHERE serialNumber = %1").arg(serialNumber));
-    int index = 0;
+    query.exec(QString("SELECT block.id FROM block JOIN controller ON block.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2 ORDER BY moduleIndex").arg(serialNumber).arg(moduleIndex));
+
     while (query.next())
     {
-        if(index++ == 0)
-            configStruct->block1.blockID = query.value(0).toInt();
-        else
-            configStruct->block2.blockID = query.value(0).toInt();
+        buffer = QString("ID,%1;").arg(query.value(0).toString());
     }
 
-    QByteArray config((const char *)configStruct, sizeof(BlockControllerConfigStruct));
-    delete configStruct;
-    return config;
+    buffer += "\n";
+    qDebug(buffer.toLatin1());
+
+    return buffer.toLatin1();
 }
 
 QByteArray Database::getPanelConfig(quint32 serialNumber)
 {
     int panelModuleIDs[MAX_PANEL_MODULES];
     memset(&panelModuleIDs, 0, sizeof(panelModuleIDs));
-    PanelControllerConfigStruct configStruct;
-    memset(&configStruct, 0, sizeof(PanelControllerConfigStruct));
-    QByteArray config;
+    QString buffer;
+    int moduleCount = 0;
 
     QSqlQuery query(db);
     bool ret = query.exec(QString("SELECT controllerModule.id FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 ORDER BY moduleIndex").arg(serialNumber));
@@ -341,80 +303,74 @@ QByteArray Database::getPanelConfig(quint32 serialNumber)
         while (query.next())
         {
            panelModuleIDs[index++] = query.value(0).toInt();
-           configStruct.mdouleCount++;
+           moduleCount++;
         }
 
-        for(int x = 0; x < configStruct.mdouleCount; x++)
+        for(int x = 0; x < moduleCount; x++)
         {
+            buffer += QString("ID,%1;").arg(panelModuleIDs[x]);
             {
                 QSqlQuery inputsQuery(db);
-                inputsQuery.exec(QString("SELECT pinIndex, inputID, inputType FROM panelInputEntry WHERE controllerModuleID = %1 ORDER BY pinIndex").arg(panelModuleIDs[x]));
+                inputsQuery.exec(QString("SELECT pinIndex, inputID, inputType FROM panelInputEntry WHERE panelModuleID = %1 ORDER BY pinIndex").arg(panelModuleIDs[x]));
                 int inputIndex = 0;
                 while (inputsQuery.next())
                 {
                     inputIndex = inputsQuery.value(0).toInt();
-                    configStruct.moduleConfigs[x].inputs[inputIndex].id = inputsQuery.value(1).toInt();
-                    configStruct.moduleConfigs[x].inputs[inputIndex].inputType = inputsQuery.value(2).toInt();
-    //                configStruct.moduleConfigs[x].inputs[inputIndex].value = inputsQuery.value(3).toInt();
+                    buffer += QString("INID,%1;INTYPE,%2;").arg(inputsQuery.value(1).toString()).arg(inputsQuery.value(2).toString());
                 }
+                buffer += QString("END,0;");
                 QSqlQuery outputsQuery(db);
                 outputsQuery.exec(QString("SELECT pinIndex, itemID, itemType, onValue, flashingValue FROM panelOutputEntry WHERE panelModuleID = %1 ORDER BY pinIndex").arg(panelModuleIDs[x]));
                 int outputIndex = 0;
                 while (outputsQuery.next())
                 {
                     outputIndex = outputsQuery.value(0).toInt();
-                    configStruct.moduleConfigs[x].outputs[outputIndex].itemID = outputsQuery.value(1).toInt();
-                    configStruct.moduleConfigs[x].outputs[outputIndex].itemType = outputsQuery.value(2).toInt();
-                    configStruct.moduleConfigs[x].outputs[outputIndex].onValue = outputsQuery.value(3).toInt();
-                    configStruct.moduleConfigs[x].outputs[outputIndex].flashingValue = outputsQuery.value(4).toInt();
+                    buffer += QString("ITEMID,%1;ITEMTYPE,%2;ON,%3;FLASH,%4;").arg(outputsQuery.value(1).toString()).arg(outputsQuery.value(2).toString()).arg(outputsQuery.value(3).toString()).arg(outputsQuery.value(4).toString());
                 }
             }
         }
 
-        config = QByteArray((const char *)&configStruct, sizeof(PanelControllerConfigStruct));
-        qDebug(QString("SENDING PANEL CONFIG DATA.  SIZE: %1.  Structure size: %2").arg(config.size()).arg(sizeof(PanelControllerConfigStruct)).toLatin1());
+        buffer += "\n";
+        qDebug(buffer.toLatin1());
     }
     else
     {
         QString errorText(query.lastError().text());
+        qDebug(errorText.toLatin1());
     }
 
-    return config;
+    return buffer.toLatin1();
 }
 
 QByteArray Database::getPanelRouteConfig(quint32 serialNumber)
 {
-    PanelControllerRouteConfigStruct configStruct;
-    memset(&configStruct, 0, sizeof(PanelControllerRouteConfigStruct));
-
     QSqlQuery routesQuery(db);
-    routesQuery.exec(QString("SELECT routeID, turnoutID, turnoutState FROM routeEntry WHERE RouteID IN (SELECT inputID FROM panelInputEntry WHERE inputType = 1 AND panelModuleID IN (SELECT panelModule.id FROM panelModule JOIN controller ON panelModule.controllerID = controller.ID WHERE serialNumber = %1)) ORDER BY routeID").arg(serialNumber));
-    int routeIndex = 0;
-    int routeEntryIndex = 0;
+    routesQuery.exec(QString("SELECT routeID, turnoutID, turnoutState FROM routeEntry WHERE RouteID IN (SELECT inputID FROM panelInputEntry WHERE inputType = 1 AND panelModuleID IN (SELECT controllerModule.id FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1)) ORDER BY routeID").arg(serialNumber));
     int currentRouteID = 0;
+    QString buffer;
 
     while (routesQuery.next())
     {
-        configStruct.count++;
         if(currentRouteID == 0)
         {
             currentRouteID = routesQuery.value(0).toInt();
-            configStruct.routes[routeIndex].routeID = currentRouteID;
+            buffer += QString("ID,%1;").arg(currentRouteID);
         }
         if(currentRouteID == routesQuery.value(0).toInt())
         {
-            configStruct.routes[routeIndex].entries[routeEntryIndex].turnoutID = routesQuery.value(1).toInt();
-            configStruct.routes[routeIndex].entries[routeEntryIndex++].state = (TurnoutState)routesQuery.value(2).toInt();
+            buffer += QString("TURNOUT,%1;STATE,%2;").arg(routesQuery.value(1).toString()).arg(routesQuery.value(2).toString());
         }
         else
         {
             currentRouteID = routesQuery.value(0).toInt();
-            configStruct.routes[++routeIndex].routeID = currentRouteID;
+            buffer += QString("ID,%1;").arg(currentRouteID);
         }
     }
 
-    QByteArray config((const char *)&configStruct, sizeof(PanelControllerRouteConfigStruct));
-    return config;
+    buffer += "\n";
+    qDebug(buffer.toLatin1());
+
+    return buffer.toLatin1();
 }
 
 QByteArray Database::getMultiControllerConfig(quint32 serialNumber)
@@ -448,6 +404,10 @@ QByteArray Database::getControllerModuleConfig(quint32 serialNumber, quint32 mod
         return getTurnoutConfig(serialNumber, moduleIndex);
     else if(classCode == "2")
         return getPanelConfig(serialNumber);
+    else if(classCode == "4")
+        return getSignalConfig(serialNumber, moduleIndex);
+    else if(classCode == "6")
+        return getBlockConfig(serialNumber, moduleIndex);
 
     QString configData("\n7");
     return configData.toLatin1();

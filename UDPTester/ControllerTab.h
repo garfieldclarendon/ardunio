@@ -15,8 +15,10 @@ public:
     explicit ControllerTab(QWidget *parent = 0);
 
 signals:
+    void currentControllerIDChanged(int controllerID);
 
 public slots:
+    void selectionChanged(void);
 
 private:
     void setupUI(void);

@@ -41,7 +41,7 @@ void WebServer::processTextMessage(const QString message)
     }
     else if(parts[1] == "B")
     {
-        configData = getBlockConfig(parts[0].toInt());
+        configData = getBlockConfig(parts[0].toInt(), parts.value(2).toInt());
     }
     else if(parts[1] == "P")
     {
@@ -126,12 +126,12 @@ QByteArray WebServer::getSignalConfig(quint32 serialNumber, int moduleIndex)
     return data;
 }
 
-QByteArray WebServer::getBlockConfig(quint32 serialNumber)
+QByteArray WebServer::getBlockConfig(quint32 serialNumber, int moduleIndex)
 {
     QByteArray data;
 
     Database db;
-    data = db.getBlockConfig(serialNumber);
+    data = db.getBlockConfig(serialNumber, moduleIndex);
 
     return data;
 }

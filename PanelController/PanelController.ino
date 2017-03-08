@@ -63,10 +63,18 @@ void messageCallback(const Message &message)
 		downloadMode = DownloadModule;
 		downloadConfig();
 	}
-	else if (totalRoutes == 0 && message.getMessageID() == SYS_HEARTBEAT)
+	else if (message.getMessageID() == SYS_SET_CONTROLLER_ID && message.getLValue() == ESP.getChipId())
 	{
-		downloadMode = DownloadRoute;
+		downloadMode = DownloadModule;
 		downloadConfig();
+	}
+	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getLValue() == ESP.getChipId())
+	{
+		DEBUG_PRINT("RESET CONFIG MESSAGE!\n");
+		memset(&modules, 0, sizeof(PanelModuleClass) * MAX_PANEL_MODULES);
+		memset(&activeRoutes, 0, sizeof(ActiveRoute) * MAX_ACTIVE_ROUTES);
+		EEPROM.put(MODULE_CONFIG_BASE_ADDRESS, controllerConfig);
+		loadConfiguration();
 	}
 	else
 	{
@@ -103,6 +111,7 @@ void setup()
 #endif
 	DEBUG_PRINT("setup\n");
 
+	memset(&modules, 0, sizeof(PanelModuleClass) * MAX_PANEL_MODULES);
 	memset(&activeRoutes, 0, sizeof(ActiveRoute) * MAX_ACTIVE_ROUTES);
 	EEPROM.begin(4096);
 
@@ -113,10 +122,6 @@ void setup()
 
 	loadConfiguration();
 	controller.setup(messageCallback, ClassPanel);
-
-	// If totalRoutes is less than 1, then this panel hasn't been configured yet.
-	if (totalRoutes < 1)
-		downloadConfig();
 
 	setupHardware();
 	for (byte x = 0; x < totalModules; x++)
@@ -158,23 +163,6 @@ void loop()
 	sendHeartbeatMessage();
 
 	ConfigDownload.process();
-	if (ConfigDownload.downloadComplete())
-	{
-		if (downloadMode == DownloadModule)
-		{
-			downloadMode = DownloadRoute;
-			saveModuleConfig();
-			ConfigDownload.reset();
-			downloadConfig();
-		}
-		else
-		{
-			downloadMode = DownloadNone;
-			saveRouteConfig();
-			ConfigDownload.reset();
-			loadConfiguration();
-		}
-	}
 
 	Message message;
 	bool flag = buttonPressed;
@@ -405,8 +393,11 @@ void downloadConfig(void)
 	// Key should be the Chip ID and a single letter indicating the type of controller:
 	// T = Turnout controller
 	// P = Panel controller
-	// S = Signal-Block controller
+	// S = Signal
+	// B = Block controller
+	// M = Multi-Module Controller
 	// 
+	// and the moduleIndex.  For this type of controller there is only one module: 0
 	// The server will use this information to lookup the configuration information for this controller
 
 	ConfigDownload.reset();
@@ -421,27 +412,97 @@ void downloadConfig(void)
 		{
 			controllerConfig = new PanelControllerConfigStruct;
 			memset(controllerConfig, 0, sizeof(PanelControllerConfigStruct));
-			ConfigDownload.downloadConfig((uint8_t *)controllerConfig, sizeof(PanelControllerConfigStruct), key);
+			ConfigDownload.downloadConfig(key, configCallback);
 		}
 		else if (downloadMode == DownloadRoute)
 		{
 			routeConfigDownload = new PanelControllerRouteConfigStruct;
 			memset(routeConfigDownload, 0, sizeof(PanelControllerRouteConfigStruct));
-			ConfigDownload.downloadConfig((uint8_t *)routeConfigDownload, sizeof(PanelControllerRouteConfigStruct), key);
+			ConfigDownload.downloadConfig(key, configCallback);
 		}
+	}
+}
+
+byte currentModuleConfig = -1;
+byte routeConfigIndex = -1;
+byte routeEntryIndex = 0;
+void configCallback(const char *key, const char *value)
+{
+	if (key == NULL)
+	{
+		if (downloadMode == DownloadModule)
+		{
+			memset(controllerConfig, 0, sizeof(PanelControllerConfigStruct));
+			for (byte x = 0; x < MAX_PANEL_MODULES; x++)
+				controllerConfig->moduleConfigs[x] = modules[x].getConfiguration();
+
+			ConfigDownload.reset();
+			DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
+			EEPROM.put(MODULE_CONFIG_BASE_ADDRESS, *controllerConfig);
+			EEPROM.commit();
+			delete controllerConfig;
+			controllerConfig = NULL;
+			downloadMode = DownloadRoute;
+			downloadConfig();
+		}
+		else
+		{
+			saveRouteConfig();
+			delete routeConfigDownload;
+			routeConfigDownload = NULL;
+			downloadMode = DownloadNone;
+		}
+	}
+	else
+	{
+		if (downloadMode == DownloadModule)
+		{
+			if (strcmp(key, "ID") == 0)
+			{
+				currentModuleConfig++;
+				controllerConfig->mdouleCount++;
+			}
+			modules[currentModuleConfig].configCallback(key, value);
+		}
+		else
+		{
+			routeConfigCallback(key, value);
+		}
+	}
+}
+
+void routeConfigCallback(const char *key, const char *value)
+{
+	if (strcmp(key, "ID") == 0)
+	{
+		routeEntryIndex = 0;
+		routeConfigIndex++;
+		routeConfigDownload->count++;
+		routeConfigDownload->routes[routeConfigIndex].routeID = atoi(value);
+	}
+	else if (strcmp(key, "TURNOUT") == 0)
+	{
+		routeConfigDownload->routes[routeConfigIndex].entries[routeEntryIndex].turnoutID = atoi(value);
+	}
+	else if (strcmp(key, "STATE") == 0)
+	{
+		routeConfigDownload->routes[routeConfigIndex].entries[routeEntryIndex++].state = (TurnoutState)atoi(value);
 	}
 }
 
 void sendStatusMessage(bool sendOnce)
 {
-	DEBUG_PRINT("Sending status message\n");
+	if (controller.getControllerID() > 0)
+	{
+		DEBUG_PRINT("Sending status message\n");
 
-	Message message;
-	message.setMessageID(PANEL_STATUS);
-	message.setControllerID(controller.getControllerID());
-	message.setMessageClass(ClassPanel);
+		Message message;
+		message.setMessageID(PANEL_STATUS);
+		message.setControllerID(controller.getControllerID());
+		message.setMessageClass(ClassPanel);
 
-	controller.sendNetworkMessage(message, sendOnce);
+		controller.sendNetworkMessage(message, sendOnce);
+	}
 }
 
 long heartbeatTimeout = 0;

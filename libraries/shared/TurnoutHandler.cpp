@@ -4,7 +4,7 @@
 TurnoutHandler::TurnoutHandler(void)
 	: m_motorAPin(0), m_motorBPin(0), m_normalPin(0), m_divergePin(0), m_currentState(TrnUnknown), m_lastState(TrnUnknown), m_currentTimeout(0), m_currentRouteConfig(0)
 {
-	memset(&m_config, 0, sizeof(TurnoutConfigStruct));
+	m_config = NULL;
 }
 
 void TurnoutHandler::setup(byte motorAPin, byte motorBPin, byte normalPin, byte divergePin)
@@ -40,6 +40,10 @@ bool TurnoutHandler::process(byte &data)
 			}
 		}
 	}
+	else
+	{
+//		DEBUG_PRINT("%d TurnoutHandler::process4:  CURRENT_STATE %d != %d CURRENT IS UNKNOWN!!  DATA: %d\n", getTurnoutID(), m_currentState, current, data);
+	}
 
 	m_lastState = current;
 
@@ -63,9 +67,9 @@ TurnoutState TurnoutHandler::getTurnoutStateForRoute(int routeID)
 
 	for (byte x = 0; x < MAX_ROUTE_ENTRIES; x++)
 	{
-		if (m_config.routeEntries[x].routeID == routeID)
+		if (m_config->routeEntries[x].routeID == routeID)
 		{
-			state = m_config.routeEntries[x].state;
+			state = m_config->routeEntries[x].state;
 			break;
 		}
 	}
@@ -93,7 +97,7 @@ void TurnoutHandler::setTurnout(TurnoutState newState, byte &data)
 			DEBUG_PRINT("SETTING TURNOUT TO DIVERGING\n");
 			bitWrite(data, m_motorAPin, 1);
 			bitWrite(data, m_motorBPin, 0);
-			if (bitRead(data, m_divergePin) != LOW)
+			if (bitRead(data, m_divergePin) != LOW || m_currentState == TrnUnknown)
 				m_currentState = TrnToDiverging;
 		}
 		else if (newState == TrnNormal && m_currentState != newState)
@@ -101,7 +105,7 @@ void TurnoutHandler::setTurnout(TurnoutState newState, byte &data)
 			DEBUG_PRINT("SETTING TURNOUT TO NORMAL\n");
 			bitWrite(data, m_motorAPin, 0);
 			bitWrite(data, m_motorBPin, 1);
-			if (bitRead(data, m_normalPin) != LOW)
+			if (bitRead(data, m_normalPin) != LOW || m_currentState == TrnUnknown)
 				m_currentState = TrnToNormal;
 		}
 	}
@@ -113,17 +117,22 @@ void TurnoutHandler::setConfigValue(const char *key, const char *value)
 	if (strcmp(key, "ID") == 0)
 	{
 		int id = atoi(value);
-		m_config.turnoutID = id;
+		m_config->turnoutID = id;
 	}
 	else if (strcmp(key, "ROUTE") == 0)
 	{
 		int id = atoi(value);
-		m_config.routeEntries[m_currentRouteConfig].routeID = id;
+		m_config->routeEntries[m_currentRouteConfig].routeID = id;
 
 	}
 	else if (strcmp(key, "STATE") == 0)
 	{
 		int state = atoi(value);
-		m_config.routeEntries[m_currentRouteConfig++].state = (TurnoutState)state;
+		m_config->routeEntries[m_currentRouteConfig++].state = (TurnoutState)state;
 	}
+}
+
+void TurnoutHandler::setConfig(TurnoutConfigStruct *value)
+{ 
+	m_config = value;
 }

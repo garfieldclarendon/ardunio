@@ -7,6 +7,7 @@ Item {
     property alias model: listView.model
     property int controllerID: 0
     property int currentControllerClass
+    property int currentSerialNumber
     property alias currentIndex: listView.currentIndex
 
     signal editClicked(int index);
@@ -54,7 +55,9 @@ Item {
                 onClicked: {
                     listView.currentIndex = index
                     currentControllerClass = controllerClass;
+                    currentSerialNumber = serialNumber;
                     controllerID = id;
+                    console.debug("current index: " + index + " class: " + controllerClass + " controllerID: " + controllerID + " serial Number: " + currentSerialNumber);
                 }
                 onDoubleClicked: {
                     editClicked(index);

@@ -23,6 +23,8 @@ class PanelModuleClass
 	Message process(bool buttonPressed);
 	Message handleMessage(const Message &message);
 	void setConfiguration(ModuleConfigStruct value) { m_configuration = value; }
+	ModuleConfigStruct getConfiguration(void) const { return m_configuration; }
+	void configCallback(const char *key, const char *value);
 
 private:
 	Message handleButtonPressed(byte buttonIndex);
@@ -44,6 +46,7 @@ private:
 
 	unsigned long m_currentBlinkTimeout;
 	ModuleConfigStruct m_configuration;
+	byte m_configIndex;
 };
 
 extern PanelModuleClass PanelModule;

@@ -14,6 +14,7 @@
 #include "ControllerWidget.h"
 #include "GlobalDefs.h"
 #include "UI.h"
+#include "ControllerModuleWidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -81,17 +82,36 @@ void MainWindow::setupUI()
 
     tab->addTab(widget2, "Track Plan");
 
+    createControllerTab(tab);
+
+    this->setCentralWidget(tab);
+}
+
+void MainWindow::createControllerTab(QTabWidget *tab)
+{
+    QHBoxLayout *layout = new QHBoxLayout;
+    QVBoxLayout *rightLayout = new QVBoxLayout;
+
+    QWidget *widget = new QWidget(this);
+
     ControllerTab *controllerTab = new ControllerTab(this);
-    tab->addTab(controllerTab, "Controllers");
+    layout->addWidget(controllerTab);
+
+    ControllerModuleWidget *moduleWidget = new ControllerModuleWidget(this);
+    connect(controllerTab, SIGNAL(currentControllerIDChanged(int)), moduleWidget, SLOT(setCurrentControllerID(int)));
+    rightLayout->addWidget(moduleWidget);
 
     DeviceTab *deviceTab = new DeviceTab(this);
+    connect(moduleWidget, SIGNAL(currentControllerModuleIDChanged(int,int)), deviceTab, SLOT(setModuleID(int,int)));
     connect(deviceTab, SIGNAL(sendConfig(int)), this, SLOT(sendConfigData(int)));
     connect(deviceTab, SIGNAL(resetController(int)), this, SLOT(sendResetCommand(int)));
     connect(deviceTab, SIGNAL(sendFirmware(int)), this, SLOT(sendFirmware(int)));
+    rightLayout->addWidget(deviceTab);
 
-    tab->addTab(deviceTab, "Devices");
+    layout->addLayout(rightLayout);
+    widget->setLayout(layout);
 
-    this->setCentralWidget(tab);
+    tab->addTab(widget, "Controllers");
 }
 
 void MainWindow::closeEvent(QCloseEvent *)

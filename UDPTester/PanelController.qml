@@ -6,6 +6,7 @@ import Utils 1.0
 Rectangle {
     id: outerRect
     property int currentControllerID: 0
+    property int serialNumber: 0
 
     PanelModuleModel {
         id: panelModel

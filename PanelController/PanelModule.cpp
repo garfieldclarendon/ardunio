@@ -34,7 +34,7 @@
 #define blinkingTimeout 200
 
 PanelModuleClass::PanelModuleClass(void)
-	: m_moduleAddress(0), m_inputs(0), m_outputs(0), m_currentBlinkTimeout(0)
+	: m_moduleAddress(0), m_inputs(0), m_outputs(0), m_currentBlinkTimeout(0), m_configIndex(-1)
 {
 	memset(&m_blinkingPins, 255, 8);
 	memset(&m_configuration, 0, sizeof(ModuleConfigStruct));
@@ -249,5 +249,43 @@ void PanelModuleClass::blinkPins(void)
 				bitWrite(m_outputs, m_blinkingPins[x], state == 0);
 			}
 		}
+	}
+}
+
+void PanelModuleClass::configCallback(const char *key, const char *value)
+{
+	if (strcmp(key, "ID") == 0 || strcmp(key, "END") == 0)
+	{
+		m_configIndex = -1;
+	}
+	else if (strcmp(key, "INID") == 0)
+	{
+		m_configIndex++;
+		m_configuration.inputs[m_configIndex].id = atoi(value);
+	}
+	else if (strcmp(key, "INTYPE") == 0)
+	{
+		m_configuration.inputs[m_configIndex].inputType = atoi(value);
+	}
+	else if (strcmp(key, "INVALUE") == 0)
+	{
+		m_configuration.inputs[m_configIndex].value = atoi(value);
+	}
+	else if (strcmp(key, "ITEMID") == 0)
+	{
+		m_configIndex++;
+		m_configuration.outputs[m_configIndex].itemID = atoi(value);
+	}
+	else if (strcmp(key, "ITEMTYPE") == 0)
+	{
+		m_configuration.outputs[m_configIndex].itemType = atoi(value);
+	}
+	else if (strcmp(key, "ON") == 0)
+	{
+		m_configuration.outputs[m_configIndex].onValue = atoi(value);
+	}
+	else if (strcmp(key, "FLASH") == 0)
+	{
+		m_configuration.outputs[m_configIndex].flashingValue = atoi(value);
 	}
 }

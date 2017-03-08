@@ -13,7 +13,11 @@ Rectangle {
     }
 
     radius: 20
-    border.color: "grey"
+    color: systemPalette.window
+
+    SystemPalette {
+        id: systemPalette
+    }
     Component {
         id: turnoutDelegate
          GroupBox {
@@ -51,7 +55,7 @@ Rectangle {
                 anchors.margins: ui.margin
                 RowLayout {
                     Layout.fillWidth: true
-                    Text
+                    TextEdit
                     {
                         id: controllerNameText
                         text: id > 0 ? deviceName : ""
@@ -61,22 +65,42 @@ Rectangle {
                         Layout.minimumWidth:  ui.applyRatio(50)
                         color: "blue"
                     }
-                    ColumnLayout {
+                    GridLayout {
                         Layout.minimumWidth: ui.applyRatio(100)
+                        Layout.fillWidth: true
+                        columns: 2
                         Text {
-                            text: id > 0 ? '<b>Description:</b> ' + deviceDescription : ""
+                            text: "<b>Description:</b>"
+                            verticalAlignment: Text.AlignVCenter
+                            height: parent.height
+                         }
+                        TextEdit {
+                            text: id > 0 ? deviceDescription : ""
+                            verticalAlignment: Text.AlignVCenter
+                            height: parent.height
+                            Layout.fillWidth: true
+                         }
+                        Text {
+                            text: "<b>ID:</b>"
+                            verticalAlignment: Text.AlignVCenter
+                            height: parent.height
+                         }
+                        TextEdit {
+                           text: id > 0 ? id : ""
+                            verticalAlignment: Text.AlignVCenter
+                            Layout.fillWidth: true
+                            height: parent.height
+                         }
+                        Text {
+                            text: "<b>State:</b>"
                             verticalAlignment: Text.AlignVCenter
                             height: parent.height
                          }
                         Text {
-                            text: id > 0 ? '<b>ID:</b> ' + id : ""
+                            text:  id > 0 ? wraper.getStateText(currentState) : ""
                             verticalAlignment: Text.AlignVCenter
                             height: parent.height
-                         }
-                        Text {
-                            text: id > 0 ? '<b>State:</b> ' + wraper.getStateText(currentState) : ""
-                            verticalAlignment: Text.AlignVCenter
-                            height: parent.height
+                            Layout.fillWidth: true
                          }
                     }
                     ColumnLayout {
@@ -122,7 +146,7 @@ Rectangle {
         clip: true
     }
     Component.onCompleted: {
-        broadcaster.sendMessage(18, currentControllerID, 1, 0, 0);
+        broadcaster.sendMessage(19, currentControllerID, 1, 0, 0);
     }
 }
 
