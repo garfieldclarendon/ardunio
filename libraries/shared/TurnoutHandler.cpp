@@ -9,6 +9,8 @@ TurnoutHandler::TurnoutHandler(void)
 
 void TurnoutHandler::setup(byte motorAPin, byte motorBPin, byte normalPin, byte divergePin)
 {
+	DEBUG_PRINT("TurnoutHandler::setup:  motorAPin %d motorBAPin %d normalPin %d divergePin %d\n", motorAPin, motorBPin, normalPin, divergePin);
+
 	m_motorAPin = motorAPin;
 	m_motorBPin = motorBPin;
 	m_normalPin = normalPin;
@@ -85,6 +87,7 @@ TurnoutState TurnoutHandler::readCurrentState(byte data)
 	else if (bitRead(data, m_divergePin) == LOW)
 		current = TrnDiverging;
 
+//	DEBUG_PRINT("readCurrentState: %d\n", current);
 	return current;
 }
 
@@ -94,22 +97,22 @@ void TurnoutHandler::setTurnout(TurnoutState newState, byte &data)
 	{
 		if (newState == TrnDiverging && m_currentState != newState)
 		{
-			DEBUG_PRINT("SETTING TURNOUT TO DIVERGING\n");
+			DEBUG_PRINT("SETTING TURNOUT TO DIVERGING CURRENT STATE %d PIN %d\n", readCurrentState(data), m_divergePin);
+			if (readCurrentState(data) == TrnNormal)
+				m_currentState = TrnToDiverging;
 			bitWrite(data, m_motorAPin, 1);
 			bitWrite(data, m_motorBPin, 0);
-			if (bitRead(data, m_divergePin) != LOW || m_currentState == TrnUnknown)
-				m_currentState = TrnToDiverging;
 		}
 		else if (newState == TrnNormal && m_currentState != newState)
 		{
-			DEBUG_PRINT("SETTING TURNOUT TO NORMAL\n");
+			DEBUG_PRINT("SETTING TURNOUT TO NORMAL CURRENT STATE %d PIN %d\n", readCurrentState(data), m_normalPin);
+			if (readCurrentState(data) == TrnDiverging)
+				m_currentState = TrnToNormal;
 			bitWrite(data, m_motorAPin, 0);
 			bitWrite(data, m_motorBPin, 1);
-			if (bitRead(data, m_normalPin) != LOW || m_currentState == TrnUnknown)
-				m_currentState = TrnToNormal;
 		}
 	}
-	DEBUG_PRINT("SETTURNOUT: %d\n", data);
+	DEBUG_PRINT("SETTURNOUT: %d CURRENT STATE: %d\n", m_config->turnoutID, m_currentState);
 }
 
 void TurnoutHandler::setConfigValue(const char *key, const char *value)

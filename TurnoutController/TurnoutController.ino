@@ -26,10 +26,10 @@ const byte diverge1_pin = 14;
 
 const byte motor1_logicalPinA = 0;
 const byte motor1_logicalPinB = 1;
-const byte normal1_logicalPin = 4;
-const byte diverge1_logicalPin = 5;
-const byte motor2_logicalPinA = 2;
-const byte motor2_logicalPinB = 3;
+const byte motor2_logicalPinA = 4;
+const byte motor2_logicalPinB = 5;
+const byte normal1_logicalPin = 2;
+const byte diverge1_logicalPin = 3;
 const byte normal2_logicalPin = 6;
 const byte diverge2_logicalPin = 7;
 
@@ -184,11 +184,6 @@ void messageCallback(const Message &message)
 	else if (message.getMessageID() == SYS_SET_CONTROLLER_ID && message.getLValue() == ESP.getChipId())
 	{
 		downloadConfig();
-	}
-	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getLValue() == ESP.getChipId())
-	{
-		memset(&controllerConfig, 0, sizeof(TurnoutControllerConfigStruct));
-		loadConfiguration();
 	}
 	else
 	{

@@ -256,7 +256,7 @@ QByteArray Database::getSignalConfig(quint32 serialNumber, int moduleIndex)
                 {
                     if(index < MAX_SIGNAL_CONDITIONS)
                     {
-                        buffer += QString("DEVICEID,%1;OERAND,%2;STATE,%3;").arg(query3.value(0).toString()).arg(query3.value(1).toString()).arg(query3.value(2).toString());
+                        buffer += QString("DEVICEID,%1;OPERAND,%2;STATE,%3;").arg(query3.value(0).toString()).arg(query3.value(1).toString()).arg(query3.value(2).toString());
                     }
                 }
                 index++;

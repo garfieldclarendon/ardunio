@@ -450,7 +450,7 @@ void configCallback(const char *key, const char *value)
 			saveRouteConfig();
 			delete routeConfigDownload;
 			routeConfigDownload = NULL;
-			downloadMode = DownloadNone;
+			ESP.restart();
 		}
 	}
 	else

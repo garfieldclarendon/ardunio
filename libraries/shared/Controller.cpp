@@ -141,7 +141,7 @@ void Controller::processMessage(const Message &message)
 	{
 		DEBUG_PRINT("RESET CONFIG MESSAGE!\n");
 		resetConfiguration();
-		m_messageCallback(message);
+		ESP.restart();
 	}
 	else if (message.getMessageID() == SYS_CONFIG_CHANGED && getControllerID() < 1)
 	{

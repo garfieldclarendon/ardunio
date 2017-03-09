@@ -59,8 +59,8 @@ void setup()
 
   ConfigDownload.init(&controller);
 
-  loadConfiguration();
   controller.setup(messageCallback, ClassSemaphore);
+  loadConfiguration();
 
   signal1.setup(motor1_pinA, motor1_pinB, normal1_pin, diverge1_pin);
   signal2.setup(motor2_pinA, motor2_pinB, normal2_pin, diverge2_pin);
@@ -96,6 +96,7 @@ void loadConfiguration(void)
 		DEBUG_PRINT("loadConfiguration:  SignalID's: %d, %d\n", controllerConfig.signal1.signalID, controllerConfig.signal2.signalID);
 		signal1.setConfig(controllerConfig.signal1);
 		signal2.setConfig(controllerConfig.signal2);
+		DEBUG_PRINT("signal configuration load complete\n");
 	}
 	else
 	{
@@ -139,7 +140,7 @@ void configCallback(const char *key, const char *value)
 		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
 		EEPROM.put(SEMAPHORE_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
-		loadConfiguration();
+		ESP.restart();
 	}
 	else
 	{
@@ -147,7 +148,7 @@ void configCallback(const char *key, const char *value)
 		{
 			currentAspectIndex = -1;
 			currentSignalConfig++;
-			if (currentSignalConfig == 1)
+			if (currentSignalConfig == 0)
 				controllerConfig.signal1.signalID = atoi(value);
 			else
 				controllerConfig.signal2.signalID = atoi(value);
@@ -159,21 +160,21 @@ void configCallback(const char *key, const char *value)
 		}
 		else if (strcmp(key, "RED") == 0)
 		{
-			if (currentSignalConfig == 1)
+			if (currentSignalConfig == 0)
 				controllerConfig.signal1.conditions[currentAspectIndex].aspect.redMode = atoi(value);
 			else
 				controllerConfig.signal2.conditions[currentAspectIndex].aspect.redMode = atoi(value);
 		}
 		else if (strcmp(key, "YELLOW") == 0)
 		{
-			if (currentSignalConfig == 1)
+			if (currentSignalConfig == 0)
 				controllerConfig.signal1.conditions[currentAspectIndex].aspect.yellowMode = atoi(value);
 			else
 				controllerConfig.signal2.conditions[currentAspectIndex].aspect.yellowMode = atoi(value);
 		}
 		else if (strcmp(key, "GREEN") == 0)
 		{
-			if (currentSignalConfig == 1)
+			if (currentSignalConfig == 0)
 				controllerConfig.signal1.conditions[currentAspectIndex].aspect.greenMode = atoi(value);
 			else
 				controllerConfig.signal2.conditions[currentAspectIndex].aspect.greenMode = atoi(value);
@@ -184,21 +185,21 @@ void configCallback(const char *key, const char *value)
 		}
 		else if (strcmp(key, "DEVICEID") == 0)
 		{
-			if (currentSignalConfig == 1)
+			if (currentSignalConfig == 0)
 				controllerConfig.signal1.conditions[currentAspectIndex].conditions[currentConditionIndex].deviceID = atoi(value);
 			else
 				controllerConfig.signal2.conditions[currentAspectIndex].conditions[currentConditionIndex].deviceID = atoi(value);
 		}
-		else if (strcmp(key, "OERAND") == 0)
+		else if (strcmp(key, "OPERAND") == 0)
 		{
-			if (currentSignalConfig == 1)
+			if (currentSignalConfig == 0)
 				controllerConfig.signal1.conditions[currentAspectIndex].conditions[currentConditionIndex].operand = atoi(value);
 			else
 				controllerConfig.signal2.conditions[currentAspectIndex].conditions[currentConditionIndex].operand = atoi(value);
 		}
 		else if (strcmp(key, "STATE") == 0)
 		{
-			if (currentSignalConfig == 1)
+			if (currentSignalConfig == 0)
 				controllerConfig.signal1.conditions[currentAspectIndex].conditions[currentConditionIndex++].deviceState = atoi(value);
 			else
 				controllerConfig.signal2.conditions[currentAspectIndex].conditions[currentConditionIndex++].deviceState = atoi(value);
@@ -229,11 +230,6 @@ void messageCallback(const Message &message)
 	{
 		downloadConfig();
 	}
-	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getLValue() == ESP.getChipId())
-	{
-		memset(&controllerConfig, 0, sizeof(SignalControllerConfigStruct));
-		loadConfiguration();
-	}
 	else
 	{
 		bool sendStatus1 = signal1.handleMessage(message);
@@ -246,14 +242,17 @@ void messageCallback(const Message &message)
 
 void sendStatusMessage(bool sendOnce)
 {
-	DEBUG_PRINT("Sending status message.\n");
+	if (controller.getWiFiReconnected() > 0)
+	{
+		DEBUG_PRINT("Sending status message.\n");
 
-	Message message;
-	message.setMessageID(SIG_STATUS);
-	message.setControllerID(controller.getControllerID());
-	message.setMessageClass(ClassSemaphore);
+		Message message;
+		message.setMessageID(SIG_STATUS);
+		message.setControllerID(controller.getControllerID());
+		message.setMessageClass(ClassSemaphore);
 
-	controller.sendNetworkMessage(message, sendOnce);
+		controller.sendNetworkMessage(message, sendOnce);
+	}
 }
 
 long heartbeatTimeout = 0;
