@@ -61,6 +61,8 @@ void UpdateServer::readClient()
                 fileName = path + "SemaphoreController/SemaphoreController.ino.bin";
             else if(controllerType == "6")
                 fileName = path + "BlockController/BlockController.ino.bin";
+            else if(controllerType == "7")
+                fileName = path + "MultiModuleController/MultiModuleController.ino.bin";
 
             // PROCESS //
             QByteArray fileData;

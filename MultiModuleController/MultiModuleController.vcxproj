@@ -89,7 +89,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties VM_ADDITIONAL_PREPROC="DEBUG_ESP_WIFI" />
+      <UserProperties arduino.upload.port="COM5" VM_ADDITIONAL_PREPROC="DEBUG_ESP_WIFI" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
