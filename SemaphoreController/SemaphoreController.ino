@@ -226,10 +226,6 @@ void messageCallback(const Message &message)
 	{
 		downloadConfig();
 	}
-	else if (signal1.getSignalID() < 1 && message.getMessageID() == SYS_HEARTBEAT)
-	{
-		downloadConfig();
-	}
 	else
 	{
 		bool sendStatus1 = signal1.handleMessage(message);

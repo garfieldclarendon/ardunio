@@ -146,10 +146,6 @@ void messageCallback(const Message &message)
 	{
 		downloadConfig();
 	}
-	else if (module.getDeviceID(0) < 1 && message.getMessageID() == SYS_HEARTBEAT)
-	{
-		downloadConfig();
-	}
 	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getLValue() == ESP.getChipId())
 	{
 		memset(&controllerConfig, 0, sizeof(BlockControllerConfigStruct));
@@ -200,6 +196,7 @@ void configCallback(const char *key, const char *value)
 		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
 		EEPROM.put(BLOCK_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
+		ESP.restart();
 	}
 	else
 	{

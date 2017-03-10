@@ -164,6 +164,7 @@ void configCallback(const char *key, const char *value)
 		DEBUG_PRINT("SAVING TURNOUT1: %d TURNOUT2: %d \n",controllerConfig.turnout1.turnoutID, controllerConfig.turnout2.turnoutID);
 		EEPROM.put(TURNOUT_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
+		ESP.restart();
 	}
 	else
 	{
