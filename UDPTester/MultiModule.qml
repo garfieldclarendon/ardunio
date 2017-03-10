@@ -19,6 +19,7 @@ Item {
             mainItem.allowNewModule = moduleModel.allowNewModule;
             console.debug("ControllerModuleModel::onAllowNewModuleChanged: " + mainItem.allowNewModule);
         }
+
     }
 
     function addNewModule(moduleName, moduleIndex, moduleClass)
@@ -41,9 +42,17 @@ Item {
 
         delegate: switch (moduleModel.getModuleClass(listView.currentIndex))
                   {
-            case 1: return turnoutDelegate;
+            case 1:
+            {
+                console.debug("MultiModule:  returning turnoutDelegate");
+                return turnoutDelegate;
+            }
             //....
-            default: return dummyDelegate
+            default:
+                {
+                    console.debug("MultiModule:  returning dummyDelegate");
+                    return dummyDelegate;
+                }
         }
         spacing: ui.applyRatio(2)
         focus: true
@@ -64,5 +73,8 @@ Item {
         id: dummyDelegate
         Item {  }
       }
+    Component.onCompleted: {
+        console.debug("MultiModuleCompleted:  Total Rows: " + moduleModel.rowCount());
+    }
 }
 

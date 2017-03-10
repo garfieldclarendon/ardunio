@@ -1,4 +1,5 @@
 #include <QSqlTableModel>
+#include <QSqlError>
 #include <QTimer>
 #include <QSqlQuery>
 
@@ -12,19 +13,25 @@ ControllerModuleModel::ControllerModuleModel(QObject *parent)
     m_tableModel = new QSqlTableModel(this, db.getDatabase());
     m_tableModel->setTable("controllerModule");
     m_tableModel->select();
+    if(m_tableModel->select() == false)
+    {
+        qDebug("ERROR LOADING controllerModule MODEL");
+        qDebug(db.getDatabase().lastError().text().toLatin1());
+    }
 
     this->setSourceModel(m_tableModel);
+    qDebug(QString("controllerModule MODEL OPEN.  TOTAL ROWS: %1").arg(this->rowCount()).toLatin1());
 }
 
 QHash<int, QByteArray> ControllerModuleModel::roleNames(void) const
 {
     QHash<int, QByteArray> roleNames;
 
-    roleNames[Qt::UserRole + 0] = QByteArray("moduleClass");
-    roleNames[Qt::UserRole + 1] = QByteArray("controllerID");
-    roleNames[Qt::UserRole + 2] = QByteArray("id");
-    roleNames[Qt::UserRole + 3] = QByteArray("moduleIndex");
-    roleNames[Qt::UserRole + 4] = QByteArray("moduleName");
+    roleNames[Qt::UserRole + m_tableModel->fieldIndex("moduleClass")] = QByteArray("moduleClass");
+    roleNames[Qt::UserRole + m_tableModel->fieldIndex("controllerID")] = QByteArray("controllerID");
+    roleNames[Qt::UserRole + m_tableModel->fieldIndex("id")] = QByteArray("id");
+    roleNames[Qt::UserRole + m_tableModel->fieldIndex("moduleIndex")] = QByteArray("moduleIndex");
+    roleNames[Qt::UserRole + m_tableModel->fieldIndex("moduleName")] = QByteArray("moduleName");
 
     return roleNames;
 }
@@ -96,34 +103,11 @@ QVariant ControllerModuleModel::data(const QModelIndex &index, int role) const
     QModelIndex i;
     i = this->index(index.row(), m_tableModel->fieldIndex("id"));
     v = QSortFilterProxyModel::data(i, Qt::EditRole);
-    int id = QSortFilterProxyModel::data(i, Qt::EditRole).toInt();
     if(role >= Qt::UserRole)
     {
         int col = role - Qt::UserRole;
-        switch(col)
-        {
-        case 0:
-            i = this->index(index.row(), m_tableModel->fieldIndex("moduleClass"));
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
-            break;
-        case 1:
-            i = this->index(index.row(), m_tableModel->fieldIndex("controllerID"));
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
-            break;
-        case 2:
-            v = id;
-            break;
-        case 3:
-            i = this->index(index.row(), m_tableModel->fieldIndex("moduleIndex"));
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
-            break;
-        case 4:
-            i = this->index(index.row(), m_tableModel->fieldIndex("moduleName"));
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
-            break;
-        default:
-            break;
-        }
+        i = this->index(index.row(), col);
+        v = QSortFilterProxyModel::data(i, Qt::EditRole);
     }
     else
     {
@@ -143,7 +127,9 @@ bool ControllerModuleModel::filterAcceptsRow(int source_row, const QModelIndex &
     bool ret = true;
     if(m_controllerID > 0)
     {
-        QModelIndex i = m_tableModel->index(source_row, m_tableModel->fieldIndex("controllerID"));
+        int col = m_tableModel->fieldIndex("controllerID");
+        QModelIndex i = m_tableModel->index(source_row, col);
+        qDebug(QString("FILTER ACCEPT: %1 = %2").arg(m_controllerID).arg(m_tableModel->data(i, Qt::EditRole).toInt()).toLatin1());
         if(m_tableModel->data(i, Qt::EditRole).toInt() != m_controllerID)
             ret = false;
     }

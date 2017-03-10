@@ -1,4 +1,5 @@
 #include <QSqlTableModel>
+#include <QSqlError>
 
 #include "TurnoutModel.h"
 #include "Database.h"
@@ -12,7 +13,15 @@ TurnoutModel::TurnoutModel(QObject *parent)
     Database db;
     m_tableModel = new QSqlTableModel(this, db.getDatabase());
     m_tableModel->setTable("device");
-    m_tableModel->select();
+    if(m_tableModel->select() == false)
+    {
+        qDebug("ERROR LOADING DEVICE MODEL");
+        qDebug(db.getDatabase().lastError().text().toLatin1());
+    }
+    else
+    {
+        qDebug(QString("DEVICE MODEL OPEN.  TOTAL ROWS: %1").arg(m_tableModel->rowCount()).toLatin1());
+    }
 
     this->setSourceModel(m_tableModel);
     connect(MessageBroadcaster::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(onNewMessage(UDPMessage)));
@@ -24,14 +33,11 @@ QHash<int, QByteArray> TurnoutModel::roleNames(void) const
 {
     QHash<int, QByteArray> roleNames;
 
-    roleNames[Qt::UserRole + 0] = QByteArray("id");
-    roleNames[Qt::UserRole + 1] = QByteArray("deviceName");
-    roleNames[Qt::UserRole + 2] = QByteArray("deviceDescription");
-    roleNames[Qt::UserRole + 3] = QByteArray("currentState");
-    roleNames[Qt::UserRole + 4] = QByteArray("controllerModuleID");
-//    roleNames[Qt::UserRole + 4] = QByteArray("serialNumber");
-//    roleNames[Qt::UserRole + 5] = QByteArray("currentStatus");
-//    roleNames[Qt::UserRole + 6] = QByteArray("version");
+    roleNames[Qt::UserRole + m_tableModel->fieldIndex("id")] = QByteArray("id");
+    roleNames[Qt::UserRole + m_tableModel->fieldIndex("deviceName")] = QByteArray("deviceName");
+    roleNames[Qt::UserRole + m_tableModel->fieldIndex("deviceDescription")] = QByteArray("deviceDescription");
+    roleNames[Qt::UserRole + m_tableModel->fieldIndex("controllerModuleID")] = QByteArray("controllerModuleID");
+    roleNames[Qt::UserRole + m_tableModel->columnCount()] = QByteArray("currentState");
 
     return roleNames;
 }
@@ -58,24 +64,16 @@ QVariant TurnoutModel::data(const QModelIndex &index, int role) const
     if(role >= Qt::UserRole)
     {
         int col = role - Qt::UserRole;
-        switch(col)
+        int statusCol = m_tableModel->columnCount();
+        if(col == statusCol)
         {
-        case 0:
-            v = deviceID;
-            break;
-        case 1:
-            i = this->index(index.row(), m_tableModel->fieldIndex("deviceName"));
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
-            break;
-        case 2:
-            i = this->index(index.row(), m_tableModel->fieldIndex("deviceDescription"));
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
-            break;
-        case 3:
             v = m_statusMap.value(deviceID);
-            break;
-        default:
-            break;
+        }
+        else
+        {
+            int col = role - Qt::UserRole;
+            i = this->index(index.row(), col);
+            v = QSortFilterProxyModel::data(i, Qt::EditRole);
         }
     }
     else

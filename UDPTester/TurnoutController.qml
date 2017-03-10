@@ -147,6 +147,7 @@ Rectangle {
     }
     Component.onCompleted: {
         broadcaster.sendMessage(19, currentControllerID, 1, 0, 0);
+        console.debug("TurnoutController.qml IS LOADED.");
     }
 }
 
