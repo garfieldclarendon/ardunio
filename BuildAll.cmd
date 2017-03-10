@@ -14,5 +14,6 @@ c:\arduino-nightly\arduino --pref build.path=Builds/PanelController --verify Pan
 c:\arduino-nightly\arduino --pref build.path=Builds/SemaphoreController --verify SemaphoreController/SemaphoreController.ino
 c:\arduino-nightly\arduino --pref build.path=Builds/SignalController --verify SignalController/SignalController.ino
 c:\arduino-nightly\arduino --pref build.path=Builds/TurnoutController --verify TurnoutController/TurnoutController.ino
+c:\arduino-nightly\arduino --pref build.path=Builds/MultiModuleController --verify MultiModuleController/MultiModuleController.ino
 
 PAUSE
