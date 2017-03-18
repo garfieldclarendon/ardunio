@@ -30,7 +30,6 @@ public:
 	short getDeviceID(byte index) const override { return getTurnoutID(index); }
 	byte getDeviceState(byte index) const override { return m_turnouts[index].getCurrentState(); }
 	byte getCurrentState(void) const override { return m_currentState; }
-	void setup(void) override;
 	byte setupWire(byte address) override;
 	bool process(byte &data) override;
 	bool handleMessage(const Message &message, byte &data) override;

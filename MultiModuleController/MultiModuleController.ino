@@ -355,7 +355,7 @@ void configCallback(const char *key, const char *value)
 			{
 				downloadMode = DownloadNone;
 				DEBUG_PRINT("configCallback.  DOWNLOAD COMPLETE  RESTARTING\n");
-				ESP.restart();
+				controller.restart();
 			}
 			else
 			{

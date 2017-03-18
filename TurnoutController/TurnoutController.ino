@@ -65,9 +65,8 @@ void setup()
 	controller.setup(messageCallback, ClassTurnout);
 	loadConfiguration();
 
-	turnoutModule.setup(0, motor1_logicalPinA, motor1_logicalPinB, normal1_logicalPin, diverge1_logicalPin);
-	turnoutModule.setup(1, motor2_logicalPinA, motor2_logicalPinB, normal2_logicalPin, diverge2_logicalPin);
-	turnoutModule.setup();
+	turnoutModule.setupWire(0);
+
 	setPins();
 
 	DEBUG_PRINT("setup complete\n");
@@ -164,7 +163,7 @@ void configCallback(const char *key, const char *value)
 		DEBUG_PRINT("SAVING TURNOUT1: %d TURNOUT2: %d \n",controllerConfig.turnout1.turnoutID, controllerConfig.turnout2.turnoutID);
 		EEPROM.put(TURNOUT_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
-		ESP.restart();
+		controller.restart();
 	}
 	else
 	{

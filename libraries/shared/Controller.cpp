@@ -131,7 +131,7 @@ void Controller::processMessage(const Message &message)
 	else if (message.getMessageID() == SYS_REBOOT_CONTROLLER && (message.getControllerID() == 0 || message.getControllerID() == getControllerID()))
 	{
 		Serial.println("RESTART MESSAGE! Controller restarting.");
-		ESP.restart();
+		restart();
 	}
 	else if (message.getMessageID() == SYS_DOWNLOAD_FIRMWARE && (message.getByteValue1() == (byte)getClass() || message.getControllerID() == 0 || message.getControllerID() == getControllerID()))
 	{
@@ -141,7 +141,7 @@ void Controller::processMessage(const Message &message)
 	{
 		DEBUG_PRINT("RESET CONFIG MESSAGE!\n");
 		resetConfiguration();
-		ESP.restart();
+		restart();
 	}
 	else if (message.getMessageID() == SYS_CONFIG_CHANGED && getControllerID() < 1)
 	{
@@ -324,4 +324,15 @@ void Controller::resetConfiguration(void)
 	EEPROM.write(0, signature);
 	EEPROM.commit();
 	clearFiles();
+}
+
+void Controller::restart(void)
+{
+	Message message;
+	message.setMessageID(SYS_RESTARTING);
+	message.setControllerID(getControllerID());
+
+	sendNetworkMessage(message, true);
+	delay(250);
+	ESP.restart();
 }

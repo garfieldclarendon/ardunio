@@ -35,6 +35,7 @@ struct TurnoutConfigStruct
 {
 	int turnoutID;
 	TurnoutRouteEntryStruct routeEntries[MAX_ROUTE_ENTRIES];
+	unsigned char inputPinSetting;
 };
 typedef struct TurnoutConfigStruct TurnoutConfigStruct;
 

@@ -123,7 +123,10 @@ void ControllerModel::onNewMessage(const UDPMessage &message)
         int rows = rowCount() - 1;
         int cols = columnCount() - 1;
         m_versionMap[controllerID] = QString("%1").arg(message.getMessageVersion());
-        m_onlineStatusMap[controllerID] = "Online";
+        if(message.getMessageID() == SYS_RESTARTING)
+            m_onlineStatusMap[controllerID] = "Restarting";
+        else
+            m_onlineStatusMap[controllerID] = "Online";
         m_timeoutMap[controllerID] = QDateTime::currentDateTime().toTime_t();
 
         QModelIndex start = this->index(0, cols);

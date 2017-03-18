@@ -140,7 +140,7 @@ void configCallback(const char *key, const char *value)
 		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
 		EEPROM.put(SEMAPHORE_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
-		ESP.restart();
+		controller.restart();
 	}
 	else
 	{

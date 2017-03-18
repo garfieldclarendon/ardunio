@@ -27,6 +27,7 @@ public:
 	bool getWiFiReconnected(void) const { return m_wifiManager.getIsReconnected(); }
 	void clearFiles(void);
 	void createControllerID(void);
+	void restart(void);
 
 private:
 	void setupNetwork(void);

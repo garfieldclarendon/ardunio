@@ -133,6 +133,11 @@ void TurnoutHandler::setConfigValue(const char *key, const char *value)
 		int state = atoi(value);
 		m_config->routeEntries[m_currentRouteConfig++].state = (TurnoutState)state;
 	}
+	else if (strcmp(key, "INPUTPIN") == 0)
+	{
+		unsigned char v = atoi(value);
+		m_config->inputPinSetting = v;
+	}
 }
 
 void TurnoutHandler::setConfig(TurnoutConfigStruct *value)

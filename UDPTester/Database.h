@@ -57,6 +57,7 @@ private:
     bool createSignalAspectCondition(void);
     bool createBlockTable(void);
     bool createDeviceTable(void);
+    bool createDevicePropertyTable(void);
 
     void updateDatabaseSchema(int currentVersion);
 

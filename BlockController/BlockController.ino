@@ -15,8 +15,8 @@
 #include "BlockModule.h"
 
 // Block pin assignments
-const byte block1Pin = 13; // 4;
-const byte block2Pin = 4;// 13;
+const byte block1Pin = 4; // 4;
+const byte block2Pin = 0;// 13;
 const byte block1LEDPin = 12;
 const byte block2LEDPin = 5;
 const byte logicalBlock1Pin = 0;
@@ -196,16 +196,21 @@ void configCallback(const char *key, const char *value)
 		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
 		EEPROM.put(BLOCK_CONFIG_ADDRESS, controllerConfig);
 		EEPROM.commit();
-		ESP.restart();
+		controller.restart();
 	}
 	else
 	{
 		module.configCallback(key, value);
 	}
 }
-
+byte lastRead = 0;
 void readPins(byte &data)
 {
+	if (digitalRead(block1Pin) != lastRead)
+	{
+		lastRead = digitalRead(block1Pin);
+		DEBUG_PRINT("readPins: %d\n", lastRead);
+	}
 	bitWrite(data, logicalBlock1Pin, digitalRead(block1Pin));
 	bitWrite(data, logicalBlock2Pin, digitalRead(block2Pin));
 }

@@ -40,15 +40,15 @@ Item {
                 id: editButton
                 text: "Edit"
                 onClicked: {
-                    console.debug("Reset Button Clicked!!");
+                    console.debug("Edit Button Clicked!!");
                     editClicked();
                 }
             }
             Button {
                 id: resetButton
-                text: "Reset"
+                text: "Restart"
                 onClicked: {
-                    console.debug("Reset Button Clicked!!");
+                    console.debug("Restart Button Clicked!!");
                     broadcaster.sendResetCommand(controllerID);
                 }
             }
@@ -64,7 +64,7 @@ Item {
                 id: resetConfig
                 text: "Reset Config"
                 onClicked: {
-                    console.debug("Rest Config Button Clicked!! Serial Number: " + serialNumber);
+                    console.debug("Reset Config Button Clicked!! Serial Number: " + serialNumber);
                     broadcaster.sendMessage(16, controllerID, 0, 0, serialNumber, 0, 0, 0, 0);
                 }
             }

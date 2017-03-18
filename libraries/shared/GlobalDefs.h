@@ -78,6 +78,7 @@ typedef struct RouteStruct RouteStruct;
 #define SYS_REBOOT_CONTROLLER 17
 #define SYS_DOWNLOAD_FIRMWARE 18
 #define SYS_REQEST_STATUS 19
+#define SYS_RESTARTING 20
 
 //Turnout Messages
 #define TRN_STATUS 101

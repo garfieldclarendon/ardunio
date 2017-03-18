@@ -10,27 +10,6 @@ TurnoutModule::TurnoutModule(void)
 	m_turnouts[1].setConfig(&m_config.turnout2);
 }
 
-void TurnoutModule::setup(void)
-{
-	byte normalPin1 = 2;
-	byte divergePin1 = 3;
-	byte normalPin2 = 6;
-	byte divergePin2 = 7;
-
-	m_currentState = 0;
-	// Force the diverging pin ON so that it resets to normal
-	// if the turnout happens to be set to the diverging route
-	bitWrite(m_currentState, normalPin1, 1);
-	bitWrite(m_currentState, divergePin1, 0);
-	bitWrite(m_currentState, normalPin2, 1);
-	bitWrite(m_currentState, divergePin2, 0);
-
-	DEBUG_PRINT("TurnoutModule::setup  Turnout1\n");
-	m_turnouts[0].setTurnout(TrnNormal, m_currentState);
-	DEBUG_PRINT("TurnoutModule::setup  Turnout2\n");
-	m_turnouts[1].setTurnout(TrnNormal, m_currentState);
-}
-
 byte TurnoutModule::setupWire(byte address)
 {
 	m_address = address;
@@ -44,6 +23,25 @@ byte TurnoutModule::setupWire(byte address)
 	byte normalPin2 = 6;
 	byte divergePin2 = 7;
 
+	if (m_config.turnout1.inputPinSetting == 1)
+	{
+		byte hold = normalPin1;
+		normalPin1 = divergePin1;
+		divergePin1 = hold;
+		hold = motorAPin1;
+		motorAPin1 = motorBPin1;
+		motorBPin1 = hold;
+	}
+	if (m_config.turnout2.inputPinSetting == 1)
+	{
+		byte hold = normalPin2;
+		normalPin2 = divergePin2;
+		divergePin2 = hold;
+		hold = motorAPin2;
+		motorAPin2 = motorBPin2;
+		motorBPin2 = hold;
+	}
+
 	bitWrite(iodir, motorAPin1, 0);
 	bitWrite(iodir, motorBPin1, 0);
 	bitWrite(iodir, motorAPin2, 0);
@@ -55,7 +53,19 @@ byte TurnoutModule::setupWire(byte address)
 
 	setup(0, motorAPin1, motorBPin1, normalPin1, divergePin1);
 	setup(1, motorAPin2, motorBPin2, normalPin2, divergePin2);
-	setup();
+
+	m_currentState = 0;
+	// Force the diverging pin ON so that it resets to normal
+	// if the turnout happens to be set to the diverging route
+	bitWrite(m_currentState, normalPin1, 1);
+	bitWrite(m_currentState, divergePin1, 0);
+	bitWrite(m_currentState, normalPin2, 1);
+	bitWrite(m_currentState, divergePin2, 0);
+
+	DEBUG_PRINT("TurnoutModule::setup  Turnout1\n");
+	m_turnouts[0].setTurnout(TrnNormal, m_currentState);
+	DEBUG_PRINT("TurnoutModule::setup  Turnout2\n");
+	m_turnouts[1].setTurnout(TrnNormal, m_currentState);
 
 	return iodir;
 }

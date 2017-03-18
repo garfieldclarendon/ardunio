@@ -8,12 +8,6 @@ BlockModule::BlockModule(void)
 	memset(&m_config, 0, sizeof(BlockControllerConfigStruct));
 }
 
-void BlockModule::setup(void)
-{
-	m_blocks[0].setConfig(m_config.block1);
-	m_blocks[1].setConfig(m_config.block2);
-}
-
 byte BlockModule::setupWire(byte address)
 {
 	m_address = address;
@@ -26,7 +20,9 @@ byte BlockModule::setupWire(byte address)
 
 	setup(0, block1Pin);
 	setup(1, block2Pin);
-	setup();
+
+	m_blocks[0].setConfig(m_config.block1);
+	m_blocks[1].setConfig(m_config.block2);
 
 	return iodir;
 }

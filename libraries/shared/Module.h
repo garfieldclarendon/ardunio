@@ -8,7 +8,6 @@ public:
 	Module(void);
 	virtual ~Module(void) { }
 
-	virtual void setup(void) = 0;
 	virtual byte setupWire(byte address) = 0;
 	virtual bool process(byte &data) = 0;
 	virtual bool handleMessage(const Message &message, byte &data) = 0;
