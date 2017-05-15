@@ -9,8 +9,7 @@
 	#include "WProgram.h"
 #endif
 
-#include "Message.h"
-#include "Structures.h"
+#include "globaldefs.h"
 
 class PanelModuleClass
 {
@@ -20,17 +19,14 @@ class PanelModuleClass
  public:
 	 PanelModuleClass(void);
 	void setup(byte address);
-	Message process(bool buttonPressed);
-	Message handleMessage(const Message &message);
-	void setConfiguration(ModuleConfigStruct value) { m_configuration = value; }
-	ModuleConfigStruct getConfiguration(void) const { return m_configuration; }
-	void configCallback(const char *key, const char *value);
+	void process(bool buttonPressed);
+	byte getModuleAddress(void) const;
+	byte getOutputState(void) const { return m_outputs; }
+	void netModuleCallback(NetActionType action, const JsonObject &json);
 
 private:
-	Message handleButtonPressed(byte buttonIndex);
-	void processSwitchTurnoutMessage(const Message &message);
-	void processBlockMessage(const Message &message);
-	void updateOutputs(int itemID, byte newState);
+	void handleButtonPressed(byte buttonIndex);
+	void updateOutputs(byte pinIndex, PinStateEnum newState);
 
 	void addBlinkingPin(byte pin);
 	void blinkPins(void);
@@ -45,11 +41,7 @@ private:
 	byte m_outputs;
 
 	unsigned long m_currentBlinkTimeout;
-	ModuleConfigStruct m_configuration;
-	byte m_configIndex;
 };
-
-extern PanelModuleClass PanelModule;
 
 #endif
 

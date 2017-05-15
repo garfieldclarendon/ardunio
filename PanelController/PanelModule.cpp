@@ -2,8 +2,10 @@
 // 
 // 
 #include <Wire.h>
+#include <ArduinoJson.h>
 
 #include "PanelModule.h"
+#include "network.h"
 
 // MCP23017 registers (everything except direction defaults to 0)
 #define IODIRA   0x00   // IO direction  (0 = output, 1 = input (Default))
@@ -34,10 +36,14 @@
 #define blinkingTimeout 200
 
 PanelModuleClass::PanelModuleClass(void)
-	: m_moduleAddress(0), m_inputs(0), m_outputs(0), m_currentBlinkTimeout(0), m_configIndex(-1)
+	: m_moduleAddress(0), m_inputs(0), m_outputs(0), m_currentBlinkTimeout(0)
 {
-	memset(&m_blinkingPins, 255, 8);
-	memset(&m_configuration, 0, sizeof(ModuleConfigStruct));
+	memset(m_blinkingPins, 255, 8);
+}
+
+byte PanelModuleClass::getModuleAddress(void) const 
+{ 
+	return m_moduleAddress - BASE_ADDRESS;
 }
 
 void PanelModuleClass::setup(byte address)
@@ -46,19 +52,12 @@ void PanelModuleClass::setup(byte address)
 
 	DEBUG_PRINT("setup module: %d\n", address);
 
+	memset(m_blinkingPins, 255, 8);
+
 	// set port A to output
 	expanderWrite(IODIRA, 00);
 	// set port B to input
 	expanderWrite(IODIRB, 0xFF);
-	/* //The interupt pin is connected to the expander chip, however, we are not using it at this time
-	expanderWriteBoth(IOCON, 0b01100000); // mirror interrupts, disable sequential mode
-	// enable all interrupts
-	expanderWriteBoth(GPINTENA, 0xFF); // enable interrupts - both ports
-
-	// read from interrupt capture ports to clear them
-	expanderRead(INTCAPA);
-	expanderRead(INTCAPB);
-	*/
 }
 
 void PanelModuleClass::expanderWrite(const byte reg, const byte data)
@@ -87,23 +86,20 @@ byte PanelModuleClass::expanderRead(const byte reg)
 	return Wire.read();
 } 
 
-Message PanelModuleClass::process(bool buttonPressed)
+void PanelModuleClass::process(bool buttonPressed)
 {
-	Message message;
-
 	byte previousOutputs = m_outputs;
 	byte buttons = expanderRead(GPIOB);
 	if (buttons != m_inputs)
 	{
-		DEBUG_PRINT("Module::process  Module Address: %d\nButton values: %02x\n", m_moduleAddress - BASE_ADDRESS, buttons);
+		DEBUG_PRINT("Module::process  Module Address: %d\nButton values: %02x\n", getModuleAddress(), buttons);
 		m_inputs = buttons;
 
 		for (byte index = 0; index < MAX_PANEL_INPUTS; index++)
 		{
 			if (bitRead(m_inputs, index) == LOW)
 			{
-				message = handleButtonPressed(index);
-				break;
+				handleButtonPressed(index);
 			}
 		}
 	}
@@ -111,95 +107,44 @@ Message PanelModuleClass::process(bool buttonPressed)
 	blinkPins();
 	if (m_outputs != previousOutputs)
 		expanderWrite(GPIOA, m_outputs);
-
-	return message;
 }
 
-Message PanelModuleClass::handleButtonPressed(byte buttonIndex)
+void PanelModuleClass::handleButtonPressed(byte buttonIndex)
 {
-	DEBUG_PRINT("Module::handleButtonPressed  Module Address: %d\nButton index: %d\nRouteID:%d\n", m_moduleAddress - BASE_ADDRESS, buttonIndex, m_configuration.inputs[buttonIndex].id);
+	DEBUG_PRINT("Module::handleButtonPressed  Module Address: %d\nButton index: %d\n", getModuleAddress(), buttonIndex, buttonIndex);
+	String json;
+	StaticJsonBuffer<200> jsonBuffer;
+	JsonObject &root = jsonBuffer.createObject();
+	root["messageUri"] = "/controller/module";
+	root["moduleIndex"] = getModuleAddress();
+	root["class"] = (int)ClassPanel;
+	root["action"] = (int)NetActionUpdate;
 
-	Message message;
+	root["buttonIndex"] = buttonIndex;
 
-	if (m_configuration.inputs[buttonIndex].id > 0)
+	Network.sendMessageToServer(root);
+}
+
+void PanelModuleClass::updateOutputs(byte pinIndex, PinStateEnum newState)
+{
+	if (newState == PinFlashing)
 	{
-		message.setDeviceID(m_configuration.inputs[buttonIndex].id);
-		message.setMessageID(PANEL_ACTIVATE_ROUTE);
-		message.setMessageClass(ClassRoute);
-		message.setField(0, m_configuration.inputs[buttonIndex].value);
+		//Serial.print(index);
+		//DEBUG_PRINT("%d Adding to blinking pins", index);
+		addBlinkingPin(pinIndex);
 	}
-
-	return message;
-}
-
-Message PanelModuleClass::handleMessage(const Message &message)
-{
-	int messageID = message.getMessageID();
-
-	if (messageID == TRN_STATUS)
+	else
 	{
-		processSwitchTurnoutMessage(message);
+		DEBUG_PRINT("Index %d State: %d\n", pinIndex, newState);
+		removeBlinkingPin(pinIndex);
+		bitWrite(m_outputs, pinIndex, newState);
 		expanderWrite(GPIOA, m_outputs);
-	}
-	else if (messageID == BLOCK_STATUS)
-	{
-		processBlockMessage(message);
-		expanderWrite(GPIOA, m_outputs);
-	}
-
-	Message returnMessage;
-	return returnMessage;
-}
-
-void PanelModuleClass::processBlockMessage(const Message &message)
-{
-	byte newState = message.getField(0);
-	int itemID = message.getDeviceID();
-
-	DEBUG_PRINT("Block Status Message for: %d New State: %d\n", itemID, newState);
-
-	updateOutputs(itemID, newState);
-}
-
-void PanelModuleClass::processSwitchTurnoutMessage(const Message &message)
-{
-	byte newState;
-	int turnoutID;
-	for (byte x = 0; x < MAX_MODULES; x++)
-	{
-		turnoutID = message.getDeviceStatusID(x);
-		newState = message.getDeviceStatus(x);
-		if (turnoutID == 0)
-			break;
-		DEBUG_PRINT("Turnout Status Message for: %d New State: %d\n", turnoutID, newState);
-		updateOutputs(turnoutID, newState);
-	}
-}
-
-void PanelModuleClass::updateOutputs(int itemID, byte newState)
-{
-	for (byte index = 0; index < MAX_PANEL_OUTPUTS; index++)
-	{
-		if (m_configuration.outputs[index].itemID == itemID && itemID > 0)
-		{
-			if (m_configuration.outputs[index].flashingValue == newState)
-			{
-				//Serial.print(index);
-				//DEBUG_PRINT("%d Adding to blinking pins", index);
-				addBlinkingPin(index);
-			}
-			else
-			{
-				DEBUG_PRINT("Index %1 State: %2 OnValue: %3\n", index, newState, m_configuration.outputs[index].onValue);
-				removeBlinkingPin(index);
-				bitWrite(m_outputs, index, m_configuration.outputs[index].onValue == newState);
-			}
-		}
 	}
 }
 
 void PanelModuleClass::addBlinkingPin(byte pin)
 {
+	DEBUG_PRINT("Adding to blinking pins: %d\n", pin);
 	bool found = false;
 	// Make sure the pin is not already in the list
 	for (byte x = 0; x < 8; x++)
@@ -226,6 +171,7 @@ void PanelModuleClass::addBlinkingPin(byte pin)
 
 void PanelModuleClass::removeBlinkingPin(byte pin)
 {
+	DEBUG_PRINT("Removing from blinking pins: %d\n", pin);
 	for (byte x = 0; x < 8; x++)
 	{
 		if (m_blinkingPins[x] == pin)
@@ -247,45 +193,25 @@ void PanelModuleClass::blinkPins(void)
 			{
 				int state = bitRead(m_outputs, m_blinkingPins[x]);
 				bitWrite(m_outputs, m_blinkingPins[x], state == 0);
+//				DEBUG_PRINT("BLINKING PIN %d\n", m_blinkingPins[x]);
 			}
 		}
 	}
 }
 
-void PanelModuleClass::configCallback(const char *key, const char *value)
+void PanelModuleClass::netModuleCallback(NetActionType action, const JsonObject &json)
 {
-	if (strcmp(key, "ID") == 0 || strcmp(key, "END") == 0)
+	DEBUG_PRINT("PanelModuleClass::netModuleCallback  Action: %d\n", action);
+	if (action == NetActionUpdate)
 	{
-		m_configIndex = -1;
-	}
-	else if (strcmp(key, "INID") == 0)
-	{
-		m_configIndex++;
-		m_configuration.inputs[m_configIndex].id = atoi(value);
-	}
-	else if (strcmp(key, "INTYPE") == 0)
-	{
-		m_configuration.inputs[m_configIndex].inputType = atoi(value);
-	}
-	else if (strcmp(key, "INVALUE") == 0)
-	{
-		m_configuration.inputs[m_configIndex].value = atoi(value);
-	}
-	else if (strcmp(key, "ITEMID") == 0)
-	{
-		m_configIndex++;
-		m_configuration.outputs[m_configIndex].itemID = atoi(value);
-	}
-	else if (strcmp(key, "ITEMTYPE") == 0)
-	{
-		m_configuration.outputs[m_configIndex].itemType = atoi(value);
-	}
-	else if (strcmp(key, "ON") == 0)
-	{
-		m_configuration.outputs[m_configIndex].onValue = atoi(value);
-	}
-	else if (strcmp(key, "FLASH") == 0)
-	{
-		m_configuration.outputs[m_configIndex].flashingValue = atoi(value);
+		JsonArray &pins = json["pins"];
+
+		for (byte x = 0; x < pins.size(); x++)
+		{
+			int pinIndex = pins[x]["pinIndex"];
+			PinStateEnum pinState = (PinStateEnum)(byte)pins[x]["pinState"];
+
+			updateOutputs(pinIndex, pinState);
+		}
 	}
 }

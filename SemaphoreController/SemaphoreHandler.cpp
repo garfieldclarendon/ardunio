@@ -2,7 +2,7 @@
 #include "SemaphoreHandler.h"
 
 SemaphoreHandler::SemaphoreHandler(void)
-	: m_motorAPin(0), m_motorBPin(0), m_normalPin(0), m_divergePin(0)
+	: m_motorAPin(0), m_motorBPin(0), m_normalPin(0), m_divergePin(0), m_currentMotorSetting(0)
 {
 }
 
@@ -18,58 +18,29 @@ void SemaphoreHandler::setup(byte motorAPin, byte motorBPin, byte normalPin, byt
 	pinMode(m_normalPin, INPUT);
 	pinMode(m_divergePin, INPUT);
 
-	SignalAspect aspect;
-	aspect.setRedMode(SignalAspect::On);
-	setSignal(aspect);
+	digitalWrite(m_motorAPin, 0);
+	digitalWrite(m_motorBPin, 1);
 }
 
 bool SemaphoreHandler::process(void)
 {
-	bool ret = false;
+	bool ret = true;
 
-	ret = m_signalHandler.process();
-
-	if (ret)
-		setSignal(m_signalHandler.getCurrentAspect());
-
-	return ret;
-}
-
-bool SemaphoreHandler::handleMessage(const Message &message)
-{
-	bool ret = false;
-	
-	ret = m_signalHandler.handleMessage(message);
-
-	return ret;
-}
-
-Message SemaphoreHandler::createMessage(SignalAspect newState)
-{
-	Message message;
-
-	message.setDeviceID(m_signalHandler.getDeviceID());
-	message.setMessageID(TRN_STATUS);
-	message.setMessageClass(ClassSignal);
-	message.setIntValue1(newState.getRedMode());
-	message.setByteValue1(newState.getYellowMode());
-	message.setByteValue2(newState.getGreenMode());
-
-	return message;
-}
-
-void SemaphoreHandler::setSignal(SignalAspect newState)
-{
-	if (newState.getRedMode() == SignalAspect::On || newState.getRedMode() == SignalAspect::Flashing)
+	if (m_currentMotorSetting == 0)
 	{
-		DEBUG_PRINT("SETTING SIGNAL TO RED\n");
-		digitalWrite(m_motorAPin, 1);
-		digitalWrite(m_motorBPin, 0);
-	}
-	else if (newState.getGreenMode() == SignalAspect::On || newState.getGreenMode() == SignalAspect::Flashing)
-	{
-		DEBUG_PRINT("SETTING SIGNAL TO GREEN\n");
 		digitalWrite(m_motorAPin, 0);
 		digitalWrite(m_motorBPin, 1);
 	}
+	else
+	{
+		digitalWrite(m_motorAPin, 1);
+		digitalWrite(m_motorBPin, 0);
+	}
+
+	return ret;
+}
+
+void SemaphoreHandler::setSignal(byte motorPinSetting)
+{
+	m_currentMotorSetting = motorPinSetting;
 }

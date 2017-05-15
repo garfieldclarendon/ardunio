@@ -1,3 +1,5 @@
+#include <ArduinoJson.h>
+#include <ESP8266WebServer.h>
 #include <WebSocketsClient.h>
 #include <Hash.h>
 #include <EEPROM.h>
@@ -8,11 +10,13 @@
 #include <WiFiServer.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
+#include <FS.h>
+#include <Wire.h>
 
-#include "ConfigDownload.h"
 #include "Controller.h"
 #include "TurnoutModule.h"
 #include "ConfigStructures.h"
+#include "Network.h"
 
 // Turnout pin assignments
 const byte motor1_pinA = 13;
@@ -37,8 +41,13 @@ const byte diverge2_logicalPin = 7;
 const int TURNOUT_CONFIG_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
 
 Controller controller(LocalServerPort);
+
 TurnoutModule turnoutModule;
 TurnoutControllerConfigStruct controllerConfig;
+
+void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json);
+void netControllerStatusCallback(int &controllerID, String &controllerName, String &controllerType, String &currentStatus);
+void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json);
 
 void setup() 
 {
@@ -55,21 +64,114 @@ void setup()
 #endif
 	DEBUG_PRINT("setup\n");
 
+	SPIFFS.begin();
 	setupPins();
 
 	memset(&controllerConfig, 0, sizeof(TurnoutControllerConfigStruct));
 	EEPROM.begin(512);
 
-	ConfigDownload.init(&controller);
+	controller.setup(ClassTurnout);
 
-	controller.setup(messageCallback, ClassTurnout);
+	Network.setModuleConfigCallback(netModuleConfigCallback);
+	Network.setControllerStatusCallback(netControllerStatusCallback);
+	Network.setModuleCallback(netModuleCallback);
+	Network.setUdpMessageCallback(udpMessageCallback);
+	Network.setServerConnectedCallback(serverReconnected);
+
 	loadConfiguration();
 
 	turnoutModule.setupWire(0);
-
+	byte data = 0;
+	readPins(data);
+	turnoutModule.process(data);
 	setPins();
 
 	DEBUG_PRINT("setup complete\n");
+}
+
+void netControllerStatusCallback(int &controllerID, String &controllerName, String &controllerType, String &currentStatus)
+{
+	controllerID = controller.getControllerID();
+	controllerName = controller.getControllerName();
+	controllerType = "Turnout";
+
+	currentStatus  = "<table>";
+	currentStatus += "<tr>";
+	currentStatus += "<th>Device ID</th>";
+	currentStatus += "<th>Status</th>";
+	currentStatus += "</tr>";
+	currentStatus += "<tr>";
+	currentStatus += "<td>";
+	currentStatus += turnoutModule.getDeviceID(0);
+	currentStatus += "</td>";
+	currentStatus += "<td>";
+	currentStatus += turnoutModule.getCurrentState();
+	currentStatus += "</td>";
+	currentStatus += "</tr>";
+	currentStatus += "<tr>";
+	currentStatus += "<td>";
+	currentStatus += turnoutModule.getDeviceID(1);
+	currentStatus += "</td>";
+	currentStatus += "<td>";
+	currentStatus += turnoutModule.getCurrentState();
+	currentStatus += "</td>";
+	currentStatus += "</tr>";
+	currentStatus += "</table>";
+}
+
+void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json)
+{
+	DEBUG_PRINT("netConfigCallback: NetAction %d\n", action);
+
+	if (moduleIndex == 0)
+	{
+		if (action == NetActionUpdate)
+			saveConfig(json);
+		else if (action == NetActionDelete)
+			deleteConfig();
+
+		turnoutModule.netModuleConfigCallback(action, moduleIndex, json);
+	}
+}
+
+void saveConfig(const JsonObject &json)
+{
+	String txt;
+	json.printTo(txt);
+
+	String fileName("/Module_0.json");
+	if (SPIFFS.exists(fileName))
+		SPIFFS.remove(fileName);
+	File f = SPIFFS.open(fileName, "w");
+
+	if (f)
+	{
+		DEBUG_PRINT("Saving Module config: %s\n", fileName.c_str());
+
+		f.write((const uint8_t *)txt.c_str(), txt.length());
+		f.close();
+	}
+	else
+	{
+		DEBUG_PRINT("Saving Module config FAILED: %s  COULD NOT OPEN FILE\n", fileName.c_str());
+	}
+}
+
+void deleteConfig(void)
+{
+	String fileName("/Module_0.json");
+	SPIFFS.remove(fileName);
+}
+
+void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json)
+{
+	if (moduleIndex == 0)
+	{
+		byte data(turnoutModule.getCurrentState());
+		readPins(data);
+		turnoutModule.netModuleCallback(action, moduleIndex, json, data);
+		setPins();
+	}
 }
 
 void setupPins(void)
@@ -87,15 +189,8 @@ void setupPins(void)
 
 void loop() 
 {
+	Network.process();
 	controller.process();
-	if (controller.getWiFiReconnected())
-	{
-		sendStatusMessage(false);
-	}
-	sendHeartbeatMessage();
-
-	ConfigDownload.process();
-
 	processTurnouts();
 }
 
@@ -105,111 +200,38 @@ void processTurnouts(void)
 	readPins(data);
 	
 	bool sendMessage = turnoutModule.process(data);
-//	setPins();
+	setPins();
 	if (sendMessage)
 	{
-		setPins();
-		sendStatusMessage(false);
+		turnoutModule.sendStatusMessage();
 	}
 }
 
 void loadConfiguration(void)
 {
-	if(controller.checkEEPROM(0xAC))
-	{  
-		EEPROM.get(TURNOUT_CONFIG_ADDRESS, controllerConfig);
+	DEBUG_PRINT("LOAD CONFIGURATION\n");
+	String json;
+	String fileName("/Module_0.json");
+	File f = SPIFFS.open(fileName, "r");
 
-		DEBUG_PRINT("LOAD TURNOUT1: %d TURNOUT2: %d \n", controllerConfig.turnout1.turnoutID, controllerConfig.turnout2.turnoutID);
-		turnoutModule.setConfig(0, controllerConfig.turnout1);
-		turnoutModule.setConfig(1, controllerConfig.turnout2);
-	}
-	else
+	if (f)
 	{
-		EEPROM.put(TURNOUT_CONFIG_ADDRESS, controllerConfig);
-		EEPROM.commit();
+		DEBUG_PRINT("Reading Module config: %s\n", fileName.c_str());
 
-		turnoutModule.setConfig(0, controllerConfig.turnout1);
-		turnoutModule.setConfig(1, controllerConfig.turnout2);
-	}
-}
+		json = f.readString();
+		f.close();
 
-int currentTurnoutConfig = -1;
-int currentRouteConfig = 0;
-void downloadConfig(void)
-{
-	// Key should be the Chip ID and a single letter indicating the type of controller:
-	// T = Turnout controller
-	// P = Panel controller
-	// S = Signal
-	// B = Block controller
-	// M = Multi-Module Controller
-	// 
-	// and the moduleIndex.  For this type of controller there is only one module: 0
-	// The server will use this information to lookup the configuration information for this controller
-	String key;
-	key += ESP.getChipId();
-	key += ",T,0";
-
-	ConfigDownload.downloadConfig(key, configCallback);
-}
-
-void configCallback(const char *key, const char *value)
-{
-	if (key == NULL)
-	{
-		ConfigDownload.reset();
-		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
-		memcpy(&controllerConfig, turnoutModule.getConfigReference(), turnoutModule.getConfigSize());
-		DEBUG_PRINT("SAVING TURNOUT1: %d TURNOUT2: %d \n",controllerConfig.turnout1.turnoutID, controllerConfig.turnout2.turnoutID);
-		EEPROM.put(TURNOUT_CONFIG_ADDRESS, controllerConfig);
-		EEPROM.commit();
-		controller.restart();
-	}
-	else
-	{
-		turnoutModule.configCallback(key, value);
-	}
-}
-
-void messageCallback(const Message &message)
-{
-	if (message.getMessageID() == SYS_REQEST_STATUS && (message.getControllerID() == 0 || message.getControllerID() == controller.getControllerID()))
-	{
-		sendStatusMessage(true);
-	}
-	else if (message.getMessageID() == SYS_CONFIG_CHANGED && (message.getControllerID() == 0 || message.getControllerID() == controller.getControllerID()))
-	{
-		downloadConfig();
-	}
-	else if (message.getMessageID() == SYS_SET_CONTROLLER_ID && message.getLValue() == ESP.getChipId())
-	{
-		downloadConfig();
-	}
-	else
-	{
-		byte data(turnoutModule.getCurrentState());
-		readPins(data);
-		bool sendStatus = turnoutModule.handleMessage(message, data);
-//		setPins();
-
-		if (sendStatus)
+		if (json.length() > 0)
 		{
-			setPins();
-			sendStatusMessage(false);
+			StaticJsonBuffer<512> jsonBuffer;
+			JsonObject &root = jsonBuffer.parseObject(json);
+			turnoutModule.netModuleConfigCallback(NetActionUpdate, 0, root);
 		}
 	}
-}
-
-void sendStatusMessage(bool sendOnce)
-{
-	Message message;
-	DEBUG_PRINT("----------------------\n");
-	DEBUG_PRINT("Sending status message\n");
-
-	message = turnoutModule.createMessage();
-	message.setControllerID(controller.getControllerID());
-	controller.sendNetworkMessage(message, sendOnce);
-	DEBUG_PRINT("----------------------\n");
+	else
+	{
+		DEBUG_PRINT("Configuration file %s is missing or can not be opened\n", fileName.c_str());
+	}
 }
 
 void setPins(void)
@@ -218,13 +240,13 @@ void setPins(void)
 //	DEBUG_PRINT("DATA %d\n", data);
 
 	digitalWrite(motor1_pinA, bitRead(data, motor1_logicalPinA));
-	DEBUG_PRINT("Morotr1_A %d\n", bitRead(data, motor1_logicalPinA));
+//	DEBUG_PRINT("Morotr1_A %d\n", bitRead(data, motor1_logicalPinA));
 	digitalWrite(motor1_pinB, bitRead(data, motor1_logicalPinB));
-	DEBUG_PRINT("Morotr1_B %d\n", bitRead(data, motor1_logicalPinB));
+//	DEBUG_PRINT("Morotr1_B %d\n", bitRead(data, motor1_logicalPinB));
 	digitalWrite(motor2_pinA, bitRead(data, motor2_logicalPinA));
-	DEBUG_PRINT("Morotr2_A %d\n", bitRead(data, motor2_logicalPinA));
+	//	DEBUG_PRINT("Morotr2_A %d\n", bitRead(data, motor2_logicalPinA));
 	digitalWrite(motor2_pinB, bitRead(data, motor2_logicalPinB));
-	DEBUG_PRINT("Morotr2_B %d\n", bitRead(data, motor2_logicalPinB));
+	//	DEBUG_PRINT("Morotr2_B %d\n", bitRead(data, motor2_logicalPinB));
 }
 
 void readPins(byte &data)
@@ -235,13 +257,13 @@ void readPins(byte &data)
 	bitWrite(data, normal2_logicalPin, digitalRead(normal2_pin));
 }
 
-long heartbeatTimeout = 0;
-void sendHeartbeatMessage(void)
+void serverReconnected(void)
 {
-	long t = millis();
-	if ((t - heartbeatTimeout) > HEARTBEAT_INTERVAL)
-	{
-		heartbeatTimeout = t;
-		sendStatusMessage(true);
-	}
+	DEBUG_PRINT("serverReconnected\n");
+	turnoutModule.sendStatusMessage();
+}
+
+void udpMessageCallback(const Message &message)
+{
+	controller.processMessage(message);
 }

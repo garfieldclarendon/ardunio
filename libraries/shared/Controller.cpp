@@ -1,5 +1,6 @@
 #include "Controller.h"
 #include "GlobalDefs.h"
+#include "Network.h"
 
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
@@ -9,10 +10,14 @@
 #include <ESP8266httpUpdate.h>
 #include <FS.h>
 
+#define blinkingTimeout 200
 
 Controller::Controller(int localServerPort)
-	: m_controllerID(-1), m_class(ClassUnknown), m_lastDNSCount(0), m_dnsCheckTimeout(0)
+	: m_controllerID(-1), m_class(ClassUnknown), m_currentBlinkTimeout(0)
 {
+	memset(&m_devices, 0, sizeof(DeviceEntryStruct) * MAX_MODULES);
+	memset(&m_extraPins, 0, 8);
+	memset(&m_blinkingPins, 255, 8);
 }
 
 Controller::~Controller()
@@ -21,147 +26,143 @@ Controller::~Controller()
 
 // Be sure Controller::loadConfig() is called first!
 // DO NOT call loadConfig from this function!!
-void Controller::setup(TMessageHandlerFunction messageCallback, ClassEnum controllerClass)
+void Controller::setup(ClassEnum controllerClass)
 {
 	m_class = controllerClass;
-	m_messageCallback = messageCallback;
 	WiFi.setAutoConnect(false);
 	WiFi.disconnect();
 
 	m_wifiManager.setupWifi(ssidPrefix, password);
-	setupNetwork();
 
-	MDNS.begin("GCMRR");
-
-	DEBUG_PRINT("------------------------\n");
-	DEBUG_PRINT(" ControllerID: %d \r\n", m_controllerID);
 	DEBUG_PRINT("------------------------\n");
 	DEBUG_PRINT(" Serial #: %d\r\n", ESP.getChipId());
 	DEBUG_PRINT("------------------------\n");
 }
 
-void Controller::setupNetwork(void)
-{
-	if(m_udp.begin(UdpPort))
-		DEBUG_PRINT("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), UdpPort);
-	else
-		DEBUG_PRINT("Error starting UDP!\n");
-}
-
 void Controller::process(void)
 {
 	m_wifiManager.process();
-	resendLastMessage();
-	processUDP();
-}
-
-void Controller::processUDP(void)
-{
-	static bool signatureFound = false;
-	int packetSize;
-	if (signatureFound)
-		packetSize = m_udp.available();
-	else
-		packetSize = m_udp.parsePacket();
-
-	// Find the start of a valid message.
-	// ...ignore everything else
-	if (packetSize >= 0 && signatureFound == false)
+	if (m_wifiManager.getIsReconnected())
 	{
-		while (m_udp.peek() != 0xEE && (packetSize = m_udp.available()) > 0)
-			m_udp.read();
-		if (m_udp.peek() == 0xEE)
-		{
-			m_udp.read();
-			if (m_udp.peek() == 0xEF)
-			{
-				signatureFound = true;
-				m_udp.read();
-			}
-		}
+		Network.init(8080);
+		findServer();
+		if (m_wifiReconnectCallback)
+			m_wifiReconnectCallback();
 	}
-
-	// wait until a full message comes in before processing
-	if (signatureFound)
-	{
-		DEBUG_PRINT("READING MESSAGE!\n");
-		Message message;
-		byte size = sizeof(MessageStruct);
-		char *ref = message.getRef();
-		// Skip the signature bytes
-		ref += 2;
-		while (m_udp.available() > 0)
-		{
-			byte b = m_udp.read();
-			if (size <= sizeof(MessageStruct))
-			{
-				*ref = b;
-				size--;
-				ref++;
-			}
-			// If this is the end of message signature, remove any extra
-			// data
-			if (b == 0xEF && m_udp.peek() == 0xEE)
-			{
-				// read the second byte of the end of message signature (0XEE)
-				b = m_udp.read();
-//				DEBUG_PRINT("END Signature found!!\n");
-				if (m_udp.available() > 0)
-					b = m_udp.read();
-				// If more data available, read to the next start signature
-				while (m_udp.available() > 0 && b != 0xEE && m_udp.peek() != 0xEF)
-					b = m_udp.read();
-				break;
-			}
-		}
-
-		processMessage(message);
-		signatureFound = false;
-	}
+	flashPins();
 }
 
 void Controller::processMessage(const Message &message)
 {
 	DEBUG_PRINT("NEW MESSAGE! MessageID %d\n", message.getMessageID());
-	if (message.getMessageID() == SYS_SET_CONTROLLER_ID && message.getLValue() == ESP.getChipId())
+	if (message.getMessageID() == SYS_REBOOT_CONTROLLER && (message.getSerialNumber() == 0 || message.getSerialNumber() == ESP.getChipId()))
 	{
-		handleSetControllerIDMessage(message);
-		m_messageCallback(message);
-	}
-	else if (message.getMessageID() == SYS_REBOOT_CONTROLLER && (message.getControllerID() == 0 || message.getControllerID() == getControllerID()))
-	{
-		Serial.println("RESTART MESSAGE! Controller restarting.");
+		DEBUG_PRINT("RESTART MESSAGE! Controller restarting.\n");
 		restart();
 	}
-	else if (message.getMessageID() == SYS_DOWNLOAD_FIRMWARE && (message.getByteValue1() == (byte)getClass() || message.getControllerID() == 0 || message.getControllerID() == getControllerID()))
+	else if (message.getMessageID() == SYS_DOWNLOAD_FIRMWARE && (message.getSerialNumber() == 0 || message.getSerialNumber() == ESP.getChipId()))
 	{
 		downloadFirmwareUpdate();
 	}
-	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getLValue() == ESP.getChipId())
+	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getSerialNumber() == ESP.getChipId())
 	{
 		DEBUG_PRINT("RESET CONFIG MESSAGE!\n");
 		resetConfiguration();
 		restart();
 	}
-	else if (message.getMessageID() == SYS_CONFIG_CHANGED && getControllerID() < 1)
+	else if (message.getMessageID() == SYS_SERVER_HEARTBEAT)
 	{
-		createControllerID();
+		IPAddress address(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
+		Network.setServerAddress(address);
+		DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s\n", address.toString().c_str());
+		if (m_controllerID <= 0)
+			getControllerIDAndName();
 	}
-	else
+	else if (message.getMessageID() == SYS_UDP_HTTP)
 	{
-		m_messageCallback(message);
+//		String buffer(message.getPayload());
+//		String actionText = buffer.substring(0, buffer.indexOf(" "));
+//		String path = buffer.substring(buffer.indexOf("/"), buffer.indexOf("\n"));
+//		String payload = buffer.substring(buffer.indexOf("\n"));
+//
+////		DEBUG_PRINT("SYS_UDP_HTTP: Action: '%s' Path: '%s' Payload: %s\n", actionText.c_str(), path.c_str(), payload .c_str());
+//
+//		NetActionType action = NetActionGet;
+//
+//		if (actionText == "PUT")
+//			action = NetActionUpdate;
+//		else if (actionText == "POST")
+//			action = NetActionAdd;
+//		else if (actionText == "DELETE")
+//			action = NetActionDelete;
+//
+//		Network.handleUdpMessage(action, ClassTurnout, path, payload);
 	}
+}
+
+void Controller::getControllerIDAndName(void)
+{
+	DEBUG_PRINT("getControllerIDAndName\n");
+	StaticJsonBuffer<600> jsonBuffer;
+	JsonObject &root = jsonBuffer.createObject();
+	root["serialNumber"] = ESP.getChipId();
+	root["messageUri"] = "/controller/connect";
+
+	String json;
+	Network.sendMessageToServer(root);
+}
+
+void Controller::updateControllerName(const JsonObject &root)
+{
+	m_controllerID = root["controllerID"];
+	m_controllerName = (const char *)root["controllerName"];
+	DEBUG_PRINT("getControllerIDAndName: Set controllerID %d and controllerName %s\n", m_controllerID, m_controllerName.c_str());
+	JsonArray &devices = root["devices"];
+	for (byte x = 0; x < devices.size(); x++)
+	{
+		m_devices[x].deviceID = devices[x]["deviceID"];
+		m_devices[x].deviceName = (const char *)devices[x]["deviceName"];
+		DEBUG_PRINT("getControllerIDAndName: DeviceID %d  Name %s\n", m_devices[x].deviceID, m_devices[x].deviceName.c_str());
+	}
+}
+
+void Controller::controllerCallback(NetActionType actionType, const JsonObject &root)
+{
+	String uri = root["messageUri"];
+	if (uri == "controller/name")
+		updateControllerName(root);
+}
+
+byte Controller::getDeviceCount(void) const
+{
+	byte count = 0;
+
+	for (byte x = 0; x < MAX_MODULES; x++)
+	{
+		if (m_devices[x].deviceID == 0)
+			break;
+		else
+			count++;
+	}
+	return count;
+}
+
+int Controller::getDeviceID(byte index) const
+{
+	return m_devices[index].deviceID;
+}
+
+String Controller::getDeviceName(byte index) const
+{
+	return m_devices[index].deviceName;
 }
 
 void Controller::downloadFirmwareUpdate(void)
 {
-	IPAddress address;
-	int port = -1;
+	IPAddress address(Network.getServerAddress());
+	int port(Network.getServerPort());
 
-	if (WiFi.status() == WL_CONNECTED)
-		getServerAddress(address, port);
-	
-	if (port > 0)
+	if (WiFi.status() == WL_CONNECTED && port > 0)
 	{
 		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 		String updateUrl;
@@ -178,100 +179,7 @@ void Controller::downloadFirmwareUpdate(void)
 	}
 }
 
-
-void Controller::getServerAddress(IPAddress &address, int &port)
-{
-	DEBUG_PRINT("Sending mDNS query\n");
-	int n = MDNS.queryService("gcmrr-firmware", "tcp"); // Send out query for gcmrr-firmware tcp services
-	DEBUG_PRINT("mDNS query done\n");
-	if (n == 0)
-	{
-		DEBUG_PRINT("no services found\n");
-	}
-	else
-	{
-		DEBUG_PRINT("%d service(s) found\n", n);
-		address = MDNS.IP(0);
-		port = MDNS.port(0);
-	}
-}
-
-void Controller::sendUdpBroadcastMessage(const Message &message)
-{
-	//DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	//DEBUG_PRINT("MessageSize: %d  MessageID: %d\n", sizeof(MessageStruct), message.getMessageID());
-	//DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-
-	IPAddress broadcastIp;
-	broadcastIp = ~WiFi.subnetMask() | WiFi.gatewayIP();
-	m_udp.beginPacket(broadcastIp, UdpPort);
-	m_udp.write(message.getRef(), sizeof(MessageStruct));
-	m_udp.endPacket();
-}
-
-void Controller::sendNetworkMessage(const Message &message, bool sendOnce)
-{
-	if (sendOnce)
-	{
-		sendUdpBroadcastMessage(message);
-	}
-	else
-	{
-		resetSendMessageCounter(message);
-		sendUdpBroadcastMessage(message);
-	}
-}
-
-void Controller::resetSendMessageCounter(const Message &message)
-{
-	m_resendMessageTimeout = millis();
-	m_lastMessage = message;
-	m_resendMessageCount = 3;
-}
-
-void Controller::resendLastMessage(void)
-{
-	long t = millis();
-	static bool firstTime = true;
-	if ((t - m_resendMessageTimeout) >= 1000 && m_resendMessageCount > 0 && m_lastMessage.isValid())
-	{
-		m_resendMessageTimeout = t;
-		sendUdpBroadcastMessage(m_lastMessage);
-		m_resendMessageCount--;
-	}
-}
-
-void Controller::handleSetControllerIDMessage(const Message &message)
-{
-	DEBUG_PRINT("NEW ControllerID Message! New ControllerID %d\n", message.getControllerID());
-	m_controllerID = message.getControllerID();
-	EEPROM.put(CONTROLLER_ID_ADDRESS, m_controllerID);
-	EEPROM.commit();
-	DEBUG_PRINT("NEW ControllerID SAVED!!\n");
-}
-
-void Controller::createControllerID(void)
-{
-	IPAddress address;
-	int port;
-	getServerAddress(address, port);
-
-	DEBUG_PRINT("createControllerID Server Address: %s:%d\n", address.toString().c_str(), port);
-
-	if ((m_controllerID < 0 || m_controllerID == 0) && port > 0)
-	{
-		DEBUG_PRINT("NEW CONTROLLER!  SEND NEW CONTROLLER MESSAG\n");
-		Message message;
-		message.setControllerID(-1);
-		message.setMessageID(SYS_NEW_CONTROLLER);
-		message.setMessageClass(ClassSystem);
-		message.setLValue(ESP.getChipId());
-		message.setByteValue1(m_class);
-
-		sendUdpBroadcastMessage(message);
-	}
-}
-
+/*
 bool Controller::checkEEPROM(byte signature)
 {
 	// return true if the first byte in memory is set to 'signature'.
@@ -300,7 +208,7 @@ bool Controller::checkEEPROM(byte signature)
 
 	return valid;
 }
-
+*/
 void Controller::clearFiles(void)
 {
 	DEBUG_PRINT("CLEAR FILES!\n");
@@ -317,10 +225,8 @@ void Controller::resetConfiguration(void)
 {
 	DEBUG_PRINT("Reset Configuration!\n");
 
-	m_controllerID = -1;
 	byte signature(0);
 
-	EEPROM.put(CONTROLLER_ID_ADDRESS, m_controllerID);
 	EEPROM.write(0, signature);
 	EEPROM.commit();
 	clearFiles();
@@ -330,9 +236,120 @@ void Controller::restart(void)
 {
 	Message message;
 	message.setMessageID(SYS_RESTARTING);
-	message.setControllerID(getControllerID());
+	message.setSerialNumber(ESP.getChipId());
 
-	sendNetworkMessage(message, true);
+	Network.sendUdpBroadcastMessage(message);
 	delay(250);
 	ESP.restart();
+}
+
+void Controller::findServer(void)
+{
+	DEBUG_PRINT("findServer!\n");
+
+	IPAddress ip;
+	ip = WiFi.localIP();
+	Message message;
+	message.setMessageID(SYS_FIND_SERVER);
+	message.setSerialNumber(ESP.getChipId());
+	message.setField(0, ip[0]);
+	message.setField(1, ip[1]);
+	message.setField(2, ip[2]);
+	message.setField(3, ip[3]);
+
+	Network.sendUdpBroadcastMessage(message);
+}
+
+void Controller::addExtraPin(byte virtualPin, byte physicalPin, PinModeEnum mode)
+{
+	m_extraPins[virtualPin] = physicalPin;
+
+	if (mode == PinInput)
+		pinMode(physicalPin, INPUT);
+	else if (mode == PinInputPullup)
+		pinMode(physicalPin, INPUT_PULLUP);
+	else if (mode == PinOutput)
+		pinMode(physicalPin, OUTPUT);
+	else if (mode == PinOutputOpenDrain)
+		pinMode(physicalPin, OUTPUT_OPEN_DRAIN);
+}
+
+void Controller::setExtraPin(byte virtualPin, PinStateEnum pinState)
+{
+	if (pinState == PinFlashing)
+	{
+		addFlashingPin(m_extraPins[virtualPin]);
+	}
+	else
+	{
+		removeFlashingPin(m_extraPins[virtualPin]);
+		digitalWrite(m_extraPins[virtualPin], pinState == PinOn ? HIGH : LOW);
+	}
+}
+
+PinStateEnum Controller::getExtraPin(byte virtualPin)
+{
+	PinStateEnum ret;
+	
+	if (digitalRead(m_extraPins[virtualPin]) == HIGH)
+		ret = PinOn;
+	else
+		ret = PinOff;
+
+	return ret;
+}
+
+void Controller::addFlashingPin(byte pin)
+{
+	bool found = false;
+	// Make sure the pin is not already in the list
+	for (byte x = 0; x < 8; x++)
+	{
+		if (m_blinkingPins[x] == pin)
+		{
+			found = true;
+			break;
+		}
+	}
+	if (!found)
+	{
+		// Add the pin to the first empty slot
+		for (byte x = 0; x < 8; x++)
+		{
+			if (m_blinkingPins[x] == 255)
+			{
+				m_blinkingPins[x] = pin;
+				break;
+			}
+		}
+	}
+}
+
+void Controller::removeFlashingPin(byte pin)
+{
+	for (byte x = 0; x < 8; x++)
+	{
+		if (m_blinkingPins[x] == pin)
+		{
+			m_blinkingPins[x] = 255;
+		}
+	}
+}
+
+void Controller::flashPins(void)
+{
+	unsigned long t = millis();
+	if (t - m_currentBlinkTimeout > blinkingTimeout)
+	{
+		m_currentBlinkTimeout = t;
+		for (int x = 0; x < 8; x++)
+		{
+			if (m_blinkingPins[x] != 255)
+			{
+				byte state = digitalRead(m_blinkingPins[x]);
+				digitalWrite(m_blinkingPins[x], state == 0);
+				DEBUG_PRINT("FLASHING PIN %d\n", m_blinkingPins[x]);
+			}
+		}
+	}
 }

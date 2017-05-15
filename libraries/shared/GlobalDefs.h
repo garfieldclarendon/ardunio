@@ -1,7 +1,7 @@
 #pragma once
 #include "Local.h"
 
-const int ControllerVersion = 7;
+const int ControllerVersion = 8;
 
 #ifdef PROJECT_DEBUG
 #define DEBUG_PRINT(...) Serial.printf( __VA_ARGS__ )
@@ -14,15 +14,42 @@ const int ControllerVersion = 7;
 #define MAX_SIGNALS 3
 #define MAX_MODULES 8
 #define MAX_PANEL_MODULES 8
-#define MAX_ROUTE_ENTRIES 5
 #define MAX_PANEL_OUTPUTS 8
 #define MAX_PANEL_INPUTS 8
-#define MAX_MODULE_ROUTES 64
-//#define MAX_MODULE_ROUTE_DOWNLOADS 8
-#define MAX_SIGNAL_CONDITIONS 10
+#define MAX_SIGNAL_PINS 8
 
 #define TIMEOUT_INTERVAL 200
 #define HEARTBEAT_INTERVAL 60000 // One minute
+
+enum ConditionEnum
+{
+    ConditionEquals,
+    ConditionNotEquals
+};
+
+enum PinModeEnum
+{
+    PinUnknown,
+    PinInput,
+    PinInputPullup,
+    PinOutput,
+    PinOutputOpenDrain
+};
+
+enum PinStateEnum
+{
+    PinOff,
+    PinOn,
+    PinFlashing
+};
+
+enum NetActionType
+{
+    NetActionGet,
+    NetActionAdd,
+    NetActionUpdate,
+    NetActionDelete
+};
 
 enum TurnoutState 
 {
@@ -42,58 +69,26 @@ enum ClassEnum
         ClassSignal,
         ClassSemaphore,
         ClassBlock,
-		ClassMulti,
+        ClassMulti,
         ClassSystem,
         ClassApp
 };
+
 static unsigned char UdpBroadcast[] = {0xFF, 0xFF, 0xFF, 0xFF};
-const int UdpPort = 45454;
-const int LocalServerPort = 45455;
+const unsigned int UdpPort = 45457;
+const unsigned int LocalServerPort = 45455;
 const unsigned int sendTimeout = 100; 
-
-struct RouteEntryStruct
-{
-	int turnoutID;
-	TurnoutState state;
-};
-typedef struct RouteEntryStruct RouteEntryStruct;
-
-struct RouteStruct
-{
-	int routeID;
-	RouteEntryStruct routeEntries[MAX_ROUTE_ENTRIES];
-};
-typedef struct RouteStruct RouteStruct;
 
 // config addresses for EEPROM
 #define CONTROLLER_ID_ADDRESS 7
 
 //Message IDS
 //System Messages
-#define SYS_SET_CONTROLLER_ID 12
-#define SYS_NEW_CONTROLLER 13
-#define SYS_HEARTBEAT 14
-#define SYS_CONFIG_CHANGED 15
-#define SYS_RESET_CONFIG 16
-#define SYS_REBOOT_CONTROLLER 17
-#define SYS_DOWNLOAD_FIRMWARE 18
-#define SYS_REQEST_STATUS 19
-#define SYS_RESTARTING 20
-
-//Turnout Messages
-#define TRN_STATUS 101
-#define TRN_ACTIVATE 102
-
-//Signal Messages
-#define SIG_STATUS 121
-#define SIG_SET_ASPECT 122
-
-//Block Messages
-#define BLOCK_STATUS 201
-
-//Panel Messages
-#define PANEL_ACTIVATE_ROUTE 221
-#define PANEL_STATUS 222
-
-// Multi Messages
-#define MULTI_STATUS 241
+#define SYS_FIND_SERVER 11
+#define SYS_SERVER_HEARTBEAT 12
+#define SYS_RESET_CONFIG 13
+#define SYS_REBOOT_CONTROLLER 14
+#define SYS_DOWNLOAD_FIRMWARE 15
+#define SYS_RESTARTING 16
+#define SYS_UDP_HTTP 17
+#define SYS_KEEP_ALIVE 18

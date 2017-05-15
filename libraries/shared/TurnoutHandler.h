@@ -1,37 +1,33 @@
 #pragma once
 
-#include "Message.h"
-#include "GlobalDefs.h"
 #include "ConfigStructures.h"
 
 class TurnoutHandler
 {
 public:
   TurnoutHandler(void);
-  void setup(byte motorAPin, byte motorBPin, byte normalPin, byte divergePin);
+  void setup(byte motorAPin, byte motorBPin, byte feedbackAPin, byte feedbackBPin);
   void setConfig(TurnoutConfigStruct *value);
   TurnoutConfigStruct getConfig(void) const { return *m_config; }
   bool process(byte &data);
-  TurnoutState getCurrentState(void) const { return m_currentState;  }
-  void setTurnout(TurnoutState newState, byte &data);
+  void setTurnout(byte motorPinSetting);
 
   int getTurnoutID(void) const { return m_config->turnoutID;  }
-  TurnoutState getTurnoutStateForRoute(int routeID);
-
-  void setConfigValue(const char *key, const char *value);
+  byte getFeedbackA(void) const { return m_currentFeedbackA; }
+  byte getFeedbackB(void) const { return m_currentFeedbackB; }
 
 private:
-	TurnoutState readCurrentState(byte data);
+	void readCurrentState(byte data);
 
 	TurnoutConfigStruct *m_config;
 	byte m_motorAPin;
 	byte m_motorBPin;
-	byte m_normalPin;
-	byte m_divergePin;
+	byte m_feedbackAPin;
+	byte m_feedbackBPin;
+	byte m_currentMotorSetting;
+	byte m_currentFeedbackA;
+	byte m_currentFeedbackB;
 
-	TurnoutState m_currentState;
-	TurnoutState m_lastState;
 	long m_currentTimeout;
-	byte m_currentRouteConfig;
 };
 

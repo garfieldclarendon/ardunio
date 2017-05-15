@@ -18,33 +18,29 @@ public:
 	}
 	TurnoutConfigStruct getConfig(byte index) const { return  m_turnouts[index].getConfig(); }
 
-	void setup(byte index, byte motorAPin, byte motorBPin, byte normalPin, byte divergePin);
-	TurnoutState getCurrentTurnoutState(byte index) const { return m_turnouts[index].getCurrentState(); }
-	void setTurnout(byte index, TurnoutState newTurnoutState, byte &data);
+	byte getIODirConfig(void) const override;
+	void setup(byte index, byte motorAPin, byte motorBPin, byte feedbackAPin, byte feedbackBPin);
+	void setTurnout(byte index, byte motorPinSetting);
 
 	int getTurnoutID(byte index) const { return m_turnouts[index].getTurnoutID(); }
-	Message createMessage(void);
+	String createCurrentStatusJson(void);
 
 	// Module overrides
 	byte getDeviceCount(void) const override { return MAX_TURNOUTS; }
 	short getDeviceID(byte index) const override { return getTurnoutID(index); }
-	byte getDeviceState(byte index) const override { return m_turnouts[index].getCurrentState(); }
 	byte getCurrentState(void) const override { return m_currentState; }
-	byte setupWire(byte address) override;
+	void setupWire(byte address) override;
 	bool process(byte &data) override;
-	bool handleMessage(const Message &message, byte &data) override;
-	bool getSendModuleState(void) const override { return true; }
-	void configCallback(const char *key, const char *value) override;
-	const char *getConfigReference(void) const override;
-	int getConfigSize(void) const override;
-	TurnoutControllerConfigStruct getControllerConfigStruct(void) const { return m_config;  }
+	void sendStatusMessage(void);
+
+	void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json, byte &data);
+	void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json);
+
 
 private:
-	TurnoutState getTurnoutStateForRoute(int routeID);
 	TurnoutHandler m_turnouts[MAX_TURNOUTS];
 
 	byte m_currentState;
-	byte m_currentTurnoutConfig;
 	TurnoutControllerConfigStruct m_config;
 };
 

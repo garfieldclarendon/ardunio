@@ -12,22 +12,6 @@ SignalHandler::SignalHandler(void)
 bool SignalHandler::updateSignal(void)
 {
   bool aspectChanged = false;
-  SignalAspect aspect;
-
-  for(byte x = 0; x < MAX_SIGNAL_CONDITIONS; x++)
-  {
-    if(m_conditions[x].evaluate())
-    {
-		aspect = m_conditions[x].getAspect();
-		break;
-    }
-  }
-
-  if (m_currentAspect != aspect)
-  {
-	  m_currentAspect = aspect;
-	  aspectChanged = true;
-  }
   return aspectChanged;
 }
 
@@ -36,8 +20,6 @@ bool SignalHandler::process(void)
 	bool ret = false;
 
 	ret = updateSignal();
-	if (m_redPin > 0 && ret)
-		setSignal(getCurrentAspect());
 
 	blinkPins();
 
@@ -51,46 +33,11 @@ bool SignalHandler::handleMessage(const Message &)
 	return ret;
 }
 
-void SignalHandler::setConfig(const SignalConfigStruct &config)
-{
-	m_deviceID = config.signalID;
-	for (byte x = 0; x < MAX_SIGNAL_CONDITIONS; x++)
-	{
-		m_conditions[x].setConfig(config.conditions[x]);
-		for (byte y = 0; y < MAX_SIGNAL_CONDITIONS; y++)
-		{
-			DeviceState::addDevice(m_conditions[x].getSignalCondition(y).getDeviceID());
-		}
-	}
-}
-
 void SignalHandler::setup(byte redPin, byte yellowPin, byte greenPin)
 {
 	pinMode(m_redPin, OUTPUT);
 	pinMode(m_yellowPin, OUTPUT);
 	pinMode(m_greenPin, OUTPUT);
-}
-
-void SignalHandler::setSignal(SignalAspect newState)
-{
-	digitalWrite(m_redPin, newState.getRedMode() == SignalAspect::On);
-	digitalWrite(m_yellowPin, newState.getYellowMode() == SignalAspect::On);
-	digitalWrite(m_greenPin, newState.getGreenMode() == SignalAspect::On);
-
-	if (newState.getRedMode() == SignalAspect::Flashing)
-		addBlinkingPin(m_redPin);
-	else
-		removeBlinkingPin(m_redPin);
-
-	if (newState.getYellowMode() == SignalAspect::Flashing)
-		addBlinkingPin(m_yellowPin);
-	else
-		removeBlinkingPin(m_yellowPin);
-
-	if (newState.getGreenMode() == SignalAspect::Flashing)
-		addBlinkingPin(m_greenPin);
-	else
-		removeBlinkingPin(m_greenPin);
 }
 
 void SignalHandler::addBlinkingPin(byte pin)

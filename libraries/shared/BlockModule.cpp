@@ -8,9 +8,9 @@ BlockModule::BlockModule(void)
 	memset(&m_config, 0, sizeof(BlockControllerConfigStruct));
 }
 
-byte BlockModule::setupWire(byte address)
+void BlockModule::setupWire(byte address)
 {
-	m_address = address;
+	setAddress(address);
 	byte iodir = 0;
 	byte block1Pin = 0;
 	byte block2Pin = 1;
@@ -24,7 +24,10 @@ byte BlockModule::setupWire(byte address)
 	m_blocks[0].setConfig(m_config.block1);
 	m_blocks[1].setConfig(m_config.block2);
 
-	return iodir;
+	expanderWrite(IODIR, iodir);
+	delay(100);
+	byte data = getCurrentState();
+	expanderWrite(GPIO, data);
 }
 
 void BlockModule::setup(byte index, byte blockPin)
@@ -53,43 +56,4 @@ bool BlockModule::process(byte &data)
 	}
 
 	return ret;
-}
-
-bool BlockModule::handleMessage(const Message &message, byte &data)
-{
-	bool ret = false;
-	return ret;
-}
-
-Message BlockModule::createMessage(void)
-{
-	Message message;
-
-	message.setMessageID(BLOCK_STATUS);
-	message.setMessageClass(ClassBlock);
-	message.setDeviceStatus(0, m_blocks[0].getBlockID(), m_blocks[0].getCurrentState());
-	message.setDeviceStatus(1, m_blocks[1].getBlockID(), m_blocks[1].getCurrentState());
-	return message;
-}
-
-void BlockModule::configCallback(const char *key, const char *value)
-{
-	if (strcmp(key, "ID") == 0)
-	{
-		m_currentBlockConfig++;
-	}
-	m_blocks[m_currentBlockConfig].setConfigValue(key, value);
-	m_config.block1 = m_blocks[0].getConfig();
-	m_config.block2 = m_blocks[1].getConfig();
-}
-
-const char *BlockModule::getConfigReference(void) const
-{
-
-	return (const char *)&m_config;
-}
-
-int BlockModule::getConfigSize(void) const
-{
-	return sizeof(BlockControllerConfigStruct);
 }

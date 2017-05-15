@@ -1,8 +1,6 @@
 #include "ManageWiFi.h"
 #include <ESP8266WiFi.h>
 #include <limits.h>
-#include <ESP8266mDNS.h>
-
 
 ManageWiFi::ManageWiFi(void)
 	: m_reconnected(false)
