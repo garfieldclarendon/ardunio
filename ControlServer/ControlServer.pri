@@ -34,3 +34,15 @@ SOURCES += main.cpp \
     $$PWD/WebServerThread.cpp \
     $$PWD/SemaphoreHandler.cpp \
     $$PWD/NotificationServer.cpp
+
+win32 {
+HEADERS += $$PWD/StatusDialog.h
+SOURCES += $$PWD/StatusDialog.cpp
+}
+
+linux {
+HEADERS += $$PWD/PIGPIO.h
+SOURCES += $$PWD/PIGPIO.cpp
+}
+FORMS += \
+    $$PWD/StatusDialog.ui

@@ -66,5 +66,7 @@ private:
 	byte m_extraPins[8];
 	byte m_blinkingPins[8];
 	unsigned long m_currentBlinkTimeout;
+	unsigned long m_findServerTimeout;
+	bool m_serverFound;
 };
 

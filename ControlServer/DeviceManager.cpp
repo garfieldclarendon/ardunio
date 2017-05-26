@@ -28,6 +28,16 @@ int DeviceManager::getDeviceStatus(int deviceID)
     return m_statusMap.value(deviceID).getCurrentStatus();
 }
 
+int DeviceManager::getDeviceCount(void) const
+{
+    return m_statusMap.keys().count();
+}
+
+int DeviceManager::getDeviceID(int index) const
+{
+    return m_statusMap.keys().value(index);
+}
+
 void DeviceManager::setDeviceStatus(int deviceID, int status)
 {
     DeviceStatus newStatus(status, QDateTime::currentDateTime());

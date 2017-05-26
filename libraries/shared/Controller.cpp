@@ -13,7 +13,7 @@
 #define blinkingTimeout 200
 
 Controller::Controller(int localServerPort)
-	: m_controllerID(-1), m_class(ClassUnknown), m_currentBlinkTimeout(0)
+	: m_controllerID(-1), m_class(ClassUnknown), m_currentBlinkTimeout(0), m_findServerTimeout(0), m_serverFound(false)
 {
 	memset(&m_devices, 0, sizeof(DeviceEntryStruct) * MAX_MODULES);
 	memset(&m_extraPins, 0, 8);
@@ -49,6 +49,15 @@ void Controller::process(void)
 		if (m_wifiReconnectCallback)
 			m_wifiReconnectCallback();
 	}
+	else if (m_serverFound == false)
+	{
+		unsigned long t = millis();
+		if (t - m_findServerTimeout > 10000)
+		{
+			m_findServerTimeout = t;
+			findServer();
+		}
+	}
 	flashPins();
 }
 
@@ -72,6 +81,7 @@ void Controller::processMessage(const Message &message)
 	}
 	else if (message.getMessageID() == SYS_SERVER_HEARTBEAT)
 	{
+		m_serverFound = true;
 		IPAddress address(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
 		Network.setServerAddress(address);
 		DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s\n", address.toString().c_str());

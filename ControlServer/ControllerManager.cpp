@@ -10,7 +10,7 @@
 
 #include "ControllerManager.h"
 #include "Database.h"
-
+/*
 class ControllerEntry
 {
  public:
@@ -35,7 +35,7 @@ private:
     int m_serialNumber;
     QPointer<QWebSocket> m_socket;
 };
-
+*/
 ControllerManager * ControllerManager::m_instance = NULL;
 
 ControllerManager::ControllerManager(QObject *parent)
@@ -57,7 +57,7 @@ ControllerManager::ControllerManager(QObject *parent)
 
 ControllerManager::~ControllerManager()
 {
-    qDeleteAll(m_controllerMap);
+
 }
 
 ControllerManager *ControllerManager::instance()
@@ -70,10 +70,13 @@ ControllerManager *ControllerManager::instance()
 
 QString ControllerManager::getControllerIPAddress(int serialNumber) const
 {
-    if(m_controllerMap.contains(serialNumber))
-        return m_controllerMap.value(serialNumber)->getIPAddress();
-
-    return QString();
+    QString ipAddress;
+    for(int x = 0; x < m_socketList.count(); x++)
+    {
+        if(m_socketList.value(x)->property("serialNumber").toInt() == serialNumber)
+            ipAddress = m_socketList.value(x)->peerAddress().toString();
+    }
+    return ipAddress;
 }
 
 bool ControllerManager::sendMessage(int serialNumber, const QJsonObject &obj)
@@ -93,33 +96,28 @@ bool ControllerManager::sendMessage(int serialNumber, const QJsonObject &obj)
     return ret;
 }
 
+int ControllerManager::getConnectionSerialNumber(int index) const
+{
+    int serialNumber(0);
+    QWebSocket *socket = m_socketList.value(index);
+    if(socket)
+        serialNumber = socket->property("serialNumber").toInt();
+
+    return serialNumber;
+}
+
 void ControllerManager::sendMessageSlot(int serialNumber, const QString &data)
 {
-    ControllerEntry *entry = m_controllerMap.value(serialNumber);
-    if(entry && entry->getSocket())
+    for(int x = 0; x < m_socketList.count(); x++)
     {
-        int count = entry->getSocket()->sendTextMessage(data);
-        entry->getSocket()->flush();
-        qDebug(QString("ControllerManager::sendMessage length: %1  ret %2 ").arg(data.length()).arg(count).toLatin1());
-//        qDebug(QString("ControllerManager::sendMessage length: %1  ret %2 data: %3").arg(data.length()).arg(count).arg(data).toLatin1());
-//        ret = count > 0;
+        QWebSocket *socket = m_socketList.value(x);
+        if(socket->property("serialNumber").toInt() == serialNumber)
+        {
+            int count = socket->sendTextMessage(data);
+            socket->flush();
+            qDebug(QString("ControllerManager::sendMessage length: %1  ret %2 ").arg(data.length()).arg(count).toLatin1());
+        }
     }
-}
-
-
-void ControllerManager::addController(int serialNumber)
-{
-    ControllerEntry *entry = m_controllerMap.value(serialNumber);
-    if(entry == NULL)
-    {
-        entry = new ControllerEntry(serialNumber);
-        m_controllerMap[serialNumber] = entry;
-    }
-}
-
-void ControllerManager::removeController(int serialNumber)
-{
-    m_controllerMap.remove(serialNumber);
 }
 
 void ControllerManager::onNewConnection(void)
@@ -129,17 +127,22 @@ void ControllerManager::onNewConnection(void)
     connect(socket, &QWebSocket::disconnected, this, &ControllerManager::connectionClosed);
     connect(this, &ControllerManager::pingSignal, socket, &QWebSocket::ping);
     connect(socket, &QWebSocket::pong, this, &ControllerManager::pongReply);
+    m_socketList << socket;
 }
 
 void ControllerManager::connectionClosed(void)
 {
     QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
-    ControllerEntry *entry = m_socketMap.value(socket);
-    m_socketMap.remove(socket);
-    m_controllerMap.remove(entry->getSerialNumber());
-    qDebug(QString("Controller %1 disconnected.").arg(entry->getSerialNumber()).toLatin1());
-    entry->getSocket()->deleteLater();
-    delete entry;
+    int serialNumber = socket->property("serialNumber").toInt();
+    if(serialNumber > 0)
+    {
+        qDebug(QString("Controller %1 disconnected.").arg(serialNumber).toLatin1());
+
+        emit controllerRemoved(serialNumber);
+    }
+    emit controllerDisconnected(m_socketList.indexOf(socket));
+    m_socketList.removeAll(socket);
+    socket->deleteLater();
 }
 
 void ControllerManager::processTextMessage(QString message)
@@ -152,19 +155,15 @@ void ControllerManager::processTextMessage(QString message)
     QJsonObject root = doc.object();
     QString uri = root["messageUri"].toString();
     QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
-    ControllerEntry *entry = m_socketMap.value(socket);
-    int serialNumber(0);
-    if(entry)
-        serialNumber = entry->getSerialNumber();
+    int serialNumber = socket->property("serialNumber").toInt();
 
     if(uri == "/controller/connect")
     {
         serialNumber = root["serialNumber"].toInt();
+        socket->setProperty("serialNumber", serialNumber);
 
-        ControllerEntry *entry = new ControllerEntry(serialNumber);
-        entry->setSocket(socket);
-        m_socketMap[socket] = entry;
-        m_controllerMap[serialNumber] = entry;
+        emit controllerAdded(serialNumber);
+        emit controllerConnected(m_socketList.indexOf(socket));
 
         sendControllerInfo(serialNumber, socket);
     }
@@ -222,6 +221,7 @@ void ControllerManager::pongReply(quint64 length, const QByteArray &)
     {
         QString txt = QString("Pong reply from %1  Total time: %2").arg(socket->peerAddress().toString()).arg(length);
         qDebug(txt.toLatin1());
+        emit controllerPing(m_socketList.indexOf(socket), length);
     }
 }
 

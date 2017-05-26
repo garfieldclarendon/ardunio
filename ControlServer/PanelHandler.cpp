@@ -59,6 +59,9 @@ void PanelHandler::deviceStatusChanged(int deviceID, int status)
                 obj["pinState"] = (int)PinFlashing;
             else
                 obj["pinState"] = (int)PinOff;
+#ifdef Q_OS_WIN
+            emit pinStateChanged(moduleIndex, pinIndex, obj["pinState"].toInt());
+#endif
             jsonArray.append(obj);
             if(currentSerialNumber != serialNumber || currentModuleIndex != moduleIndex)
             {

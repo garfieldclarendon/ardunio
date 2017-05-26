@@ -55,9 +55,11 @@ public:
     static DeviceManager *instance(void);
 
     int getDeviceStatus(int deviceID);
+    int getDeviceCount(void) const;
+    int getDeviceID(int index) const;
 
 signals:
-    void deviceStatusChanged(ClassEnum classCode);
+//    void deviceStatusChanged(ClassEnum classCode);
     void deviceStatusChanged(int deviceID, int status);
 
 public slots:

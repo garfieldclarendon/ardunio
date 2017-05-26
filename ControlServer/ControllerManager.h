@@ -22,15 +22,20 @@ public:
     static ControllerManager *instance(void);
     QString getControllerIPAddress(int serialNumber) const;
     bool sendMessage(int serialNumber, const QJsonObject &obj);
+    int getConnectionCount(void) const { return m_socketList.count(); }
+    int getConnectionSerialNumber(int index) const;
 
 signals:
     void newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
     void pingSignal(const QByteArray &data);
 
-public slots:
-    void addController(int serialNumber);
-    void removeController(int serialNumber);
+    void controllerConnected(int index);
+    void controllerAdded(int serialNumber);
+    void controllerRemoved(int serialNumber);
+    void controllerDisconnected(int index);
+    void controllerPing(int serialNumber, quint64 length);
 
+public slots:
     //Web Socket slots
     void onNewConnection(void);
     void connectionClosed(void);
@@ -49,8 +54,9 @@ private:
 
     QWebSocketServer *m_server;
     QTimer *m_pingTimer;
-    QMap<int, ControllerEntry *> m_controllerMap;
-    QMap<QWebSocket *, ControllerEntry *> m_socketMap;
+    QList<QWebSocket *> m_socketList;
+//    QMap<int, ControllerEntry *> m_controllerMap;
+//    QMap<QWebSocket *, ControllerEntry *> m_socketMap;
     int m_transactionID;
 };
 

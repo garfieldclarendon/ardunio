@@ -1,9 +1,16 @@
 #include <QCoreApplication>
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "AppService.h"
 #include "GlobalDefs.h"
 
+void messageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+bool enableDebugMessages = false;
+
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(messageOutput);
     qRegisterMetaType<ClassEnum>("ClassEnum");
     qRegisterMetaType<NetActionType>("NetActionType");
 
@@ -11,6 +18,12 @@ int main(int argc, char *argv[])
     QString description(QObject::tr("GCMRR Layout Control Server"));
 
     QString s;
+    for(int x = 0; x < argc; x++)
+    {
+        QString s = QString(argv[2]);
+        if(s == "-d" || s == "-D")
+            enableDebugMessages = true;
+    }
     if(argc > 2 && s != "-c")
     {
 
@@ -47,3 +60,28 @@ int main(int argc, char *argv[])
     return service.exec();
 }
 
+void messageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    if(enableDebugMessages)
+    {
+        QByteArray localMsg = msg.toLocal8Bit();
+        switch (type)
+        {
+        case QtDebugMsg:
+            fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+            break;
+        case QtWarningMsg:
+            fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+            break;
+        case QtCriticalMsg:
+            fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+            break;
+        case QtFatalMsg:
+            fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+            abort();
+        default:
+            fprintf(stderr, "Info: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+            break;
+        }
+    }
+}

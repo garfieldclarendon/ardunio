@@ -1,4 +1,3 @@
-#include <QCoreApplication>
 #include <QTranslator>
 #include <QLocale>
 #include <QThreadPool>
@@ -8,6 +7,7 @@
 #include <QSqlQuery>
 #include <QTimer>
 #include <QSettings>
+#include <QProcess>
 
 #include "AppService.h"
 #include "Database.h"
@@ -25,14 +25,18 @@
 
 #ifdef Q_OS_WIN
 #include <windows.h>
+#include "StatusDialog.h"
 
 BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType);
-
 #endif
 
 CAppService::CAppService(int argc, char **argv, const QString &name, const QString &description)
+#ifdef Q_OS_WIN
+    : QtService<QApplication>(argc, argv, name),
+#else
     : QtService<QCoreApplication>(argc, argv, name),
-      m_initialized(false)
+#endif
+      m_initialized(false), m_shutdownPi(false)
 {
     logMessage("starting");
     QString m = QString("%1 Server Starting.").arg(name);
@@ -69,6 +73,11 @@ void CAppService::start(void)
         SetConsoleCtrlHandler(NULL, FALSE);
         SetConsoleCtrlHandler(ConsoleCtrlHandler, TRUE);
 #endif
+
+#ifdef Q_OS_UNIX
+        m_gpio.monitorPin(21);
+        connect(&m_gpio, SIGNAL(pinChanged(int,int)), this, SLOT(shutdownMonitor(int,int)));
+#endif
         QDir::setCurrent(QCoreApplication::applicationDirPath());
 
         Database db;
@@ -84,6 +93,10 @@ void CAppService::start(void)
         logMessage(QObject::tr("Server started."));
         QString m = QString("Server Started.");
         qDebug(m.toLatin1());
+#ifdef Q_OS_WIN
+        StatusDialog *dlg = new StatusDialog;
+        dlg->show();
+#endif
     }
     else
     {
@@ -114,6 +127,25 @@ void CAppService::timerProc(void)
 void CAppService::stopTimerProc()
 {
     stop();
+    if(m_shutdownPi)
+    {
+        QProcess process;
+        process.startDetached("shutdown -P now");
+    }
+}
+
+void CAppService::shutdownMonitor(int pin, int value)
+{
+    qDebug(QString("shutdownMonitor: pin %1 value %2").arg(pin).arg(value).toLatin1());
+
+    if(pin == 21)
+    {
+        if(value == 0)
+        {
+            m_shutdownPi = true;
+            QTimer::singleShot(200, this, SLOT(stopTimerProc()));
+        }
+    }
 }
 
 void CAppService::startWebServer()

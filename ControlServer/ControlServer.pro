@@ -1,5 +1,11 @@
 QT += core network websockets sql
-QT -= gui
+win32 {
+    QT += gui widgets
+}
+else
+{
+    QT -= gui
+}
 
 TARGET = ControlServer
 CONFIG += console
@@ -14,4 +20,4 @@ include(ControlServer.pri)
 include($$PWD/QtSolutionsService/src/qtservice.pri)
 
 #Windows resource file
-//win32:RC_FILE = AppServer.rc
+#win32:RC_FILE = AppServer.rc
