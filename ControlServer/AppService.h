@@ -1,5 +1,8 @@
 #pragma once
+
+#include <QTimer>
 #include "qtservice.h"
+
 #ifdef Q_OS_WIN
 #include <QApplication>
 #else
@@ -10,7 +13,6 @@
 #include "PIGPIO.h"
 #endif
 
-class QTimer;
 class WebServer;
 class NotificationServer;
 
@@ -44,6 +46,9 @@ private:
     quint16 m_basePort;
     bool m_initialized;
     bool m_shutdownPi;
+    bool m_restartPi;
+    QTimer m_shutdownTimer;
+    QTimer m_restartTimer;
 #ifdef Q_OS_UNIX
     PIGPIO m_gpio;
 #endif

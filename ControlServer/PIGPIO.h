@@ -9,7 +9,7 @@
 #define PIN_LOW  0
 #define PIN_HIGH 1
 
-#define MAX_PINS 40
+#define MAX_PINS 41
 #define MAX_MONITOR 5
 
 class PIGPIO : public QObject

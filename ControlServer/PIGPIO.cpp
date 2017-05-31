@@ -21,7 +21,7 @@ PIGPIO::~PIGPIO()
     {
         if(m_pinList[x] == 1)
         {
-            unExportPin(m_pinList[x]);
+            unExportPin(x);
         }
     }
 }
@@ -127,11 +127,12 @@ void PIGPIO::timerProc()
     {
         if(m_monitorList[x] > 0)
         {
-            int value = readPin(m_monitorList[x]);
+            int pin = m_monitorList[x];
+            int value = readPin(pin);
             if(value != m_monitorValue[x])
             {
                 m_monitorValue[x] = value;
-                emit pinChanged(m_monitorList[x], value);
+                emit pinChanged(pin, value);
             }
         }
     }

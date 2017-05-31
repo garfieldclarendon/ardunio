@@ -36,7 +36,7 @@ CAppService::CAppService(int argc, char **argv, const QString &name, const QStri
 #else
     : QtService<QCoreApplication>(argc, argv, name),
 #endif
-      m_initialized(false), m_shutdownPi(false)
+      m_initialized(false), m_shutdownPi(false), m_restartPi(false)
 {
     logMessage("starting");
     QString m = QString("%1 Server Starting.").arg(name);
@@ -44,6 +44,14 @@ CAppService::CAppService(int argc, char **argv, const QString &name, const QStri
     setServiceDescription(description);
     setStartupType(QtServiceController::AutoStartup);
     QThreadPool::globalInstance()->setExpiryTimeout(-1);
+
+    m_shutdownTimer.setInterval(30000);
+    m_shutdownTimer.stop();
+    connect(&m_shutdownTimer, SIGNAL(timeout()), this, SLOT(stopTimerProc()));
+
+    m_restartTimer.setInterval(3000);
+    m_restartTimer.stop();
+    connect(&m_restartTimer, SIGNAL(timeout()), this, SLOT(stopTimerProc()));
 }
 
 CAppService::~CAppService(void)
@@ -75,7 +83,8 @@ void CAppService::start(void)
 #endif
 
 #ifdef Q_OS_UNIX
-        m_gpio.monitorPin(21);
+        m_gpio.monitorPin(23);
+        m_gpio.monitorPin(24);
         connect(&m_gpio, SIGNAL(pinChanged(int,int)), this, SLOT(shutdownMonitor(int,int)));
 #endif
         QDir::setCurrent(QCoreApplication::applicationDirPath());
@@ -130,7 +139,12 @@ void CAppService::stopTimerProc()
     if(m_shutdownPi)
     {
         QProcess process;
-        process.startDetached("shutdown -P now");
+        process.startDetached("shutdown -h now");
+    }
+    else if(m_restartPi)
+    {
+        QProcess process;
+        process.startDetached("shutdown -r now");
     }
 }
 
@@ -138,12 +152,30 @@ void CAppService::shutdownMonitor(int pin, int value)
 {
     qDebug(QString("shutdownMonitor: pin %1 value %2").arg(pin).arg(value).toLatin1());
 
-    if(pin == 21)
+    if(pin == 24)
     {
+        m_shutdownTimer.stop();
         if(value == 0)
         {
             m_shutdownPi = true;
-            QTimer::singleShot(200, this, SLOT(stopTimerProc()));
+            m_shutdownTimer.start();
+        }
+        else
+        {
+            m_shutdownPi = false;
+        }
+    }
+    else if(pin == 23)
+    {
+        m_restartTimer.stop();
+        if(value == 1)
+        {
+            m_restartPi = true;
+            m_restartTimer.start();
+        }
+        else
+        {
+            m_restartPi = false;
         }
     }
 }
