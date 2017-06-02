@@ -13,9 +13,9 @@
 #include <FS.h>
 #include <Wire.h>
 
+#include "GlobalDefs.h"
 #include "PanelModule.h"
 #include "Controller.h"
-#include "GlobalDefs.h"
 #include "configStructures.h"
 #include "Network.h"
 

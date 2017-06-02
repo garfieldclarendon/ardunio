@@ -57,6 +57,8 @@ QHostAddress MessageBroadcaster::getLocalAddress() const
                 returnAddress = dnsTestSocket.localAddress();
                 break;
             }
+            if(address.toString().startsWith("192"))
+                returnAddress = address;
         }
     }
 
