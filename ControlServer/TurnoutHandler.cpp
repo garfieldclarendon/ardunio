@@ -171,25 +171,29 @@ void TurnoutHandler::setCurrentState(int turnoutID, TurnoutState newState)
 {
     m_mapMutex.lock();
     TurnoutState current = m_turnoutStates.value(turnoutID);
+    m_mapMutex.unlock();
     if(current != newState && newState != TrnUnknown)
     {
         if(current == TrnToDiverging || current == TrnToNormal)
         {
             if((current == TrnToNormal && newState == TrnNormal) || (current == TrnToDiverging && newState == TrnDiverging))
             {
+                m_mapMutex.lock();
                 m_turnoutStates[turnoutID] = newState;
+                m_mapMutex.unlock();
                 DeviceManager::instance()->setDeviceStatus(turnoutID, newState);
                 createAndSendNotificationMessage(turnoutID, newState);
             }
         }
         else
         {
+            m_mapMutex.lock();
             m_turnoutStates[turnoutID] = newState;
+            m_mapMutex.unlock();
             DeviceManager::instance()->setDeviceStatus(turnoutID, newState);
             createAndSendNotificationMessage(turnoutID, newState);
         }
     }
-    m_mapMutex.unlock();
 }
 
 void TurnoutHandler::createAndSendNotificationMessage(int turnoutID, TurnoutState newState)

@@ -80,7 +80,7 @@ void setup()
 
 	loadConfiguration();
 
-	turnoutModule.setupWire(0);
+	turnoutModule.setupWire(255);
 	byte data = 0;
 	readPins(data);
 	turnoutModule.process(data);
@@ -244,9 +244,9 @@ void setPins(void)
 	digitalWrite(motor1_pinB, bitRead(data, motor1_logicalPinB));
 //	DEBUG_PRINT("Morotr1_B %d\n", bitRead(data, motor1_logicalPinB));
 	digitalWrite(motor2_pinA, bitRead(data, motor2_logicalPinA));
-	//	DEBUG_PRINT("Morotr2_A %d\n", bitRead(data, motor2_logicalPinA));
+//	DEBUG_PRINT("Morotr2_A %d\n", bitRead(data, motor2_logicalPinA));
 	digitalWrite(motor2_pinB, bitRead(data, motor2_logicalPinB));
-	//	DEBUG_PRINT("Morotr2_B %d\n", bitRead(data, motor2_logicalPinB));
+//	DEBUG_PRINT("Morotr2_B %d\n", bitRead(data, motor2_logicalPinB));
 }
 
 void readPins(byte &data)

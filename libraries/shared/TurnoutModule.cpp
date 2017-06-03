@@ -65,12 +65,15 @@ void TurnoutModule::setupWire(byte address)
 	DEBUG_PRINT("TurnoutModule::setup  Turnout2\n");
 	m_turnouts[1].setTurnout(m_config.turnout2.inputPinSetting);
 
-	expanderBegin();
-	byte iodir = getIODirConfig();
-	expanderWrite(IODIR, iodir);
-	delay(100);
-	byte data = getCurrentState();
-	expanderWrite(GPIO, data);
+	if (address != 255)
+	{
+		expanderBegin();
+		byte iodir = getIODirConfig();
+		expanderWrite(IODIR, iodir);
+		delay(100);
+		byte data = getCurrentState();
+		expanderWrite(GPIO, data);
+	}
 }
 
 void TurnoutModule::setup(byte index, byte motorAPin, byte motorBPin, byte feedbackAPin, byte feedbackBPin)
