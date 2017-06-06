@@ -25,6 +25,7 @@ public:
 	Module(void);
 	virtual ~Module(void) { }
 
+	virtual void setup(void) { }
 	virtual void setupWire(byte address) = 0;
 	virtual bool processWire(void);
 	virtual bool process(byte &data) = 0;

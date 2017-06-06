@@ -80,7 +80,7 @@ void setup()
 
 	loadConfiguration();
 
-	turnoutModule.setupWire(255);
+	turnoutModule.setup();
 	byte data = 0;
 	readPins(data);
 	turnoutModule.process(data);

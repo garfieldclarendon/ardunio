@@ -4,6 +4,15 @@
 #include "TurnoutModule.h"
 #include "network.h"
 
+const byte motorAPin1 = 0;
+const byte motorBPin1 = 1;
+const byte motorAPin2 = 4;
+const byte motorBPin2 = 5;
+const byte feedbackAPin1 = 2;
+const byte feedbackBPin1 = 3;
+const byte feedbackAPin2 = 6;
+const byte feedbackBPin2 = 7;
+
 TurnoutModule::TurnoutModule(void)
 	: m_currentState(0)
 
@@ -16,14 +25,6 @@ TurnoutModule::TurnoutModule(void)
 byte TurnoutModule::getIODirConfig(void) const
 {
 	byte iodir = 0;
-	byte motorAPin1 = 0;
-	byte motorBPin1 = 1;
-	byte motorAPin2 = 4;
-	byte motorBPin2 = 5;
-	byte feedbackAPin1 = 2;
-	byte feedbackBPin1 = 3;
-	byte feedbackAPin2 = 6;
-	byte feedbackBPin2 = 7;
 
 	bitWrite(iodir, motorAPin1, 0);
 	bitWrite(iodir, motorBPin1, 0);
@@ -37,17 +38,28 @@ byte TurnoutModule::getIODirConfig(void) const
 	return iodir;
 }
 
+void TurnoutModule::setup(void)
+{
+	setup(0, motorAPin1, motorBPin1, feedbackAPin1, feedbackBPin1);
+	setup(1, motorAPin2, motorBPin2, feedbackAPin2, feedbackBPin2);
+
+	m_currentState = 0;
+	// Force the diverging pin ON so that it resets to normal
+	// if the turnout happens to be set to the diverging route
+	bitWrite(m_currentState, feedbackAPin1, 1);
+	bitWrite(m_currentState, feedbackBPin1, 0);
+	bitWrite(m_currentState, feedbackAPin2, 1);
+	bitWrite(m_currentState, feedbackBPin2, 0);
+
+	DEBUG_PRINT("TurnoutModule::setup  Turnout1\n");
+	m_turnouts[0].setTurnout(m_config.turnout1.inputPinSetting);
+	DEBUG_PRINT("TurnoutModule::setup  Turnout2\n");
+	m_turnouts[1].setTurnout(m_config.turnout2.inputPinSetting);
+}
+
 void TurnoutModule::setupWire(byte address)
 {
 	setAddress(address);
-	byte motorAPin1 = 0;
-	byte motorBPin1 = 1;
-	byte motorAPin2 = 4;
-	byte motorBPin2 = 5;
-	byte feedbackAPin1 = 2;
-	byte feedbackBPin1 = 3;
-	byte feedbackAPin2 = 6;
-	byte feedbackBPin2 = 7;
 
 	setup(0, motorAPin1, motorBPin1, feedbackAPin1, feedbackBPin1);
 	setup(1, motorAPin2, motorBPin2, feedbackAPin2, feedbackBPin2);
@@ -65,15 +77,12 @@ void TurnoutModule::setupWire(byte address)
 	DEBUG_PRINT("TurnoutModule::setup  Turnout2\n");
 	m_turnouts[1].setTurnout(m_config.turnout2.inputPinSetting);
 
-	if (address != 255)
-	{
-		expanderBegin();
-		byte iodir = getIODirConfig();
-		expanderWrite(IODIR, iodir);
-		delay(100);
-		byte data = getCurrentState();
-		expanderWrite(GPIO, data);
-	}
+	expanderBegin();
+	byte iodir = getIODirConfig();
+	expanderWrite(IODIR, iodir);
+	delay(100);
+	byte data = getCurrentState();
+	expanderWrite(GPIO, data);
 }
 
 void TurnoutModule::setup(byte index, byte motorAPin, byte motorBPin, byte feedbackAPin, byte feedbackBPin)
