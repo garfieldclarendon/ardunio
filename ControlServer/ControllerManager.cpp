@@ -253,7 +253,7 @@ void ControllerManager::pingSlot()
     {
         uint timeout = m_socketList.value(x)->property("socketTimeout").toUInt();
         timeout = QDateTime::currentDateTime().toTime_t() - timeout;
-        if(timeout > 30000)
+        if(timeout > 60)
             m_socketList.value(x)->close();
     }
     QByteArray data;
