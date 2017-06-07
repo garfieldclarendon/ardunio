@@ -6,7 +6,7 @@
 NetworkClass *NetworkClass::m_this = NULL;
 
 NetworkClass::NetworkClass(void)
-	: m_serverPort(-1), m_serverAddress(0,0,0,0)
+	: m_serverPort(-1), m_serverAddress(0, 0, 0, 0), m_isConnected(false)
 {
 	m_this = this;
 }
@@ -151,11 +151,13 @@ void NetworkClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t lengt
 	{
 	case WStype_DISCONNECTED:
 		DEBUG_PRINT("[WSc] Disconnected!\n");
+		m_this->m_isConnected = false;
 		break;
 	case WStype_CONNECTED:
 	{
 		DEBUG_PRINT("[WSc] Connected to server: %s\n", payload);
 
+		m_this->m_isConnected = true;
 //		 Send message to server when Connected containing the Serial Number
 		String json;
 		StaticJsonBuffer<200> jsonBuffer;

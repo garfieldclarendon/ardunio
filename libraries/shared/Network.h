@@ -20,6 +20,7 @@ public:
 	typedef std::function<String(NetActionType action, const JsonObject &json)> TControllerConfigCallback;
 	typedef std::function<void(const Message &message)> TUDPMessageCallback;
 	typedef std::function<void(void)> TServerConnectedCallback;
+	typedef std::function<void(void)> TServerDisconnectedCallback;
 
 	NetworkClass(void);
 	~NetworkClass(void);
@@ -30,6 +31,7 @@ public:
 	void setServerAddress(const IPAddress &value);
 	IPAddress getServerAddress(void) const { return m_serverAddress;  }
 	int getServerPort(void) const { return m_serverPort;  }
+	bool getIsConnected(void) const { return m_isConnected;  }
 
 	void sendMessageToServer(const JsonObject &json);
 //	void sendConfigMessageToServer(ClassEnum moduleClass, int moduleIndex, const String &json, String &retJson);
@@ -61,6 +63,7 @@ private:
 	static NetworkClass *m_this;
 	String m_controllerName;
 	int m_controllerID;
+	bool m_isConnected;
 
 	//Callbacks
 	TControllerStatusCallback m_controllerStatusCallback;

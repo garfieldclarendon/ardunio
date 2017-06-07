@@ -15,6 +15,7 @@ TurnoutHandler::TurnoutHandler(QObject *parent)
     : DeviceHandler(ClassTurnout, parent)
 {
 //    QTimer::singleShot(3000, this, SLOT(timerProc()));
+    connect(ControllerManager::instance(), SIGNAL(controllerRemoved(int)), this, SLOT(controllerRemoved(int)));
 }
 
 void TurnoutHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
@@ -120,6 +121,29 @@ void TurnoutHandler::sendConfig(int serialNumber, int moduleIndex)
     obj["motorPinSettings"] = array;
 
     ControllerManager::instance()->sendMessage(serialNumber, obj);
+}
+
+void TurnoutHandler::controllerRemoved(int serialNumber)
+{
+    QString sql = QString("SELECT device.id as turnoutID FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE serialNumber = %1").arg(serialNumber);
+
+    QList<int> turnoutIDs;
+    Database db;
+    QSqlQuery query = db.executeQuery(sql);
+    while(query.next())
+    {
+        turnoutIDs << query.value("turnoutID").toInt();
+    }
+
+    for(int x = 0; x < turnoutIDs.count(); x++)
+    {
+        int turnoutID(turnoutIDs.value(x));
+        m_mapMutex.lock();
+        m_turnoutStates[turnoutID] = TrnUnknown;
+        m_mapMutex.unlock();
+        DeviceManager::instance()->setDeviceStatus(turnoutID, TrnUnknown);
+        createAndSendNotificationMessage(turnoutID, TrnUnknown);
+    }
 }
 
 void TurnoutHandler::getIPAddressAndModuleIndexForDevice(int deviceID, QString &ipAddress, int &moduleIndex, int &port, int &serialNumber)

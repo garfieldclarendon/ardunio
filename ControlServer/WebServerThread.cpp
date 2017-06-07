@@ -151,7 +151,11 @@ void WebServerThread::handleDownloadFirmware(QTcpSocket* socket, const QUrl &url
     QString path = QCoreApplication::applicationDirPath();
     QDir::setCurrent(path);
 //            path = "C:/Users/John/Documents/Arduino/";
+#ifdef PROJECT_DEBUG
     path = "../../Builds/";
+#else
+    path = "Builds/";
+#endif
     QString returnCode("200 OK");
     if(controllerType == "1")
         fileName = path + "TurnoutController/TurnoutController.ino.bin";

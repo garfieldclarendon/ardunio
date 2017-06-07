@@ -84,7 +84,10 @@ void loop()
 	Network.process();
 	controller.process();
 	for (byte x = 0; x < config.totalModules; x++)
+	{
+		modules[x].setFlashAll(Network.getIsConnected() == false);
 		modules[x].process(true);
+	}
 }
 
 void udpMessageCallback(const Message &message)
@@ -194,5 +197,7 @@ void serverReconnected(void)
 		out["class"] = (int)ClassPanel;
 		out["action"] = (int)NetActionGet;
 		Network.sendMessageToServer(out);
+
+		modules[x].setFlashAll(false);
 	}
 }

@@ -23,6 +23,7 @@ class PanelModuleClass
 	byte getModuleAddress(void) const;
 	byte getOutputState(void) const { return m_outputs; }
 	void netModuleCallback(NetActionType action, const JsonObject &json);
+	void setFlashAll(bool value) { m_flashAll = value; }
 
 private:
 	void handleButtonPressed(byte buttonIndex);
@@ -39,6 +40,7 @@ private:
 	byte m_blinkingPins[8];
 	byte m_inputs;
 	byte m_outputs;
+	bool m_flashAll;
 
 	unsigned long m_currentBlinkTimeout;
 };

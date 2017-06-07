@@ -136,9 +136,20 @@ void ControllerManager::connectionClosed(void)
     int serialNumber = socket->property("serialNumber").toInt();
     if(serialNumber > 0)
     {
-        qDebug(QString("Controller %1 disconnected.").arg(serialNumber).toLatin1());
-
-        emit controllerRemoved(serialNumber);
+        bool found = false;
+        for(int x = 0; x < m_socketList.count(); x++)
+        {
+            if(m_socketList.value(x) != socket && m_socketList.value(x)->property("serialNumber").toInt() == serialNumber)
+            {
+                found = true;
+                break;
+            }
+        }
+        if(!found)
+        {
+            qDebug(QString("Controller %1 disconnected.").arg(serialNumber).toLatin1());
+            emit controllerRemoved(serialNumber);
+        }
     }
     emit controllerDisconnected(m_socketList.indexOf(socket));
     m_socketList.removeAll(socket);
@@ -161,8 +172,17 @@ void ControllerManager::processTextMessage(QString message)
     {
         serialNumber = root["serialNumber"].toInt();
         socket->setProperty("serialNumber", serialNumber);
-
-        emit controllerAdded(serialNumber);
+        bool found = false;
+        for(int x = 0; x < m_socketList.count(); x++)
+        {
+            if(m_socketList.value(x) != socket && m_socketList.value(x)->property("serialNumber").toInt() == serialNumber)
+            {
+                found = true;
+                break;
+            }
+        }
+        if(!found)
+            emit controllerAdded(serialNumber);
         emit controllerConnected(m_socketList.indexOf(socket));
 
         sendControllerInfo(serialNumber, socket);

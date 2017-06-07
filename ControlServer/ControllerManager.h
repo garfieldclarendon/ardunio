@@ -30,9 +30,9 @@ signals:
     void pingSignal(const QByteArray &data);
 
     void controllerConnected(int index);
+    void controllerDisconnected(int index);
     void controllerAdded(int serialNumber);
     void controllerRemoved(int serialNumber);
-    void controllerDisconnected(int index);
     void controllerPing(int serialNumber, quint64 length);
 
 public slots:
@@ -55,8 +55,6 @@ private:
     QWebSocketServer *m_server;
     QTimer *m_pingTimer;
     QList<QWebSocket *> m_socketList;
-//    QMap<int, ControllerEntry *> m_controllerMap;
-//    QMap<QWebSocket *, ControllerEntry *> m_socketMap;
     int m_transactionID;
 };
 

@@ -34,11 +34,13 @@
 #define BASE_ADDRESS 0x20  // MCP23017 is on I2C port 0x20
 
 #define blinkingTimeout 200
+#define slowBlinkingTimeout 1000
 
 PanelModuleClass::PanelModuleClass(void)
-	: m_moduleAddress(0), m_inputs(0), m_outputs(0), m_currentBlinkTimeout(0)
+	: m_moduleAddress(0), m_inputs(0), m_outputs(0), m_currentBlinkTimeout(0), m_flashAll(true)
 {
-	memset(m_blinkingPins, 255, 8);
+	for (byte x = 0; x < 8; x++)
+		m_blinkingPins[x] = 255;
 }
 
 byte PanelModuleClass::getModuleAddress(void) const 
@@ -48,6 +50,10 @@ byte PanelModuleClass::getModuleAddress(void) const
 
 void PanelModuleClass::setup(byte address)
 {
+	m_currentBlinkTimeout = 0;
+	m_outputs = 0;
+	m_inputs = 0;
+	m_flashAll = true;
 	m_moduleAddress = BASE_ADDRESS + address;
 
 	DEBUG_PRINT("setup module: %d\n", address);
@@ -184,16 +190,26 @@ void PanelModuleClass::removeBlinkingPin(byte pin)
 void PanelModuleClass::blinkPins(void)
 {
 	unsigned long t = millis();
-	if (t - m_currentBlinkTimeout > blinkingTimeout)
+
+	if (m_flashAll)
 	{
-		m_currentBlinkTimeout = t;
-		for (int x = 0; x < 8; x++)
+		// Flashing all doesn't work so well, so simply turn all LED's off
+		// until we get re-connected to the server
+		m_outputs = 0;
+	}
+	else
+	{
+		if (t - m_currentBlinkTimeout > blinkingTimeout)
 		{
-			if (m_blinkingPins[x] != 255)
+			m_currentBlinkTimeout = t;
+			for (int x = 0; x < 8; x++)
 			{
-				int state = bitRead(m_outputs, m_blinkingPins[x]);
-				bitWrite(m_outputs, m_blinkingPins[x], state == 0);
-//				DEBUG_PRINT("BLINKING PIN %d\n", m_blinkingPins[x]);
+				if (m_blinkingPins[x] != 255)
+				{
+					int state = bitRead(m_outputs, m_blinkingPins[x]);
+					bitWrite(m_outputs, m_blinkingPins[x], state == 0);
+					//				DEBUG_PRINT("BLINKING PIN %d\n", m_blinkingPins[x]);
+				}
 			}
 		}
 	}
