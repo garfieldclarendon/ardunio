@@ -128,6 +128,7 @@ void ControllerManager::onNewConnection(void)
     connect(this, &ControllerManager::pingSignal, socket, &QWebSocket::ping);
     connect(socket, &QWebSocket::pong, this, &ControllerManager::pongReply);
     m_socketList << socket;
+    socket->setProperty("socketTimeout", QDateTime::currentDateTime().toTime_t());
 }
 
 void ControllerManager::connectionClosed(void)
@@ -239,6 +240,7 @@ void ControllerManager::pongReply(quint64 length, const QByteArray &)
     QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
     if(socket)
     {
+        socket->setProperty("socketTimeout", QDateTime::currentDateTime().toTime_t());
         QString txt = QString("Pong reply from %1  Total time: %2").arg(socket->peerAddress().toString()).arg(length);
         qDebug(txt.toLatin1());
         emit controllerPing(m_socketList.indexOf(socket), length);
@@ -247,6 +249,13 @@ void ControllerManager::pongReply(quint64 length, const QByteArray &)
 
 void ControllerManager::pingSlot()
 {
+    for(int x = 0; x < m_socketList.count(); x++)
+    {
+        uint timeout = m_socketList.value(x)->property("socketTimeout").toUInt();
+        timeout = QDateTime::currentDateTime().toTime_t() - timeout;
+        if(timeout > 30000)
+            m_socketList.value(x)->close();
+    }
     QByteArray data;
     emit pingSignal(data);
 }
