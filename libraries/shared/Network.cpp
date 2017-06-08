@@ -176,7 +176,7 @@ void NetworkClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t lengt
 	{
 		String txt((char *)payload);
 		DEBUG_PRINT("raw text: %s\n", txt.c_str());
-		StaticJsonBuffer<512> jsonBuffer;
+		StaticJsonBuffer<1024> jsonBuffer;
 		JsonObject &root = jsonBuffer.parseObject(txt);
 
 		// return an ACK message

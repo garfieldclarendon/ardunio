@@ -28,13 +28,13 @@ bool SemaphoreHandler::process(void)
 
 	if (m_currentMotorSetting == 0)
 	{
-		digitalWrite(m_motorAPin, 0);
-		digitalWrite(m_motorBPin, 1);
+		digitalWrite(m_motorAPin, 1);
+		digitalWrite(m_motorBPin, 0);
 	}
 	else
 	{
-		digitalWrite(m_motorAPin, 1);
-		digitalWrite(m_motorBPin, 0);
+		digitalWrite(m_motorAPin, 0);
+		digitalWrite(m_motorBPin, 1);
 	}
 
 	return ret;

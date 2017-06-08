@@ -190,14 +190,12 @@ void serverReconnected(void)
 	DEBUG_PRINT("serverReconnected\n");
 	for (byte x = 0; x < config.totalModules; x++)
 	{	
-		StaticJsonBuffer<200> jsonBuffer;
+		StaticJsonBuffer<500> jsonBuffer;
 		JsonObject &out = jsonBuffer.createObject();
 		out["messageUri"] = "/controller/module";
 		out["moduleIndex"] = x;
 		out["class"] = (int)ClassPanel;
 		out["action"] = (int)NetActionGet;
 		Network.sendMessageToServer(out);
-
-		modules[x].setFlashAll(false);
 	}
 }
