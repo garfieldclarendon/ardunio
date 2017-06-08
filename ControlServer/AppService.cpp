@@ -139,12 +139,12 @@ void CAppService::stopTimerProc()
     if(m_shutdownPi)
     {
         QProcess process;
-        process.startDetached("shutdown -h now");
+        process.startDetached("sudo shutdown -h now");
     }
     else if(m_restartPi)
     {
         QProcess process;
-        process.startDetached("shutdown -r now");
+        process.startDetached("sudo shutdown -r now");
     }
 }
 
