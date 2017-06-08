@@ -58,7 +58,7 @@ void SemaphoreHandler::updateSignal(int signalId)
     int aspectRed = 1;
     int aspectYellow = 0;
     int aspectGreen = 0;
-    bool found = false;
+    bool found = true;
 
     while(query1.next())
     {
