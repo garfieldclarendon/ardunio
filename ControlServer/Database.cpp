@@ -360,6 +360,7 @@ QByteArray Database::getMultiControllerConfig(quint32 serialNumber)
         o["index"] = query.value(1).toString();
         array.append(o);
     }
+    obj["messageUri"] = "/controllerConfig";
     obj["modules"] = array;
     jsonDoc.setObject(obj);
 

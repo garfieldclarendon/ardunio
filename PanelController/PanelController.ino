@@ -70,7 +70,7 @@ void setup()
 void setupHardware(void)
 {
 	DEBUG_PRINT("setup hardware\n");
-	Wire.begin(); //creates a Wire object
+	Wire.begin(4,5); //creates a Wire object
 
 	controller.addExtraPin(0, 2, config.extraPin0Mode);
 	controller.addExtraPin(1, 0, config.extraPin1Mode);

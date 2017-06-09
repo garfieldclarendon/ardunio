@@ -169,7 +169,7 @@ void deleteConfig(byte moduleIndex)
 
 String netControllerConfigCallback(NetActionType action, const JsonObject &json)
 {
-	DEBUG_PRINT("netConfigCallback: NetAction %d\n", action);
+	DEBUG_PRINT("netControllerConfigCallback: NetAction %d\n", action);
 
 	controllerConfig.extraPin0Mode = (PinModeEnum)(int)json["extrPin0Mode"];
 	controllerConfig.extraPin1Mode = (PinModeEnum)(int)json["extrPin1Mode"];
@@ -233,13 +233,13 @@ void udpMessageCallback(const Message &message)
 void setupHardware(void)
 {
 	DEBUG_PRINT("setup hardware\n");
-	Wire.begin(); //creates a Wire object
+	Wire.begin(4, 5); //creates a Wire object
 
-	controller.addExtraPin(0, 2, controllerConfig.extraPin0Mode);
-	controller.addExtraPin(1, 0, controllerConfig.extraPin1Mode);
-	controller.addExtraPin(2, 12, controllerConfig.extraPin2Mode);
-	controller.addExtraPin(3, 14, controllerConfig.extraPin3Mode);
-	controller.addExtraPin(4, 16, controllerConfig.extraPin4Mode);
+	//controller.addExtraPin(0, 2, controllerConfig.extraPin0Mode);
+	//controller.addExtraPin(1, 0, controllerConfig.extraPin1Mode);
+	//controller.addExtraPin(2, 12, controllerConfig.extraPin2Mode);
+	//controller.addExtraPin(3, 14, controllerConfig.extraPin3Mode);
+	//controller.addExtraPin(4, 16, controllerConfig.extraPin4Mode);
 }
 
 void loop() 
@@ -348,6 +348,7 @@ void downloadConfig(void)
 	StaticJsonBuffer<200> jsonBuffer;
 	JsonObject &out = jsonBuffer.createObject();
 
+	out["messageUri"] = "/controller/multiConfig";
 	out["serialNumber"] = ESP.getChipId();
 	out["classCode"] = (int)ClassMulti;
 	out["action"] = (int)NetActionGet;
@@ -370,7 +371,8 @@ void downloadModuelConfig(byte moduleIndex, ClassEnum classCode)
 void saveControllerConfig(void)
 {
 	DEBUG_PRINT("Saving module configuration to EEPROM!!!!!!!\nTotal Modules: %d\n", controllerConfig.mdouleCount);
-
+	
+	EEPROM.write(0, 0xAD);
 	EEPROM.put(MODULE_CONFIG_BASE_ADDRESS, controllerConfig);
 	EEPROM.commit();
 }

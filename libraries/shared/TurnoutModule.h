@@ -43,5 +43,15 @@ private:
 
 	byte m_currentState;
 	TurnoutControllerConfigStruct m_config;
+
+	const byte motorAPin1 = 0;
+	const byte motorBPin1 = 1;
+	const byte motorAPin2 = 4;
+	const byte motorBPin2 = 5;
+	const byte feedbackAPin1 = 2;
+	const byte feedbackBPin1 = 3;
+	const byte feedbackAPin2 = 6;
+	const byte feedbackBPin2 = 7;
+
 };
 
