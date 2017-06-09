@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     QString s;
     for(int x = 0; x < argc; x++)
     {
-        QString s = QString(argv[2]);
+        QString s = QString(argv[x]);
         if(s == "-d" || s == "-D")
             enableDebugMessages = true;
     }

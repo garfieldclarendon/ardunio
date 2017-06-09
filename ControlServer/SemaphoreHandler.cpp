@@ -124,20 +124,14 @@ void SemaphoreHandler::sendSignalUpdateMessage(int serialNumber, int moduleIndex
     else if(greenMode == 1)
         motorPinSetting = 1;
 
-    QJsonDocument doc;
     QJsonObject obj;
 
-    QString ipAddress;
-    ipAddress = ControllerManager::instance()->getControllerIPAddress(serialNumber);
-
+    obj["moduleIndex"] = moduleIndex;
+    obj["messageUri"] = "/controller/module";
+    obj["action"] = NetActionUpdate;
     obj["port"] = port;
     obj["motorPinSetting"] = motorPinSetting;
-    doc.setObject(obj);
-    if(ipAddress.length() > 0)
-    {
-        QString uri = QString("http://%1:8080/controller/module?moduleIndex=%1").arg(ipAddress).arg(moduleIndex);
-        QString returnJson;
-        WebServer::instance()->sendMessage(NetActionUpdate, uri, doc.toJson(), returnJson);
-    }
+
+    ControllerManager::instance()->sendMessage(serialNumber, obj);
 }
 
