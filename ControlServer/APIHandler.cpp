@@ -13,6 +13,7 @@
 #include "RouteHandler.h"
 #include "Database.h"
 #include "WebServer.h"
+#include "MessageBroadcaster.h"
 
 APIHandler::APIHandler(QObject *parent)
     : QObject(parent)
@@ -60,9 +61,17 @@ void APIHandler::handleClient(QTcpSocket *socket, const QString &path, const QSt
     {
         handleGetDeviceList(socket, url);
     }
+    else if(url.path().contains("controller_list"))
+    {
+        handleGetControllerList(socket, url);
+    }
     else if(url.path().contains("send_module_config"))
     {
         handleSendModuleConfig(socket, url);
+    }
+    else if(url.path().contains("send_controller_firmware"))
+    {
+        handleControllerFirmwareUpdate(socket, url);
     }
     else
     {
@@ -237,6 +246,28 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     socket->close();
 }
 
+void APIHandler::handleGetControllerList(QTcpSocket *socket, const QUrl & /*url*/)
+{
+    qDebug(QString("handleGetModuleList.").toLatin1());
+    Database db;
+
+    QString sql = QString("SELECT serialNumber, controllerName, controllerDescription FROM controller");
+    sql += QString(" ORDER BY controllerName");
+
+    QJsonArray jsonArray = db.fetchItems(sql);
+
+    QJsonDocument doc;
+    doc.setArray(jsonArray);
+    QByteArray data(doc.toJson());
+
+    QString header = WebServer::createHeader("200 OK", data.size());
+
+    socket->write(header.toLatin1());
+    socket->write(data);
+    socket->flush();
+    socket->close();
+}
+
 void APIHandler::handleSendModuleConfig(QTcpSocket *socket, const QUrl &url)
 {
     QString header = WebServer::createHeader("200 OK", 0);
@@ -265,5 +296,19 @@ void APIHandler::handleSendModuleConfig(QTcpSocket *socket, const QUrl &url)
             }
         }
     }
+}
+
+void APIHandler::handleControllerFirmwareUpdate(QTcpSocket *socket, const QUrl &url)
+{
+    QString header = WebServer::createHeader("200 OK", 0);
+
+    socket->write(header.toLatin1());
+    socket->flush();
+    socket->close();
+
+    QUrlQuery urlQuery(url);
+    int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
+
+    MessageBroadcaster::instance()->sendDownloadFirmware(serialNumber);
 }
 

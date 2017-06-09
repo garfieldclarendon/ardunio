@@ -58,6 +58,7 @@ void setup()
   Network.setControllerStatusCallback(netControllerStatusCallback);
   Network.setModuleCallback(netModuleCallback);
   Network.setUdpMessageCallback(udpMessageCallback);
+  Network.setServerConnectedCallback(serverReconnected);
 
   signal1.setup(motor1_pinA, motor1_pinB, normal1_pin, diverge1_pin);
   signal2.setup(motor2_pinA, motor2_pinB, normal2_pin, diverge2_pin);
@@ -70,8 +71,20 @@ void loop()
 	Network.process();
 	controller.process();
 
-	signal1.process();
-	signal2.process();
+	if (Network.getIsConnected())
+	{
+		signal1.process();
+		signal2.process();
+	}
+	else
+	{
+		// We're disconnected from the server, set the signal to Red/Stop
+		digitalWrite(motor1_pinA, 0);
+		digitalWrite(motor1_pinB, 1);
+
+		digitalWrite(motor2_pinA, 0);
+		digitalWrite(motor2_pinB, 1);
+	}
 } 
 
 
@@ -99,4 +112,16 @@ void netModuleCallback(NetActionType action, byte, const JsonObject &root)
 void udpMessageCallback(const Message &message)
 {
 	controller.processMessage(message);
+}
+
+void serverReconnected(void)
+{
+	DEBUG_PRINT("serverReconnected\n");
+	StaticJsonBuffer<500> jsonBuffer;
+	JsonObject &out = jsonBuffer.createObject();
+	out["messageUri"] = "/controller/module";
+	out["moduleIndex"] = 0;
+	out["class"] = (int)ClassSemaphore;
+	out["action"] = (int)NetActionGet;
+	Network.sendMessageToServer(out);
 }

@@ -23,7 +23,9 @@ private:
     void handleGetPanelRouteList(QTcpSocket *socket, const QUrl &url);
     void handleGetPanelList(QTcpSocket *socket, const QUrl &url);
     void handleGetDeviceList(QTcpSocket *socket, const QUrl &url);
+    void handleGetControllerList(QTcpSocket *socket, const QUrl &url);
     void handleSendModuleConfig(QTcpSocket *socket, const QUrl &url);
+    void handleControllerFirmwareUpdate(QTcpSocket *socket, const QUrl &url);
 };
 
 #endif // APIHANDLER_H

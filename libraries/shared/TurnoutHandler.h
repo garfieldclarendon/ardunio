@@ -24,10 +24,13 @@ private:
 	byte m_motorBPin;
 	byte m_feedbackAPin;
 	byte m_feedbackBPin;
+	byte m_lastARead;
+	byte m_lastBRead;
 	byte m_currentMotorSetting;
 	byte m_currentFeedbackA;
 	byte m_currentFeedbackB;
 
-	long m_currentTimeout;
+	long m_currentATimeout;
+	long m_currentBTimeout;
 };
 

@@ -37,6 +37,31 @@ void SemaphoreHandler::deviceStatusChanged(int deviceID, int status)
     }
 }
 
+void SemaphoreHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject & /*json*/)
+{
+    if(uri == "/controller/module" && classCode == ClassSemaphore)
+    {
+        if(actionType == NetActionGet)
+        {
+            QList<int> signalIDs;
+            {
+                QString sql = QString("SELECT signal.id as signalID FROM signal JOIN controllerModule ON controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2 ").arg(serialNumber).arg(moduleIndex);
+                Database db;
+                QSqlQuery query1 = db.executeQuery(sql);
+
+                while(query1.next())
+                {
+                    signalIDs << query1.value("signalID").toInt();
+                }
+            }
+            for(int x = 0; x < signalIDs.count(); x++)
+            {
+                updateSignal(signalIDs.value(x));
+            }
+        }
+    }
+}
+
 void SemaphoreHandler::updateSignal(int signalId)
 {
     QString sql = QString("SELECT  signalAspectConditionID, signal.moduleIndex AS port, controllerModule.moduleIndex, serialNumber, deviceID, conditionOperand, deviceState, redMode, yellowMode, greenMode FROM signal JOIN signalAspectCondition ON signal.id = signalAspectCondition.signalID JOIN signalCondition ON signalAspectCondition.id = signalCondition.signalAspectConditionID JOIN controllerModule ON signal.controllerModuleID = controllerModule.id  JOIN controller ON controllerModule.controllerID = controller.id WHERE signalAspectCondition.signalID = %1 ORDER BY signalAspectConditionID, signalAspectCondition.sortIndex, signalCondition.sortIndex").arg(signalId);
