@@ -144,6 +144,7 @@ void WebServerThread::readClient()
 
 void WebServerThread::handleDownloadFirmware(QTcpSocket* socket, const QUrl &url)
 {
+    qDebug("DOWNLOAD FIRMAWARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     QUrlQuery query(url);
     QString controllerType(query.queryItemValue("ControllerType"));
 
@@ -165,6 +166,7 @@ void WebServerThread::handleDownloadFirmware(QTcpSocket* socket, const QUrl &url
     else if(controllerType == "7")
         fileName = path + "MultiModuleController/MultiModuleController.ino.bin";
 
+    qDebug(fileName.toLatin1());
     // PROCESS //
     QByteArray fileData;
     if(fileName.length() > 0)
