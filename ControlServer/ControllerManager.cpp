@@ -10,6 +10,8 @@
 
 #include "ControllerManager.h"
 #include "Database.h"
+#include "NotificationServer.h"
+
 /*
 class ControllerEntry
 {
@@ -43,6 +45,7 @@ ControllerManager::ControllerManager(QObject *parent)
       m_server(new QWebSocketServer(QStringLiteral("Controller Server"), QWebSocketServer::NonSecureMode, this)),
       m_pingTimer(NULL), m_transactionID(1)
 {
+    connect(this, &ControllerManager::sendNotificationMessage, NotificationServer::instance(), &NotificationServer::sendNotificationMessage);
     if (m_server->listen(QHostAddress::Any, UdpPort + 1))
     {
         qDebug() << "Controller listening on port" << (UdpPort + 1);
@@ -106,6 +109,19 @@ int ControllerManager::getConnectionSerialNumber(int index) const
     return serialNumber;
 }
 
+void ControllerManager::getConnectedInfo(int serialNumber, int &version, bool &isOnline)
+{
+    for(int x = 0; x < m_socketList.count(); x++)
+    {
+        if(m_socketList.value(x)->property("serialNumber").toInt() == serialNumber)
+        {
+            version = m_socketList.value(x)->property("version").toInt();
+            isOnline = true;
+            break;
+        }
+    }
+}
+
 void ControllerManager::sendMessageSlot(int serialNumber, const QString &data)
 {
     for(int x = 0; x < m_socketList.count(); x++)
@@ -150,6 +166,7 @@ void ControllerManager::connectionClosed(void)
         {
             qDebug(QString("Controller %1 disconnected.").arg(serialNumber).toLatin1());
             emit controllerRemoved(serialNumber);
+            createAndSendNotificationMessage(serialNumber, false);
         }
     }
     emit controllerDisconnected(m_socketList.indexOf(socket));
@@ -172,7 +189,9 @@ void ControllerManager::processTextMessage(QString message)
     if(uri == "/controller/connect")
     {
         serialNumber = root["serialNumber"].toInt();
+        int version = root["version"].toInt();
         socket->setProperty("serialNumber", serialNumber);
+        socket->setProperty("version", version);
         bool found = false;
         for(int x = 0; x < m_socketList.count(); x++)
         {
@@ -183,7 +202,10 @@ void ControllerManager::processTextMessage(QString message)
             }
         }
         if(!found)
+        {
             emit controllerAdded(serialNumber);
+            createAndSendNotificationMessage(serialNumber, true);
+        }
         emit controllerConnected(m_socketList.indexOf(socket));
 
         sendControllerInfo(serialNumber, socket);
@@ -258,4 +280,14 @@ void ControllerManager::pingSlot()
     }
     QByteArray data;
     emit pingSignal(data);
+}
+
+void ControllerManager::createAndSendNotificationMessage(int serialNumber, bool isOnline)
+{
+    QString uri("/api/notification/controller");
+    QJsonObject obj;
+    obj["serialNumber"] = serialNumber;
+    obj["isOnline"] = isOnline;
+
+    emit sendNotificationMessage(uri, obj);
 }

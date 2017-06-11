@@ -14,6 +14,7 @@
 #include "Database.h"
 #include "WebServer.h"
 #include "MessageBroadcaster.h"
+#include "ControllerManager.h"
 
 APIHandler::APIHandler(QObject *parent)
     : QObject(parent)
@@ -72,6 +73,10 @@ void APIHandler::handleClient(QTcpSocket *socket, const QString &path, const QSt
     else if(url.path().contains("send_controller_firmware"))
     {
         handleControllerFirmwareUpdate(socket, url);
+    }
+    else if(url.path().contains("send_controller_reset"))
+    {
+        handleControllerReset(socket, url);
     }
     else
     {
@@ -251,10 +256,24 @@ void APIHandler::handleGetControllerList(QTcpSocket *socket, const QUrl & /*url*
     qDebug(QString("handleGetModuleList.").toLatin1());
     Database db;
 
-    QString sql = QString("SELECT serialNumber, controllerName, controllerDescription FROM controller");
+    QString sql = QString("SELECT serialNumber, id as controllerID, controllerName, controllerDescription FROM controller");
     sql += QString(" ORDER BY controllerName");
 
     QJsonArray jsonArray = db.fetchItems(sql);
+
+    for(int x = 0; x < jsonArray.size(); x++)
+    {
+        QJsonObject obj = jsonArray[x].toObject();
+        QString serialNumber = obj["serialNumber"].toString();
+        int version = 0;
+        bool isOnline = false;
+        ControllerManager::instance()->getConnectedInfo(serialNumber.toInt(), version, isOnline);
+        obj["isOnline"] = isOnline;
+        obj["version"] = version;
+
+        jsonArray[x] = obj;
+    }
+
 
     QJsonDocument doc;
     doc.setArray(jsonArray);
@@ -310,5 +329,19 @@ void APIHandler::handleControllerFirmwareUpdate(QTcpSocket *socket, const QUrl &
     int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
 
     MessageBroadcaster::instance()->sendDownloadFirmware(serialNumber);
+}
+
+void APIHandler::handleControllerReset(QTcpSocket *socket, const QUrl &url)
+{
+    QString header = WebServer::createHeader("200 OK", 0);
+
+    socket->write(header.toLatin1());
+    socket->flush();
+    socket->close();
+
+    QUrlQuery urlQuery(url);
+    int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
+
+    MessageBroadcaster::instance()->sendResetCommand(serialNumber);
 }
 

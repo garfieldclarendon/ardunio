@@ -88,26 +88,6 @@ void Controller::processMessage(const Message &message)
 		if (m_controllerID <= 0)
 			getControllerIDAndName();
 	}
-	else if (message.getMessageID() == SYS_UDP_HTTP)
-	{
-//		String buffer(message.getPayload());
-//		String actionText = buffer.substring(0, buffer.indexOf(" "));
-//		String path = buffer.substring(buffer.indexOf("/"), buffer.indexOf("\n"));
-//		String payload = buffer.substring(buffer.indexOf("\n"));
-//
-////		DEBUG_PRINT("SYS_UDP_HTTP: Action: '%s' Path: '%s' Payload: %s\n", actionText.c_str(), path.c_str(), payload .c_str());
-//
-//		NetActionType action = NetActionGet;
-//
-//		if (actionText == "PUT")
-//			action = NetActionUpdate;
-//		else if (actionText == "POST")
-//			action = NetActionAdd;
-//		else if (actionText == "DELETE")
-//			action = NetActionDelete;
-//
-//		Network.handleUdpMessage(action, ClassTurnout, path, payload);
-	}
 }
 
 void Controller::getControllerIDAndName(void)

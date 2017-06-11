@@ -164,6 +164,7 @@ void NetworkClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t lengt
 		JsonObject &root = jsonBuffer.createObject();
 		root["messageUri"] = "/controller/connect";
 		root["serialNumber"] = ESP.getChipId();
+		root["version"] = ControllerVersion;
 
 		root.printTo(json);
 

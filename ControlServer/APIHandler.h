@@ -26,6 +26,7 @@ private:
     void handleGetControllerList(QTcpSocket *socket, const QUrl &url);
     void handleSendModuleConfig(QTcpSocket *socket, const QUrl &url);
     void handleControllerFirmwareUpdate(QTcpSocket *socket, const QUrl &url);
+    void handleControllerReset(QTcpSocket *socket, const QUrl &url);
 };
 
 #endif // APIHANDLER_H
