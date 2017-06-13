@@ -46,7 +46,6 @@ TurnoutModule turnoutModule;
 TurnoutControllerConfigStruct controllerConfig;
 
 void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json);
-void netControllerStatusCallback(int &controllerID, String &controllerName, String &controllerType, String &currentStatus);
 void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json);
 
 void setup() 
@@ -73,7 +72,6 @@ void setup()
 	controller.setup(ClassTurnout);
 
 	Network.setModuleConfigCallback(netModuleConfigCallback);
-	Network.setControllerStatusCallback(netControllerStatusCallback);
 	Network.setModuleCallback(netModuleCallback);
 	Network.setUdpMessageCallback(udpMessageCallback);
 	Network.setServerConnectedCallback(serverReconnected);
@@ -87,36 +85,6 @@ void setup()
 	setPins();
 
 	DEBUG_PRINT("setup complete\n");
-}
-
-void netControllerStatusCallback(int &controllerID, String &controllerName, String &controllerType, String &currentStatus)
-{
-	controllerID = controller.getControllerID();
-	controllerName = controller.getControllerName();
-	controllerType = "Turnout";
-
-	currentStatus  = "<table>";
-	currentStatus += "<tr>";
-	currentStatus += "<th>Device ID</th>";
-	currentStatus += "<th>Status</th>";
-	currentStatus += "</tr>";
-	currentStatus += "<tr>";
-	currentStatus += "<td>";
-	currentStatus += turnoutModule.getDeviceID(0);
-	currentStatus += "</td>";
-	currentStatus += "<td>";
-	currentStatus += turnoutModule.getCurrentState();
-	currentStatus += "</td>";
-	currentStatus += "</tr>";
-	currentStatus += "<tr>";
-	currentStatus += "<td>";
-	currentStatus += turnoutModule.getDeviceID(1);
-	currentStatus += "</td>";
-	currentStatus += "<td>";
-	currentStatus += turnoutModule.getCurrentState();
-	currentStatus += "</td>";
-	currentStatus += "</tr>";
-	currentStatus += "</table>";
 }
 
 void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json)

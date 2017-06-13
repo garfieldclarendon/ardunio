@@ -206,7 +206,7 @@ void CAppService::startWebServer()
         connect(ControllerManager::instance(), &ControllerManager::newMessage, panelHandler, &PanelHandler::newMessage, Qt::QueuedConnection);
 
         SemaphoreHandler *semaphoreHandler = new SemaphoreHandler(this);
-        Q_UNUSED(semaphoreHandler);
+        connect(ControllerManager::instance(), &ControllerManager::newMessage, semaphoreHandler, &SemaphoreHandler::newMessage, Qt::QueuedConnection);
 
         qDebug(QObject::tr("ready to start HTTP server").toLatin1());
         webServer->startServer(httpPort);

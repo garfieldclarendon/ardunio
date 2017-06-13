@@ -55,7 +55,6 @@ void setup()
 
   controller.setup(ClassSemaphore);
 
-  Network.setControllerStatusCallback(netControllerStatusCallback);
   Network.setModuleCallback(netModuleCallback);
   Network.setUdpMessageCallback(udpMessageCallback);
   Network.setServerConnectedCallback(serverReconnected);
@@ -86,14 +85,6 @@ void loop()
 		digitalWrite(motor2_pinB, 0);
 	}
 } 
-
-
-void netControllerStatusCallback(int &controllerID, String &controllerName, String &controllerType, String &currentStatus)
-{
-	controllerID = controller.getControllerID();
-	controllerName = controller.getControllerName();
-	controllerType = "Semaphore";
-}
 
 void netModuleCallback(NetActionType action, byte, const JsonObject &root)
 {
