@@ -42,6 +42,7 @@ protected slots:
     void sendMessageSlot(void);
     void sendHeartbeatSlot(const UDPMessage &message);
     void sendKeepAliveMessageSlot(void);
+    void controllerRestarting(const UDPMessage &message);
 
 private:
     void setupSocket(void);
