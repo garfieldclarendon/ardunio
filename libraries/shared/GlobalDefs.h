@@ -21,6 +21,14 @@ const int ControllerVersion = 12;
 #define TIMEOUT_INTERVAL 200
 #define HEARTBEAT_INTERVAL 60000 // One minute
 
+enum ControllerStatus
+{
+    ControllerUnknown,
+    ControllerOffline,
+    ControllerOnline,
+    ControllerRestarting
+};
+
 enum ConditionEnum
 {
     ConditionEquals,

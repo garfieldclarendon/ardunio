@@ -182,6 +182,8 @@ void MessageBroadcaster::processUdpBuffer()
             emit newRawUDPMessage(str);
             if(message.getMessageID() == SYS_FIND_SERVER)
                 sendHeartbeatSlot(message);
+            else if(message.getMessageID() == SYS_RESTARTING)
+                controllerRestarting(message);
 
             signitureFound = false;
         }
@@ -224,6 +226,11 @@ void MessageBroadcaster::sendKeepAliveMessageSlot()
 
     sendUDPMessage(outMessage);
     QTimer::singleShot(60000, this, SLOT(sendKeepAliveMessageSlot()));
+}
+
+void MessageBroadcaster::controllerRestarting(const UDPMessage &message)
+{
+    ControllerManager::instance()->controllerResetting(message.getSerialNumber());
 }
 
 void MessageBroadcaster::sendResetCommand(int serialNumber)

@@ -59,7 +59,6 @@ Serial.setDebugOutput(true);
 	Network.setModuleConfigCallback(netModuleConfigCallback);
 	Network.setControllerCallback(netControllerCallback);
 	Network.setControllerConfigCallback(netControllerConfigCallback);
-	Network.setControllerStatusCallback(netControllerStatusCallback);
 	Network.setModuleCallback(netModuleCallback);
 	Network.setUdpMessageCallback(udpMessageCallback);
 	Network.setServerConnectedCallback(serverReconnected);
@@ -95,31 +94,6 @@ void serverReconnected(void)
 	{
 		modules[x]->sendStatusMessage();
 	}
-}
-
-void netControllerStatusCallback(int &controllerID, String &controllerName, String &controllerType, String &currentStatus)
-{
-	controllerID = controller.getControllerID();
-	controllerName = controller.getControllerName();
-	controllerType = "Multi-Module Controller";
-
-	currentStatus = "<table>";
-	currentStatus += "<tr>";
-	currentStatus += "<th>Device ID</th>";
-	currentStatus += "<th>Device Name</th>";
-	currentStatus += "</tr>";
-	for (byte x = 0; x < controller.getDeviceCount(); x++)
-	{
-		currentStatus += "<tr>";
-		currentStatus += "<td>";
-		currentStatus += controller.getDeviceID(x);
-		currentStatus += "</td>";
-		currentStatus += "<td>";
-		currentStatus += controller.getDeviceName(x);
-		currentStatus += "</td>";
-		currentStatus += "</tr>";
-	}
-	currentStatus += "</table>";
 }
 
 void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json)

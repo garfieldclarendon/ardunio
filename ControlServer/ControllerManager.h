@@ -24,7 +24,8 @@ public:
     bool sendMessage(int serialNumber, const QJsonObject &obj);
     int getConnectionCount(void) const { return m_socketList.count(); }
     int getConnectionSerialNumber(int index) const;
-    void getConnectedInfo(int serialNumber, int &version, bool &isOnline);
+    void getConnectedInfo(int serialNumber, int &version, ControllerStatus &status);
+    void controllerResetting(int serialNumber);
 
 signals:
     void newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
@@ -51,7 +52,7 @@ private:
     void sendMultiControllerConfig(int serialNumber, QWebSocket *socket);
     void pongReply(quint64 length, const QByteArray &);
     void pingSlot(void);
-    void createAndSendNotificationMessage(int serialNumber, bool isOnline);
+    void createAndSendNotificationMessage(int serialNumber, ControllerStatus status);
 
     static ControllerManager *m_instance;
 

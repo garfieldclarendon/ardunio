@@ -18,8 +18,8 @@ void SemaphoreHandler::setup(byte motorAPin, byte motorBPin, byte normalPin, byt
 	pinMode(m_normalPin, INPUT);
 	pinMode(m_divergePin, INPUT);
 
-	digitalWrite(m_motorAPin, 0);
-	digitalWrite(m_motorBPin, 1);
+	digitalWrite(m_motorAPin, 1);
+	digitalWrite(m_motorBPin, 0);
 }
 
 bool SemaphoreHandler::process(void)

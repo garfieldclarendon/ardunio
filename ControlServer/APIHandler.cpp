@@ -266,9 +266,9 @@ void APIHandler::handleGetControllerList(QTcpSocket *socket, const QUrl & /*url*
         QJsonObject obj = jsonArray[x].toObject();
         QString serialNumber = obj["serialNumber"].toString();
         int version = 0;
-        bool isOnline = false;
-        ControllerManager::instance()->getConnectedInfo(serialNumber.toInt(), version, isOnline);
-        obj["isOnline"] = isOnline;
+        ControllerStatus status = ControllerUnknown;
+        ControllerManager::instance()->getConnectedInfo(serialNumber.toInt(), version, status);
+        obj["status"] = status;
         obj["version"] = version;
 
         jsonArray[x] = obj;

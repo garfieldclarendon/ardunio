@@ -109,15 +109,29 @@ int ControllerManager::getConnectionSerialNumber(int index) const
     return serialNumber;
 }
 
-void ControllerManager::getConnectedInfo(int serialNumber, int &version, bool &isOnline)
+void ControllerManager::getConnectedInfo(int serialNumber, int &version, ControllerStatus &status)
 {
     for(int x = 0; x < m_socketList.count(); x++)
     {
         if(m_socketList.value(x)->property("serialNumber").toInt() == serialNumber)
         {
             version = m_socketList.value(x)->property("version").toInt();
-            isOnline = true;
+            status = ControllerOnline;
             break;
+        }
+    }
+}
+
+void ControllerManager::controllerResetting(int serialNumber)
+{
+    qDebug(QString("Controller %1 restarting!!!!!!!").arg(serialNumber).toLatin1());
+
+    for(int x = 0; x < m_socketList.count(); x++)
+    {
+        QWebSocket *socket = m_socketList.value(x);
+        if(socket->property("serialNumber").toInt() == serialNumber)
+        {
+            socket->close();
         }
     }
 }
@@ -166,7 +180,7 @@ void ControllerManager::connectionClosed(void)
         {
             qDebug(QString("Controller %1 disconnected.").arg(serialNumber).toLatin1());
             emit controllerRemoved(serialNumber);
-            createAndSendNotificationMessage(serialNumber, false);
+            createAndSendNotificationMessage(serialNumber, ControllerOffline);
         }
     }
     emit controllerDisconnected(m_socketList.indexOf(socket));
@@ -204,12 +218,10 @@ void ControllerManager::processTextMessage(QString message)
         if(!found)
         {
             emit controllerAdded(serialNumber);
-            createAndSendNotificationMessage(serialNumber, true);
+            createAndSendNotificationMessage(serialNumber, ControllerOnline);
         }
         emit controllerConnected(m_socketList.indexOf(socket));
-
-        sendControllerInfo(serialNumber, socket);
-    }
+   }
     else if(uri == "/controller/multiConfig")
     {
         QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
@@ -282,12 +294,12 @@ void ControllerManager::pingSlot()
     emit pingSignal(data);
 }
 
-void ControllerManager::createAndSendNotificationMessage(int serialNumber, bool isOnline)
+void ControllerManager::createAndSendNotificationMessage(int serialNumber, ControllerStatus status)
 {
     QString uri("/api/notification/controller");
     QJsonObject obj;
     obj["serialNumber"] = serialNumber;
-    obj["isOnline"] = isOnline;
+    obj["status"] = status;
 
     emit sendNotificationMessage(uri, obj);
 }
