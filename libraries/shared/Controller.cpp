@@ -97,6 +97,7 @@ void Controller::getControllerIDAndName(void)
 	JsonObject &root = jsonBuffer.createObject();
 	root["serialNumber"] = ESP.getChipId();
 	root["messageUri"] = "/controller/connect";
+	root["version"] = ControllerVersion;
 
 	String json;
 	Network.sendMessageToServer(root);
