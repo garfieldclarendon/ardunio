@@ -13,9 +13,8 @@
 #define blinkingTimeout 200
 
 Controller::Controller(int localServerPort)
-	: m_controllerID(-1), m_class(ClassUnknown), m_currentBlinkTimeout(0), m_findServerTimeout(0), m_serverFound(false)
+	: m_class(ClassUnknown), m_currentBlinkTimeout(0), m_findServerTimeout(0), m_serverFound(false)
 {
-	memset(&m_devices, 0, sizeof(DeviceEntryStruct) * MAX_MODULES);
 	memset(&m_extraPins, 0, 8);
 	memset(&m_blinkingPins, 255, 8);
 }
@@ -85,67 +84,13 @@ void Controller::processMessage(const Message &message)
 		IPAddress address(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
 		Network.setServerAddress(address);
 		DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s\n", address.toString().c_str());
-		if (m_controllerID <= 0)
-			getControllerIDAndName();
-	}
-}
-
-void Controller::getControllerIDAndName(void)
-{
-	DEBUG_PRINT("getControllerIDAndName\n");
-	StaticJsonBuffer<600> jsonBuffer;
-	JsonObject &root = jsonBuffer.createObject();
-	root["serialNumber"] = ESP.getChipId();
-	root["messageUri"] = "/controller/connect";
-	root["version"] = ControllerVersion;
-
-	String json;
-	Network.sendMessageToServer(root);
-}
-
-void Controller::updateControllerName(const JsonObject &root)
-{
-	m_controllerID = root["controllerID"];
-	m_controllerName = (const char *)root["controllerName"];
-	DEBUG_PRINT("getControllerIDAndName: Set controllerID %d and controllerName %s\n", m_controllerID, m_controllerName.c_str());
-	JsonArray &devices = root["devices"];
-	for (byte x = 0; x < devices.size(); x++)
-	{
-		m_devices[x].deviceID = devices[x]["deviceID"];
-		m_devices[x].deviceName = (const char *)devices[x]["deviceName"];
-		DEBUG_PRINT("getControllerIDAndName: DeviceID %d  Name %s\n", m_devices[x].deviceID, m_devices[x].deviceName.c_str());
 	}
 }
 
 void Controller::controllerCallback(NetActionType actionType, const JsonObject &root)
 {
 	String uri = root["messageUri"];
-	if (uri == "controller/name")
-		updateControllerName(root);
-}
-
-byte Controller::getDeviceCount(void) const
-{
-	byte count = 0;
-
-	for (byte x = 0; x < MAX_MODULES; x++)
-	{
-		if (m_devices[x].deviceID == 0)
-			break;
-		else
-			count++;
-	}
-	return count;
-}
-
-int Controller::getDeviceID(byte index) const
-{
-	return m_devices[index].deviceID;
-}
-
-String Controller::getDeviceName(byte index) const
-{
-	return m_devices[index].deviceName;
+	DEBUG_PRINT("controllerCallback: %s\n", uri.c_str());
 }
 
 void Controller::downloadFirmwareUpdate(void)

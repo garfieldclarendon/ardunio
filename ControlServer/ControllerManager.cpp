@@ -207,9 +207,7 @@ void ControllerManager::processTextMessage(QString message)
             createAndSendNotificationMessage(serialNumber, true);
         }
         emit controllerConnected(m_socketList.indexOf(socket));
-
-        sendControllerInfo(serialNumber, socket);
-    }
+   }
     else if(uri == "/controller/multiConfig")
     {
         QWebSocket *socket = qobject_cast<QWebSocket *>(sender());

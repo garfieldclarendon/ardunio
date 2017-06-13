@@ -52,7 +52,6 @@ void setup()
 
 	Network.setControllerCallback(netControllerCallback);
 	Network.setControllerConfigCallback(netControllerConfigCallback);
-	Network.setControllerStatusCallback(netControllerStatusCallback);
 	Network.setModuleCallback(netModuleCallback);
 	Network.setUdpMessageCallback(udpMessageCallback);
 	Network.setServerConnectedCallback(serverReconnected);
@@ -93,31 +92,6 @@ void loop()
 void udpMessageCallback(const Message &message)
 {
 	controller.processMessage(message);
-}
-
-void netControllerStatusCallback(int &controllerID, String &controllerName, String &controllerType, String &currentStatus)
-{
-	controllerID = controller.getControllerID();
-	controllerName = controller.getControllerName();
-	controllerType = "Panel";
-
-	currentStatus = "<table>";
-	currentStatus += "<tr>";
-	currentStatus += "<th>Device ID</th>";
-	currentStatus += "<th>Status</th>";
-	currentStatus += "</tr>";
-	for (byte x = 0; x < config.totalModules; x++)
-	{
-		currentStatus += "<tr>";
-		currentStatus += "<td>";
-		currentStatus += modules[x].getModuleAddress();
-		currentStatus += "</td>";
-		currentStatus += "<td>";
-		currentStatus += modules[x].getOutputState();
-		currentStatus += "</td>";
-		currentStatus += "</tr>";
-	}
-	currentStatus += "</table>";
 }
 
 String netControllerConfigCallback(NetActionType action, const JsonObject &root)
