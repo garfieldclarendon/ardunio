@@ -171,7 +171,7 @@ void WebServerThread::handleDownloadFirmware(QTcpSocket* socket, const QUrl &url
     QByteArray fileData;
     if(fileName.length() > 0)
         fileData = getFile(fileName);
-    QString result = WebServer::createHeader(returnCode, fileData.size());
+    QString result = WebServer::createHeader(returnCode, fileData.size(), "application/octet-stream");
 
     socket->write(result.toLatin1());
 

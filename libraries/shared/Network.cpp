@@ -160,7 +160,7 @@ void NetworkClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t lengt
 		m_this->m_isConnected = true;
 //		 Send message to server when Connected containing the Serial Number
 		String json;
-		StaticJsonBuffer<200> jsonBuffer;
+                StaticJsonBuffer<250> jsonBuffer;
 		JsonObject &root = jsonBuffer.createObject();
 		root["messageUri"] = "/controller/connect";
 		root["serialNumber"] = ESP.getChipId();

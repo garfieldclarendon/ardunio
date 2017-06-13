@@ -49,7 +49,7 @@ public:
     void handleUdpMessage(NetActionType action, const QString &path, const QString &payload);
 
     static WebServer *instance(void);
-    static QString createHeader(const QString &httpCode, int bodySize);
+    static QString createHeader(const QString &httpCode, int bodySize, const QString &contentType = "text/html");
 
 signals:
 

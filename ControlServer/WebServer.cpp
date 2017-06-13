@@ -114,13 +114,13 @@ bool WebServer::sendMessage(NetActionType actionType, const QString &uri, const 
     return ret;
 }
 
-QString WebServer::createHeader(const QString &httpCode, int bodySize)
+QString WebServer::createHeader(const QString &httpCode, int bodySize, const QString &contentType)
 {
     QString header;
     header = QString("HTTP/1.0 %1\r\n"
-            "Content-Type: text/html;\r\n").arg(httpCode);
+            "Content-Type: %2;\r\n").arg(httpCode).arg(contentType);
     if(bodySize > 0)
-            header += QString("Content-Length: %2\r\n").arg(bodySize);
+            header += QString("Content-Length: %1\r\n").arg(bodySize);
     header += "\r\n";
 
     return header;
