@@ -79,11 +79,11 @@ void loop()
 	else
 	{
 		// We're disconnected from the server, set the signal to Red/Stop
-		digitalWrite(motor1_pinA, 0);
-		digitalWrite(motor1_pinB, 1);
+		digitalWrite(motor1_pinA, 1);
+		digitalWrite(motor1_pinB, 0);
 
-		digitalWrite(motor2_pinA, 0);
-		digitalWrite(motor2_pinB, 1);
+		digitalWrite(motor2_pinA, 1);
+		digitalWrite(motor2_pinB, 0);
 	}
 } 
 
