@@ -102,16 +102,17 @@ void Controller::downloadFirmwareUpdate(void)
 	{
 		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 		String updateUrl;
-		updateUrl = "http://";
-		updateUrl += address.toString() + ":" + port;
 		updateUrl += "/firmware?ControllerType=";
 		updateUrl += m_class;
 		DEBUG_PRINT("Checking for firmware update at: %s\n", updateUrl.c_str());
 		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-		ESPhttpUpdate.update(updateUrl);
+		ESPhttpUpdate.update(address.toString(), port, updateUrl);
 
 		if (ESPhttpUpdate.getLastError() != 0)
+		{
 			Serial.println(ESPhttpUpdate.getLastErrorString());
+			restart();
+		}
 	}
 }
 
