@@ -16,6 +16,7 @@
 #include "MessageBroadcaster.h"
 #include "DeviceManager.h"
 #include "ControllerManager.h"
+#include "NCEInterface.h"
 
 #include "TurnoutHandler.h"
 #include "ControllerHandler.h"
@@ -74,6 +75,8 @@ void CAppService::start(void)
     ControllerManager::instance();
     // Force the Route handler to initialize
     RouteHandler::instance();
+
+    NCEInterface::instance()->setup(1);
 
     if(!m_initialized)
     {

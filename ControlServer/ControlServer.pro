@@ -1,4 +1,4 @@
-QT += core network websockets sql
+QT += core network websockets sql serialport
 win32 {
     QT += gui widgets
 }

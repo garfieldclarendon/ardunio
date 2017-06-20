@@ -14,7 +14,8 @@ HEADERS += AppService.h \
     $$PWD/PanelHandler.h \
     $$PWD/WebServerThread.h \
     $$PWD/SemaphoreHandler.h \
-    $$PWD/NotificationServer.h
+    $$PWD/NotificationServer.h \
+    $$PWD/NCEInterface.h
 
 #Source files
 SOURCES += main.cpp \
@@ -33,7 +34,8 @@ SOURCES += main.cpp \
     $$PWD/PanelHandler.cpp \
     $$PWD/WebServerThread.cpp \
     $$PWD/SemaphoreHandler.cpp \
-    $$PWD/NotificationServer.cpp
+    $$PWD/NotificationServer.cpp \
+    $$PWD/NCEInterface.cpp
 
 win32 {
 HEADERS += $$PWD/StatusDialog.h
