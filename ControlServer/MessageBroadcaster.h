@@ -31,6 +31,7 @@ signals:
 
 public slots:
     void sendResetCommand(int serialNumber);
+    void sendResetConfigCommand(int serialNumber);
     void sendDownloadFirmware(int serialNumber);
     void sendMessage(int messageID, int serialNumber, quint8 byte1, quint8 byte2 = 0, quint8 byte3 = 0, quint8 byte4 = 0, quint8 byte5= 0);
     void sendUDPMessage(const UDPMessage &message);
