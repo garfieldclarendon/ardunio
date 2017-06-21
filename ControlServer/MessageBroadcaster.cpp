@@ -242,6 +242,15 @@ void MessageBroadcaster::sendResetCommand(int serialNumber)
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 
+void MessageBroadcaster::sendResetConfigCommand(int serialNumber)
+{
+    UDPMessage message;
+    message.setMessageID(SYS_RESET_CONFIG);
+    message.setSerialNumber(serialNumber);
+
+    MessageBroadcaster::instance()->sendUDPMessage(message);
+}
+
 void MessageBroadcaster::sendDownloadFirmware(int serialNumber)
 {
     UDPMessage message;

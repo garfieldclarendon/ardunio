@@ -74,6 +74,10 @@ void APIHandler::handleClient(QTcpSocket *socket, const QString &path, const QSt
     {
         handleControllerFirmwareUpdate(socket, url);
     }
+    else if(url.path().contains("send_controller_reset_config"))
+    {
+        handleControllerResetConfig(socket, url);
+    }
     else if(url.path().contains("send_controller_reset"))
     {
         handleControllerReset(socket, url);
@@ -343,5 +347,19 @@ void APIHandler::handleControllerReset(QTcpSocket *socket, const QUrl &url)
     int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
 
     MessageBroadcaster::instance()->sendResetCommand(serialNumber);
+}
+
+void APIHandler::handleControllerResetConfig(QTcpSocket *socket, const QUrl &url)
+{
+    QString header = WebServer::createHeader("200 OK", 0);
+
+    socket->write(header.toLatin1());
+    socket->flush();
+    socket->close();
+
+    QUrlQuery urlQuery(url);
+    int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
+
+    MessageBroadcaster::instance()->sendResetConfigCommand(serialNumber);
 }
 
