@@ -225,6 +225,7 @@ void loop()
 	for (byte x = 0; x < totalModules; x++)
 	{
 		modules[x]->processWire();
+		yield();
 	}
 }
 
