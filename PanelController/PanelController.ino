@@ -20,6 +20,7 @@
 #include "Network.h"
 
 bool buttonPressed = false;
+bool downloadConfigFlag= false;
 PanelControllerConfigStruct config;
 
 PanelModuleClass modules[MAX_PANEL_MODULES];
@@ -98,7 +99,9 @@ String netControllerConfigCallback(NetActionType action, const JsonObject &root)
 {
 	DEBUG_PRINT("netControllerConfigCallback: NetAction %d\n", action);
 
-	config.totalModules = root["totalModules"];
+	JsonArray &mods = root["modules"];
+	config.totalModules = mods.size();
+
 	config.extraPin0Mode = (PinModeEnum)(int)root["extrPin0Mode"];
 	config.extraPin1Mode = (PinModeEnum)(int)root["extrPin1Mode"];
 	config.extraPin2Mode = (PinModeEnum)(int)root["extrPin2Mode"];
@@ -115,14 +118,37 @@ String netControllerConfigCallback(NetActionType action, const JsonObject &root)
 
 void loadConfig(void)
 {
+	DEBUG_PRINT("loadConfig\n");
 	if (EEPROM.read(0) == 0xEE)
 	{
+		DEBUG_PRINT("CONFIG VALID!\n");
 		EEPROM.get(1, config);
 	}
+	else
+	{
+		DEBUG_PRINT("CONFIG INVALID!!!\n");
+		downloadConfigFlag = true;
+	}
+}
+
+void downloadConfig(void)
+{
+	DEBUG_PRINT("downloadConfig\n");
+
+	StaticJsonBuffer<200> jsonBuffer;
+	JsonObject &out = jsonBuffer.createObject();
+
+	out["messageUri"] = "/controller/panel";
+	out["serialNumber"] = ESP.getChipId();
+	out["classCode"] = (int)ClassPanel;
+	out["action"] = (int)NetActionGet;
+
+	Network.sendMessageToServer(out);
 }
 
 void saveConfig(void)
 {
+	DEBUG_PRINT("saveConfig\n");
 	EEPROM.write(0, 0xEE);
 	EEPROM.put(1, config);
 	EEPROM.commit();
@@ -161,15 +187,23 @@ String netControllerCallback(NetActionType action, const JsonObject &root)
 
 void serverReconnected(void)
 {
-	DEBUG_PRINT("serverReconnected\n");
-	for (byte x = 0; x < config.totalModules; x++)
-	{	
-		StaticJsonBuffer<500> jsonBuffer;
-		JsonObject &out = jsonBuffer.createObject();
-		out["messageUri"] = "/controller/module";
-		out["moduleIndex"] = x;
-		out["class"] = (int)ClassPanel;
-		out["action"] = (int)NetActionGet;
-		Network.sendMessageToServer(out);
+	if (downloadConfigFlag)
+	{
+		downloadConfigFlag = false;
+		downloadConfig();
+	}
+	else
+	{
+		DEBUG_PRINT("serverReconnected\n");
+		for (byte x = 0; x < config.totalModules; x++)
+		{
+			StaticJsonBuffer<500> jsonBuffer;
+			JsonObject &out = jsonBuffer.createObject();
+			out["messageUri"] = "/controller/module";
+			out["moduleIndex"] = x;
+			out["class"] = (int)ClassPanel;
+			out["action"] = (int)NetActionGet;
+			Network.sendMessageToServer(out);
+		}
 	}
 }
