@@ -41,6 +41,8 @@ private:
 	byte m_inputs;
 	byte m_outputs;
 	bool m_flashAll;
+	byte m_outputRegister;
+	byte m_inputRegister;
 
 	unsigned long m_currentBlinkTimeout;
 };

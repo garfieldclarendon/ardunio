@@ -50,6 +50,16 @@ byte PanelModuleClass::getModuleAddress(void) const
 
 void PanelModuleClass::setup(byte address)
 {
+	if (address == 0)
+	{
+		m_inputRegister = GPIOB;
+		m_outputRegister = GPIOA;
+	}
+	else
+	{
+		m_inputRegister = GPIOA;
+		m_outputRegister = GPIOB;
+	}
 	m_currentBlinkTimeout = 0;
 	m_outputs = 0;
 	m_inputs = 0;
@@ -61,9 +71,15 @@ void PanelModuleClass::setup(byte address)
 	memset(m_blinkingPins, 255, 8);
 
 	// set port A to output
-	expanderWrite(IODIRA, 00);
+	if (address == 0)
+		expanderWrite(IODIRA, 00);
+	else
+		expanderWrite(IODIRA, 0xFF);
 	// set port B to input
-	expanderWrite(IODIRB, 0xFF);
+	if (address == 0)
+		expanderWrite(IODIRB, 0xFF);
+	else
+		expanderWrite(IODIRB, 0);
 }
 
 void PanelModuleClass::expanderWrite(const byte reg, const byte data)
@@ -95,7 +111,7 @@ byte PanelModuleClass::expanderRead(const byte reg)
 void PanelModuleClass::process(bool buttonPressed)
 {
 	byte previousOutputs = m_outputs;
-	byte buttons = expanderRead(GPIOB);
+	byte buttons = expanderRead(m_inputRegister);
 	if (buttons != m_inputs)
 	{
 		DEBUG_PRINT("Module::process  Module Address: %d\nButton values: %02x\n", getModuleAddress(), buttons);
@@ -112,12 +128,12 @@ void PanelModuleClass::process(bool buttonPressed)
 	
 	blinkPins();
 	if (m_outputs != previousOutputs)
-		expanderWrite(GPIOA, m_outputs);
+		expanderWrite(m_outputRegister, m_outputs);
 }
 
 void PanelModuleClass::handleButtonPressed(byte buttonIndex)
 {
-	DEBUG_PRINT("Module::handleButtonPressed  Module Address: %d\nButton index: %d\n", getModuleAddress(), buttonIndex, buttonIndex);
+	DEBUG_PRINT("Module::handleButtonPressed  Module Address: %d\nButton index: %d\n", getModuleAddress(), buttonIndex);
 	String json;
 	StaticJsonBuffer<200> jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
@@ -144,7 +160,7 @@ void PanelModuleClass::updateOutputs(byte pinIndex, PinStateEnum newState)
 		DEBUG_PRINT("Index %d State: %d\n", pinIndex, newState);
 		removeBlinkingPin(pinIndex);
 		bitWrite(m_outputs, pinIndex, newState);
-		expanderWrite(GPIOA, m_outputs);
+		expanderWrite(m_outputRegister, m_outputs);
 	}
 }
 
