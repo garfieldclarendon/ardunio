@@ -19,6 +19,7 @@
 #include "NCEInterface.h"
 
 #include "TurnoutHandler.h"
+#include "BlockHandler.h"
 #include "ControllerHandler.h"
 #include "RouteHandler.h"
 #include "PanelHandler.h"
@@ -67,16 +68,19 @@ void CAppService::initiateStop()
 void CAppService::start(void)
 {
     qDebug(QObject::tr("Server started. START function").toLatin1());
+
+    NCEInterface::instance()->setup();
+
     WebServer::instance();
+
     NotificationServer::instance();
+
     // Force the device manager to initialize
     DeviceManager::instance();
     // Force the controller manager to initialize
     ControllerManager::instance();
     // Force the Route handler to initialize
     RouteHandler::instance();
-
-    NCEInterface::instance()->setup(1);
 
     if(!m_initialized)
     {
@@ -204,6 +208,10 @@ void CAppService::startWebServer()
         TurnoutHandler *turnoutHandler = new TurnoutHandler(this);
         connect(ControllerManager::instance(), &ControllerManager::newMessage, turnoutHandler, &TurnoutHandler::newMessage, Qt::QueuedConnection);
         connect(turnoutHandler, &TurnoutHandler::sendNotificationMessage, notificationServer, &NotificationServer::sendNotificationMessage);
+
+        BlockHandler *blockHandler = new BlockHandler(this);
+        connect(ControllerManager::instance(), &ControllerManager::newMessage, blockHandler, &BlockHandler::newMessage, Qt::QueuedConnection);
+        connect(blockHandler, &BlockHandler::sendNotificationMessage, notificationServer, &NotificationServer::sendNotificationMessage);
 
         PanelHandler *panelHandler = new PanelHandler(this);
         connect(ControllerManager::instance(), &ControllerManager::newMessage, panelHandler, &PanelHandler::newMessage, Qt::QueuedConnection);

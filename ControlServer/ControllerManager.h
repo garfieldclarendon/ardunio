@@ -50,6 +50,7 @@ protected slots:
 private:
     void sendControllerInfo(int serialNumber, QWebSocket *socket);
     void sendMultiControllerConfig(int serialNumber, QWebSocket *socket);
+    void sendPanelControllerConfig(int serialNumber, QWebSocket *socket);
     void pongReply(quint64 length, const QByteArray &);
     void pingSlot(void);
     void createAndSendNotificationMessage(int serialNumber, ControllerStatus status);

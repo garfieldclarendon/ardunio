@@ -14,8 +14,11 @@ HEADERS += AppService.h \
     $$PWD/PanelHandler.h \
     $$PWD/WebServerThread.h \
     $$PWD/SemaphoreHandler.h \
+    $$PWD/SignalHandler.h \
+    $$PWD/BlockHandler.h \
     $$PWD/NotificationServer.h \
-    $$PWD/NCEInterface.h
+    $$PWD/NCEInterface.h \
+    $$PWD/NCEMessage.h
 
 #Source files
 SOURCES += main.cpp \
@@ -34,8 +37,11 @@ SOURCES += main.cpp \
     $$PWD/PanelHandler.cpp \
     $$PWD/WebServerThread.cpp \
     $$PWD/SemaphoreHandler.cpp \
+    $$PWD/SignalHandler.cpp \
+    $$PWD/BlockHandler.cpp \
     $$PWD/NotificationServer.cpp \
-    $$PWD/NCEInterface.cpp
+    $$PWD/NCEInterface.cpp \
+    $$PWD/NCEMessage.cpp
 
 win32 {
 HEADERS += $$PWD/StatusDialog.h

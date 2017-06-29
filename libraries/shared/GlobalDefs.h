@@ -68,6 +68,13 @@ enum TurnoutState
   TrnToNormal
 };
 
+enum BlockState
+{
+    BlockUnknown,
+    BlockClear,
+    BlockOccupied
+};
+
 enum ClassEnum
 {
         ClassUnknown,

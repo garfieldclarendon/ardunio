@@ -259,56 +259,27 @@ QByteArray Database::getBlockConfig(quint32 serialNumber, int moduleIndex)
 
 QByteArray Database::getPanelConfig(quint32 serialNumber)
 {
-    int panelModuleIDs[MAX_PANEL_MODULES];
-    memset(&panelModuleIDs, 0, sizeof(panelModuleIDs));
-    QString buffer;
-    int moduleCount = 0;
+    QJsonDocument jsonDoc;
+    QJsonObject obj;
+    QJsonArray array;
 
+    if(db.isValid() == false)
+        db = QSqlDatabase::database();
+    db.open();
     QSqlQuery query(db);
-    bool ret = query.exec(QString("SELECT controllerModule.id FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 ORDER BY moduleIndex").arg(serialNumber));
-    if(ret)
+    query.exec(QString("SELECT moduleClass, moduleIndex FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 ORDER BY moduleIndex").arg(serialNumber));
+    while (query.next())
     {
-        int index = 0;
-        while (query.next())
-        {
-           panelModuleIDs[index++] = query.value(0).toInt();
-           moduleCount++;
-        }
-
-        for(int x = 0; x < moduleCount; x++)
-        {
-            buffer += QString("ID,%1;").arg(panelModuleIDs[x]);
-            {
-                QSqlQuery inputsQuery(db);
-                inputsQuery.exec(QString("SELECT pinIndex, inputID, inputType FROM panelInputEntry WHERE panelModuleID = %1 ORDER BY pinIndex").arg(panelModuleIDs[x]));
-                int inputIndex = 0;
-                while (inputsQuery.next())
-                {
-                    inputIndex = inputsQuery.value(0).toInt();
-                    buffer += QString("INID,%1;INTYPE,%2;").arg(inputsQuery.value(1).toString()).arg(inputsQuery.value(2).toString());
-                }
-                buffer += QString("END,0;");
-                QSqlQuery outputsQuery(db);
-                outputsQuery.exec(QString("SELECT pinIndex, itemID, itemType, onValue, flashingValue FROM panelOutputEntry WHERE panelModuleID = %1 ORDER BY pinIndex").arg(panelModuleIDs[x]));
-                int outputIndex = 0;
-                while (outputsQuery.next())
-                {
-                    outputIndex = outputsQuery.value(0).toInt();
-                    buffer += QString("ITEMID,%1;ITEMTYPE,%2;ON,%3;FLASH,%4;").arg(outputsQuery.value(1).toString()).arg(outputsQuery.value(2).toString()).arg(outputsQuery.value(3).toString()).arg(outputsQuery.value(4).toString());
-                }
-            }
-        }
-
-        buffer += "\n";
-        qDebug(buffer.toLatin1());
+        QJsonObject o;
+        o["class"] = query.value(0).toString();
+        o["index"] = query.value(1).toString();
+        array.append(o);
     }
-    else
-    {
-        QString errorText(query.lastError().text());
-        qDebug(errorText.toLatin1());
-    }
+    obj["messageUri"] = "/controllerConfig";
+    obj["modules"] = array;
+    jsonDoc.setObject(obj);
 
-    return buffer.toLatin1();
+    return jsonDoc.toJson();
 }
 
 QByteArray Database::getPanelRouteConfig(quint32 serialNumber)

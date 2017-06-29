@@ -227,6 +227,11 @@ void ControllerManager::processTextMessage(QString message)
         QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
         sendMultiControllerConfig(serialNumber, socket);
     }
+    else if(uri == "/controller/panel")
+    {
+        QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
+        sendPanelControllerConfig(serialNumber, socket);
+    }
     else
     {
         NetActionType actionType = (NetActionType)root["action"].toInt();
@@ -265,6 +270,16 @@ void ControllerManager::sendMultiControllerConfig(int serialNumber, QWebSocket *
 
     Database db;
     QString returnPayload = db.getMultiControllerConfig(serialNumber);
+    socket->sendTextMessage(returnPayload);
+    qDebug(returnPayload.toLatin1());
+}
+
+void ControllerManager::sendPanelControllerConfig(int serialNumber, QWebSocket *socket)
+{
+    qDebug(QString("sendMultiControllerConfig: controller %1").arg(serialNumber).toLatin1());
+
+    Database db;
+    QString returnPayload = db.getPanelConfig(serialNumber);
     socket->sendTextMessage(returnPayload);
     qDebug(returnPayload.toLatin1());
 }
