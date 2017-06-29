@@ -102,6 +102,8 @@ public:
     void accDecoder(int number, bool closed);
     void accMemoryRead(int address);
 
+    int getExpectedSize(void) const;
+
 private:
     void copy(const NCEMessage &other)
     {

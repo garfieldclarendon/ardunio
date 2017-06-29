@@ -17,6 +17,7 @@ public:
     const int REPLY_LEN = 16;
 
     SerialPortThread(QObject *parent) : QThread(parent) { }
+    ~SerialPortThread(void);
     virtual void run(void) Q_DECL_OVERRIDE;
 
     void setQuit(void)
@@ -38,7 +39,7 @@ private:
     void processRouteBlock(const QByteArray &blockData, int blockIndex);
     void sendMessageInternal(NCEMessage &message);
 
-    QSerialPort m_serialPort;
+    QSerialPort *m_serialPort;
 };
 
 class NCEInterface : public QObject

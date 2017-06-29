@@ -33,11 +33,28 @@ void NCEMessage::accMemoryRead(int address)
 {
     m_messageData.clear();
     m_command = READ16_CMD;
-    int addr_h = address / 256;
-    int addr_l = address & 0xFF;
+    int addr_h;
+    addr_h = (address / 256);
+    int addr_l;
+    addr_l = (address & 0xFF);
 
     m_messageData.append((char) m_command); // read 16 bytes command
     m_messageData.append((char) addr_h);    // high address
     m_messageData.append((char) addr_l);    // low address
+}
+
+int NCEMessage::getExpectedSize() const
+{
+    int ret = 1;
+
+    if(m_command == READ16_CMD)
+        ret = 16;
+    else if(m_command == SW_REV_CMD || m_command == READ_CLOCK_CMD)
+        ret = 3;
+    else if(m_command == READ_AUI4_CMD)
+        ret = 4;
+    else if(m_command == READ_AUI2_CMD || m_command == PGM_REG_READ_CMD || m_command == PGM_DIR_READ_CMD)
+        ret = 2;
+    return ret;
 }
 

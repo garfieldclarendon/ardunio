@@ -21,8 +21,8 @@ void NCEInterface::setup(void)
 {
     m_pollThread = new SerialPortThread(this);
 
-    connect(m_pollThread, SIGNAL(newMessage(NCEMessage)), this, SLOT(newMessageSlot(NCEMessage)), Qt::QueuedConnection);
-    connect(this, SIGNAL(sendMessageSignal(NCEMessage)), m_pollThread, SLOT(sendMessage(NCEMessage)), Qt::QueuedConnection);
+//    connect(m_pollThread, SIGNAL(newMessage(NCEMessage)), this, SLOT(newMessageSlot(NCEMessage)), Qt::QueuedConnection);
+//    connect(this, SIGNAL(sendMessageSignal(NCEMessage)), m_pollThread, SLOT(sendMessage(NCEMessage)), Qt::QueuedConnection);
 
     m_pollThread->start();
 }
@@ -71,6 +71,11 @@ void NCEInterface::sendMessage(const NCEMessage &message)
 /// SerialPortThread
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+SerialPortThread::~SerialPortThread()
+{
+    delete m_serialPort;
+}
+
 void SerialPortThread::run()
 {
     openPort();
@@ -82,7 +87,7 @@ void SerialPortThread::run()
 void SerialPortThread::sendMessage(const NCEMessage &message)
 {
     NCEMessage returnMessage(message);
-    if(m_serialPort.isOpen())
+    if(m_serialPort->isOpen())
     {
         sendMessageInternal(returnMessage);
     }
@@ -92,7 +97,7 @@ void SerialPortThread::sendMessage(const NCEMessage &message)
 
 void SerialPortThread::timerProc()
 {
-    if(m_serialPort.isOpen())
+    if(m_serialPort->isOpen())
     {
         pollRouteChanges();
     }
@@ -105,23 +110,24 @@ void SerialPortThread::openPort()
     QSettings settings("AppServer.ini", QSettings::IniFormat);
     QString serialPort = settings.value("serialPort", "COM4").toString();
 
-    m_serialPort.setPortName(serialPort);
-    m_serialPort.setBaudRate(QSerialPort::Baud9600);
-    m_serialPort.setDataBits(QSerialPort::Data8);
-    m_serialPort.setParity(QSerialPort::NoParity);
-    m_serialPort.setStopBits(QSerialPort::OneStop);
-    m_serialPort.setFlowControl(QSerialPort::HardwareControl);
+    m_serialPort = new QSerialPort;
+    m_serialPort->setPortName(serialPort);
+    m_serialPort->setBaudRate(QSerialPort::Baud9600);
+    m_serialPort->setDataBits(QSerialPort::Data8);
+    m_serialPort->setParity(QSerialPort::NoParity);
+    m_serialPort->setStopBits(QSerialPort::OneStop);
+    m_serialPort->setFlowControl(QSerialPort::HardwareControl);
 
-    if(m_serialPort.open(QIODevice::ReadWrite))
+    if(m_serialPort->open(QIODevice::ReadWrite))
     {
         qDebug("NCE Serail Port OPEN!");
 
         unsigned char command[2];
         command[0] = 0xAA;
         command[1] = 2;
-        m_serialPort.write((const char *)command, 1);
-        m_serialPort.waitForReadyRead(5000);
-        QByteArray versionData = m_serialPort.readAll();
+        m_serialPort->write((const char *)command, 1);
+        m_serialPort->waitForReadyRead(5000);
+        QByteArray versionData = m_serialPort->readAll();
         Q_UNUSED(versionData);
     }
     else
@@ -168,7 +174,12 @@ void SerialPortThread::processRouteBlock(const QByteArray &blockData, int blockI
 
 void SerialPortThread::sendMessageInternal(NCEMessage &message)
 {
-    m_serialPort.write(message.getMessageData());
-    m_serialPort.waitForReadyRead(5000);
-    message.setResultData(m_serialPort.readAll());
+    QByteArray a = message.getMessageData();
+    m_serialPort->write(a);
+    m_serialPort->waitForReadyRead(5000);
+    int size = m_serialPort->bytesAvailable();
+    while(size < message.getExpectedSize())
+        size = m_serialPort->bytesAvailable();
+    message.setResultData(m_serialPort->readAll());
+    size = m_serialPort->bytesAvailable();
 }
