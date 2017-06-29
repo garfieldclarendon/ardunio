@@ -120,6 +120,9 @@ void SerialPortThread::openPort()
         command[0] = 0xAA;
         command[1] = 2;
         m_serialPort.write((const char *)command, 1);
+        m_serialPort.waitForReadyRead(5000);
+        QByteArray versionData = m_serialPort.readAll();
+        Q_UNUSED(versionData);
     }
     else
     {
