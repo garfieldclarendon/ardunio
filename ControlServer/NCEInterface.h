@@ -7,6 +7,16 @@
 
 #include "NCEMessage.h"
 
+struct TagAddress {
+    unsigned char byteL;
+    unsigned char byteH;
+};
+
+union AddressUnion {
+    unsigned int addressInt;
+    TagAddress addressStruct;
+};
+
 class SerialPortThread : public QThread
 {
     Q_OBJECT

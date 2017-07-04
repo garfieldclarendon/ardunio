@@ -116,24 +116,34 @@ void SerialPortThread::openPort()
     m_serialPort->setDataBits(QSerialPort::Data8);
     m_serialPort->setParity(QSerialPort::NoParity);
     m_serialPort->setStopBits(QSerialPort::OneStop);
-    m_serialPort->setFlowControl(QSerialPort::NoFlowControl);
+    m_serialPort->setFlowControl(QSerialPort::HardwareControl);
 
     if(m_serialPort->open(QIODevice::ReadWrite))
     {
         qDebug("NCE Serail Port OPEN!");
 
-//        unsigned char command[3];
-//        command[0] = 0x8F;
-//        command[1] = CS_ACCY_MEMORY;
-//        command[2] = 0;
-        NCEMessage message;
-        message.accMemoryRead(CS_ACCY_MEMORY);
-        int size = message.getMessageData().length();
-        m_serialPort->write(message.getMessageData(), size);
+        int address = CS_ACCY_MEMORY;
+        int addr_h;
+        addr_h = (address / 256);
+        int addr_l;
+        addr_l = (address & 0xFF);
+
+        AddressUnion a;
+        a.addressInt = CS_ACCY_MEMORY;
+
+        unsigned char command[4];
+        command[0] = 0x8F;
+        command[1] = a.addressStruct.byteH;
+        command[2] = a.addressStruct.byteL;
+        command[3] = 0;
+//        NCEMessage message;
+//        message.accMemoryRead(CS_ACCY_MEMORY);
+//        int size = message.getMessageData().length();
+        m_serialPort->write((const char *)command, 3);
         m_serialPort->waitForReadyRead(5000);
-        size = m_serialPort->bytesAvailable();
-        while(size < 16)
-            size = m_serialPort->bytesAvailable();
+        int size = m_serialPort->bytesAvailable();
+//        while(size < 16)
+//            size = m_serialPort->bytesAvailable();
         QByteArray versionData = m_serialPort->readAll();
 //        Q_UNUSED(versionData);
     }
@@ -152,7 +162,7 @@ void SerialPortThread::pollRouteChanges()
         message.accMemoryRead(nceAccAddress);
 
         sendMessageInternal(message);
-        processRouteBlock(message.getResultData(), x);
+//        processRouteBlock(message.getResultData(), x);
     }
 }
 
@@ -169,11 +179,11 @@ void SerialPortThread::processRouteBlock(const QByteArray &blockData, int blockI
                 if(RouteHandler::instance()->isRouteActive(routeID) == false)
                 {
                     RouteHandler::instance()->activateRoute(routeID);
-                    // Reset the accessory entry back to normal
-                    NCEMessage message;
-                    message.accDecoder(routeID, true);
-                    sendMessageInternal(message);
                 }
+                // Reset the accessory entry back to normal
+                NCEMessage message;
+                message.accDecoder(routeID, true);
+                sendMessageInternal(message);
             }
         }
     }
