@@ -116,19 +116,26 @@ void SerialPortThread::openPort()
     m_serialPort->setDataBits(QSerialPort::Data8);
     m_serialPort->setParity(QSerialPort::NoParity);
     m_serialPort->setStopBits(QSerialPort::OneStop);
-    m_serialPort->setFlowControl(QSerialPort::HardwareControl);
+    m_serialPort->setFlowControl(QSerialPort::NoFlowControl);
 
     if(m_serialPort->open(QIODevice::ReadWrite))
     {
         qDebug("NCE Serail Port OPEN!");
 
-        unsigned char command[2];
-        command[0] = 0xAA;
-        command[1] = 2;
-        m_serialPort->write((const char *)command, 1);
+//        unsigned char command[3];
+//        command[0] = 0x8F;
+//        command[1] = CS_ACCY_MEMORY;
+//        command[2] = 0;
+        NCEMessage message;
+        message.accMemoryRead(CS_ACCY_MEMORY);
+        int size = message.getMessageData().length();
+        m_serialPort->write(message.getMessageData(), size);
         m_serialPort->waitForReadyRead(5000);
+        size = m_serialPort->bytesAvailable();
+        while(size < 16)
+            size = m_serialPort->bytesAvailable();
         QByteArray versionData = m_serialPort->readAll();
-        Q_UNUSED(versionData);
+//        Q_UNUSED(versionData);
     }
     else
     {

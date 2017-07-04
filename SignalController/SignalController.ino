@@ -1,3 +1,4 @@
+#include <ArduinoJson.h>
 #include "ConfigDownload.h"
 #include <WebSocketsClient.h>
 #include <Hash.h>
@@ -8,21 +9,21 @@
 #include <WiFiClient.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
+#include <FS.h>
+#include <Wire.h>
 
-#include "ConfigDownload.h"
 #include "Controller.h"
-#include "SignalHandler.h"
+#include "SignalModule.h"
 #include "ConfigStructures.h"
-#include "DeviceState.h"
-#include "GlobalDefs.h"
+#include "Network.h"
 
 // Signal pin assignments
-const int signal1RedPin = 4;
-const int signal1YellowPin = 5;
-const int signal1GreenPin = 2;
-const int signal2RedPin = 12;
-const int signal2YellowPin = 14;
-const int signal2GreenPin = 16;
+const int signal1Pin1 = 4;
+const int signal1Pin2 = 5;
+const int signal1Pin3 = 2;
+const int signal2Pin1 = 12;
+const int signal2Pin2 = 14;
+const int signal2Pin3 = 16;
 
 // Configuration EEPROM memory addresses
 const int SIGNAL_CONFIG_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
@@ -30,11 +31,7 @@ const int SIGNAL_CONFIG_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
 WiFiClient Tcp;
 
 Controller controller(LocalServerPort);
-SignalHandler signal1;
-SignalHandler signal2;
-SignalControllerConfigStruct controllerConfig;
-const long heartbeatTimeout = 10 * 1000;
-long currentHeartbeatTimeout = 0;
+SignalModule signalModule;
 
 void setup() 
 {
@@ -51,120 +48,56 @@ void setup()
 #endif
 	DEBUG_PRINT("setup\n");
 
-  memset(&controllerConfig, 0, sizeof(SignalControllerConfigStruct));
-  EEPROM.begin(4096);
+  EEPROM.begin(512);
+  controller.setup(ClassSignal);
 
-  ConfigDownload.init(&controller);
+  Network.setModuleCallback(netModuleCallback);
+  Network.setUdpMessageCallback(udpMessageCallback);
+  Network.setServerConnectedCallback(serverReconnected);
 
-  loadConfiguration();
-  controller.setup(messageCallback, ClassSemaphore);
-
-  signal1.setup(signal1RedPin, signal1YellowPin, signal1GreenPin);
-  signal2.setup(signal2RedPin, signal2YellowPin, signal2GreenPin);
+  signalModule.setup();
+  byte data = 0;
+  signalModule.process(data);
+  setPins();
 
   DEBUG_PRINT("setup complete\n");
 }
 
+void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json)
+{
+	if (moduleIndex == 0)
+	{
+		byte data(signalModule.getCurrentState());
+		signalModule.netModuleCallback(action, moduleIndex, json, data);
+		setPins();
+	}
+}
+
 void loop() 
 {
+	Network.process();
 	controller.process();
-
-	if (controller.getWiFiReconnected())
-		sendHeartbeat(true);
-
-	ConfigDownload.process();
-	if (ConfigDownload.downloadComplete())
-	{
-		ConfigDownload.reset();
-		DEBUG_PRINT("CONFIG DOWNLOAD COMPLETE!!  Saving to memory\n");
-		EEPROM.put(SIGNAL_CONFIG_ADDRESS, controllerConfig);
-		EEPROM.commit();
-		loadConfiguration();
-	}
-
-	bool sendMessage = signal1.process();
-	bool sendMessage2 = signal2.process();
-	if (sendMessage || sendMessage2)
-		sendHeartbeat(true);
-	else
-		sendHeartbeat(false);
-} 
-
-void loadConfiguration(void)
-{
-	if(controller.checkEEPROM(0xAC))
-	{  
-		EEPROM.get(SIGNAL_CONFIG_ADDRESS, controllerConfig);
-
-		DEBUG_PRINT("loadConfiguration:  SignalID's: %d, %d\n", controllerConfig.signal1.signalID, controllerConfig.signal2.signalID);
-		signal1.setConfig(controllerConfig.signal1);
-		signal2.setConfig(controllerConfig.signal2);
-	}
-	else
-	{
-		EEPROM.put(SIGNAL_CONFIG_ADDRESS, controllerConfig);
-		EEPROM.commit();
-	}
 }
 
-void downloadConfig(void)
+void setPins(void)
 {
-	// Key should be the Chip ID, single letter indicating the type of controller:
-	// T = Turnout controller
-	// P = Panel controller
-	// S = Signal-Block controller
-	// 
-	// and the moduleIndex.  For this type of controller there is only one module: 0
-	// The server will use this information to lookup the configuration information for this controller
-	String key;
-	key += controller.getControllerID();
-	key += ",S,0";
+	byte data = signalModule.getCurrentState();
 
-	ConfigDownload.downloadConfig((uint8_t *)&controllerConfig, sizeof(SignalControllerConfigStruct), key);
+	digitalWrite(signal1Pin1, bitRead(data, 0));
+	digitalWrite(signal1Pin2, bitRead(data, 1));
+	digitalWrite(signal1Pin3, bitRead(data, 2));
+
+	digitalWrite(signal2Pin1, bitRead(data, 3));
+	digitalWrite(signal2Pin2, bitRead(data, 4));
+	digitalWrite(signal2Pin3, bitRead(data, 5));
 }
 
-void messageCallback(const Message &message)
+void serverReconnected(void)
 {
-	if (message.getMessageID() == TRN_STATUS || message.getMessageID() == BLOCK_STATUS)
-	{
-		for (byte x = 0; x < MAX_MODULES; x++)
-		{
-			if (message.getDeviceStatusID(x) == 0)
-				break;
-			DeviceState::setDeviceState(message.getDeviceStatusID(x), message.getDeviceStatus(x));
-		}
-	}
-
-	if (message.getMessageID() == SYS_CONFIG_CHANGED && (message.getControllerID() == 0 || message.getControllerID() == controller.getControllerID()))
-	{
-		downloadConfig();
-	}
-	else if (signal1.getDeviceID() < 1 && message.getMessageID() == SYS_HEARTBEAT)
-	{
-		downloadConfig();
-	}
-	else
-	{
-		bool sendHeartbeat1 = signal1.handleMessage(message);
-		bool sendHeartbeat2 = signal2.handleMessage(message);
-
-		if (sendHeartbeat1 || sendHeartbeat2)
-			sendHeartbeat(true);
-	}
+	DEBUG_PRINT("serverReconnected\n");
 }
 
-void sendHeartbeat(bool forceSend)
+void udpMessageCallback(const Message &message)
 {
-	Message message;
-	long t = millis();
-	if (forceSend || (t - currentHeartbeatTimeout > heartbeatTimeout))
-	{
-		currentHeartbeatTimeout = t;
-
-		message.setMessageID(SIG_STATUS);
-		message.setControllerID(controller.getControllerID());
-		message.setMessageClass(ClassSignal);
-
-		controller.sendNetworkMessage(message, true);
-	}
+	controller.processMessage(message);
 }

@@ -13,20 +13,19 @@ public:
 	int getDeviceID(void) const { return m_deviceID; }
 	void setDeviceID(int value) { m_deviceID = value; }
   
-	void setup(byte redPin, byte yellowPin, byte greenPin);
-	bool process(void);
-	bool handleMessage(const Message &message);
-
-	bool updateSignal(void);
+	void setup(byte m_pin1, byte m_pin2, byte m_pin3);
+	bool process(byte &data);
+	void setSignal(PinStateEnum pin1State, PinStateEnum pin2State, PinStateEnum pin3State, byte &data);
+	void setSignal(byte pin, PinStateEnum pinState, byte &data);
 
 private:
 	void addBlinkingPin(byte pin);
 	void removeBlinkingPin(byte pin);
-	void blinkPins(void);
+	void blinkPins(byte &data);
 	int m_deviceID;
-	byte m_redPin;
-	byte m_yellowPin;
-	byte m_greenPin;
+	byte m_pin1;
+	byte m_pin2;
+	byte m_pin3;
 	unsigned long m_currentBlinkTimeout;
 	byte m_blinkingPins[8];
 };

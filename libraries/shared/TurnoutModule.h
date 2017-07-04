@@ -18,7 +18,6 @@ public:
 	}
 	TurnoutConfigStruct getConfig(byte index) const { return  m_turnouts[index].getConfig(); }
 
-	byte getIODirConfig(void) const override;
 	void setup(byte index, byte motorAPin, byte motorBPin, byte feedbackAPin, byte feedbackBPin);
 	void setTurnout(byte index, byte motorPinSetting);
 
@@ -26,6 +25,7 @@ public:
 	String createCurrentStatusJson(void);
 
 	// Module overrides
+	byte getIODirConfig(void) const override;
 	byte getDeviceCount(void) const override { return MAX_TURNOUTS; }
 	short getDeviceID(byte index) const override { return getTurnoutID(index); }
 	byte getCurrentState(void) const override { return m_currentState; }

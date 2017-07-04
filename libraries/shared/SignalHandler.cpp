@@ -1,43 +1,56 @@
 #include <Arduino.h>
 #include "SignalHandler.h"
 
-#define blinkingTimeout 200
+#define blinkingTimeout 750
 
 SignalHandler::SignalHandler(void) 
-	: m_deviceID(0), m_redPin(0), m_yellowPin(0), m_greenPin(0), m_currentBlinkTimeout(0)
+	: m_deviceID(0), m_pin1(0), m_pin2(0), m_pin3(0), m_currentBlinkTimeout(0)
 { 
 	memset(&m_blinkingPins, 255, 8);
 }
 
-bool SignalHandler::updateSignal(void)
-{
-  bool aspectChanged = false;
-  return aspectChanged;
-}
-
-bool SignalHandler::process(void)
+bool SignalHandler::process(byte &data)
 {
 	bool ret = false;
 
-	ret = updateSignal();
-
-	blinkPins();
+	blinkPins(data);
 
 	return ret;
 }
 
-bool SignalHandler::handleMessage(const Message &)
+void SignalHandler::setSignal(PinStateEnum pin1State, PinStateEnum pin2State, PinStateEnum pin3State, byte &data)
 {
-	bool ret = false;
-
-	return ret;
+	setSignal(m_pin1, pin1State, data);
+	setSignal(m_pin2, pin2State, data);
+	setSignal(m_pin3, pin3State, data);
 }
 
-void SignalHandler::setup(byte redPin, byte yellowPin, byte greenPin)
+void SignalHandler::setSignal(byte pin, PinStateEnum pinState, byte &data)
 {
-	pinMode(m_redPin, OUTPUT);
-	pinMode(m_yellowPin, OUTPUT);
-	pinMode(m_greenPin, OUTPUT);
+	if (pinState == PinFlashing)
+	{
+		addBlinkingPin(pin);
+	}
+	else
+	{
+		removeBlinkingPin(pin);
+		if (pin < 8)
+			bitWrite(data, pin, PinOn == pinState ? 1 : 0);
+	}
+}
+
+void SignalHandler::setup(byte pin1, byte pin2, byte pin3)
+{
+	m_pin1 = pin1;
+	m_pin2 = pin2;
+	m_pin3 = pin3;
+
+	if (m_pin1 < 8)
+		pinMode(m_pin1, OUTPUT);
+	if (m_pin2 < 8)
+		pinMode(m_pin2, OUTPUT);
+	if (m_pin3 < 8)
+		pinMode(m_pin3, OUTPUT);
 }
 
 void SignalHandler::addBlinkingPin(byte pin)
@@ -77,7 +90,7 @@ void SignalHandler::removeBlinkingPin(byte pin)
 	}
 }
 
-void SignalHandler::blinkPins(void)
+void SignalHandler::blinkPins(byte &data)
 {
 	unsigned long t = millis();
 	if (t - m_currentBlinkTimeout > blinkingTimeout)
@@ -87,8 +100,8 @@ void SignalHandler::blinkPins(void)
 		{
 			if (m_blinkingPins[x] != 255)
 			{
-				bool value = (0 != (*portOutputRegister(digitalPinToPort(m_blinkingPins[x])) & digitalPinToBitMask(m_blinkingPins[x])));
-				digitalWrite(m_blinkingPins[x], value == false);
+				int state = bitRead(data, m_blinkingPins[x]);
+				bitWrite(data, m_blinkingPins[x], state == 0);
 			}
 		}
 	}

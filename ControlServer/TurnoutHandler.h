@@ -25,6 +25,7 @@ public slots:
     void timerProc(void);
     void sendConfig(int serialNumber, int moduleIndex);
     void controllerRemoved(int serialNumber);
+    void controllerConnected(int index);
 
 private:
     int getMotorPinSetting(int turnoutID);

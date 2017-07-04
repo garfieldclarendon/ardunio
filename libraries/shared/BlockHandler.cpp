@@ -2,7 +2,7 @@
 #include "BlockHandler.h"
 
 BlockHandler::BlockHandler(void)
-	: m_blockPin(0), m_currentState(Unknown), m_current(HIGH), m_lastRead(HIGH), m_currentTimeout(0)
+	: m_blockPin(0), m_currentState(0), m_current(HIGH), m_lastRead(HIGH), m_currentTimeout(0)
 {
 	memset(&m_config, 0, sizeof(BlockConfigStruct));
 }
@@ -28,7 +28,7 @@ bool BlockHandler::process(byte &data)
 
 			if (m_current == LOW)
 			{
-				m_currentState = Occupied;
+				m_currentState = 1;
 				DEBUG_PRINT("Occupied TRUE BlockID: %d\n", m_config.blockID);
 				DEBUG_PRINT("-------------------------------\n%d\n", raw);
 				DEBUG_PRINT("-------------------------------\n");
@@ -36,7 +36,7 @@ bool BlockHandler::process(byte &data)
 			else
 			{
 				DEBUG_PRINT("Occupied FALSE %d\n", raw);
-				m_currentState = Empty;
+				m_currentState = 0;
 			}
 			ret = true;
 		}

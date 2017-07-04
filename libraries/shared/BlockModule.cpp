@@ -8,15 +8,28 @@ BlockModule::BlockModule(void)
 	memset(&m_config, 0, sizeof(BlockControllerConfigStruct));
 }
 
+byte BlockModule::getIODirConfig(void) const
+{
+	byte iodir = 0;
+
+	bitWrite(iodir, block1Pin, INPUT);
+	bitWrite(iodir, block2Pin, INPUT);
+
+	return iodir;
+}
+
+void BlockModule::setup(void)
+{
+	setup(0, block1Pin);
+	setup(1, block2Pin);
+
+	m_currentState = 0;
+}
+
 void BlockModule::setupWire(byte address)
 {
 	setAddress(address);
-	byte iodir = 0;
-	byte block1Pin = 0;
-	byte block2Pin = 1;
-
-	bitWrite(iodir, block1Pin, 1);
-	bitWrite(iodir, block2Pin, 1);
+	byte iodir = getIODirConfig();
 
 	setup(0, block1Pin);
 	setup(1, block2Pin);
@@ -52,8 +65,50 @@ bool BlockModule::process(byte &data)
 	bool ret = false;
 	if (sendStatus)
 	{
+		sendStatusMessage();
 		ret = true;
 	}
 
 	return ret;
+}
+
+
+void BlockModule::netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json, byte &data)
+{
+	createCurrentStatusJson();
+}
+
+void BlockModule::netModuleConfigCallback(NetActionType /* action */, byte /* moduleIndex */, const JsonObject & /* json */)
+{
+}
+
+void BlockModule::sendStatusMessage(void)
+{
+	createCurrentStatusJson();
+	//	DEBUG_PRINT("sendStatusMessage:  %s\n", json.c_str());
+	//	Network.sendUdpMessageToServer(NetActionUpdate, ClassTurnout, getAddress(), json);
+}
+
+String BlockModule::createCurrentStatusJson(void)
+{
+	String json;
+	StaticJsonBuffer<256> jsonBuffer;
+	JsonObject &root = jsonBuffer.createObject();
+	root["messageUri"] = "/controller/module";
+	root["moduleIndex"] = getAddress();
+	root["class"] = (int)ClassBlock;
+	root["action"] = (int)NetActionUpdate;
+	JsonArray &blocks = root.createNestedArray("blocks");
+
+	for (byte x = 0; x < MAX_BLOCKS; x++)
+	{
+		JsonObject& block = blocks.createNestedObject();
+		block["port"] = x;
+		block["blockPin"] = m_blocks[x].getCurrentState();
+	}
+
+	root.printTo(json);
+	Network.sendMessageToServer(root);
+
+	return json;
 }

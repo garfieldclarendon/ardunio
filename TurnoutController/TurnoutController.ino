@@ -1,5 +1,4 @@
 #include <ArduinoJson.h>
-#include <ESP8266WebServer.h>
 #include <WebSocketsClient.h>
 #include <Hash.h>
 #include <EEPROM.h>
@@ -167,12 +166,8 @@ void processTurnouts(void)
 	byte data(turnoutModule.getCurrentState());
 	readPins(data);
 	
-	bool sendMessage = turnoutModule.process(data);
+	turnoutModule.process(data);
 	setPins();
-	if (sendMessage)
-	{
-		turnoutModule.sendStatusMessage();
-	}
 }
 
 void loadConfiguration(void)

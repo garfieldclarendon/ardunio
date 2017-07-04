@@ -146,6 +146,15 @@ void TurnoutHandler::controllerRemoved(int serialNumber)
     }
 }
 
+void TurnoutHandler::controllerConnected(int index)
+{
+    // When a controller is in the process of reconnecting, we need to set the turnout state to UNKNOWN
+    // so that when the controller sends the current turnout status, all panels, signals, etc will
+    // get the correct state.
+    int serialNumber = ControllerManager::instance()->getConnectionSerialNumber(index);
+    controllerRemoved(serialNumber);
+}
+
 void TurnoutHandler::getIPAddressAndModuleIndexForDevice(int deviceID, QString &ipAddress, int &moduleIndex, int &port, int &serialNumber)
 {
     QString sql = QString("SELECT serialNumber, controllerModule.moduleIndex, device.moduleIndex as port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1").arg(deviceID);
