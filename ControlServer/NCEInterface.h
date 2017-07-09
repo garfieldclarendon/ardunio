@@ -7,26 +7,27 @@
 
 #include "NCEMessage.h"
 
-struct TagAddress {
+const int CS_ACCY_MEMORY = 0xEC00;
+const int NUM_BLOCK = 16;
+const int BLOCK_LEN = 16;
+const int REPLY_LEN = 16;
+
+struct AddressStruct {
     unsigned char byteL;
     unsigned char byteH;
 };
 
 union AddressUnion {
     unsigned int addressInt;
-    TagAddress addressStruct;
+    AddressStruct addressStruct;
 };
 
 class SerialPortThread : public QThread
 {
     Q_OBJECT
 public:
-    const int CS_ACCY_MEMORY = 0xEC00;
-    const int NUM_BLOCK = 16;
-    const int BLOCK_LEN = 16;
-    const int REPLY_LEN = 16;
 
-    SerialPortThread(QObject *parent) : QThread(parent) { }
+    SerialPortThread(QObject *parent);
     ~SerialPortThread(void);
     virtual void run(void) Q_DECL_OVERRIDE;
 
@@ -46,10 +47,13 @@ public slots:
 private:
     void openPort(void);
     void pollRouteChanges(void);
-    void processRouteBlock(const QByteArray &blockData, int blockIndex);
+    void processRouteBlock(const quint8 data, int blockIndex, int byteIndex);
     void sendMessageInternal(NCEMessage &message);
 
     QSerialPort *m_serialPort;
+    quint8 m_nceBuffer[NUM_BLOCK * BLOCK_LEN]; // Copy of NCE CS accessory memory
+    quint8 m_pollBuffer[NUM_BLOCK * BLOCK_LEN]; // place to store reply messages
+    bool m_firstTime;
 };
 
 class NCEInterface : public QObject

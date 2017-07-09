@@ -71,6 +71,13 @@ void NCEInterface::sendMessage(const NCEMessage &message)
 /// SerialPortThread
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+SerialPortThread::SerialPortThread(QObject *parent)
+    : QThread(parent), m_firstTime(true)
+{
+    memset(m_nceBuffer, 0, NUM_BLOCK * BLOCK_LEN);
+    memset(m_pollBuffer, 0, NUM_BLOCK * BLOCK_LEN);
+}
+
 SerialPortThread::~SerialPortThread()
 {
     delete m_serialPort;
@@ -162,41 +169,57 @@ void SerialPortThread::pollRouteChanges()
         message.accMemoryRead(nceAccAddress);
 
         sendMessageInternal(message);
-//        processRouteBlock(message.getResultData(), x);
+        // Copy receive data into buffer
+        // Process the bytes that have changed
+        QVector<quint8> data = message.getResultData();
+        for (int i = 0; i < REPLY_LEN; i++)
+        {
+            if(m_firstTime == false)
+            {
+                if(m_nceBuffer[i + x * BLOCK_LEN] != data[i])
+                {
+                    processRouteBlock(data[i], x, i);
+                }
+            }
+            m_nceBuffer[i + x * BLOCK_LEN] = data[i];
+        }
     }
+    m_firstTime = false;
 }
 
-void SerialPortThread::processRouteBlock(const QByteArray &blockData, int blockIndex)
+void SerialPortThread::processRouteBlock(const quint8 data, int blockIndex, int byteIndex)
 {
-    for(int x = 0; x < blockData.count(); x++)
+    for(int bit = 0; bit < 8; bit++)
     {
-        unsigned char recMemByte = blockData[x];
-        for(int bit = 0; bit < 8; bit++)
+        int routeID = 1 + bit + (byteIndex * 8) + (blockIndex * 128);
+        if(((data >> bit) & 0x01) == 1)
         {
-            int routeID = 1 + bit + (x * 8) + (blockIndex * 128);
-            if(((recMemByte >> bit) & 0x01) == 1)
+            if(RouteHandler::instance()->isRouteActive(routeID) == false)
             {
-                if(RouteHandler::instance()->isRouteActive(routeID) == false)
-                {
-                    RouteHandler::instance()->activateRoute(routeID);
-                }
-                // Reset the accessory entry back to normal
-                NCEMessage message;
-                message.accDecoder(routeID, true);
-                sendMessageInternal(message);
+                RouteHandler::instance()->activateRoute(routeID);
             }
+            // Reset the accessory entry back to normal
+            NCEMessage message;
+            message.accDecoder(routeID, true);
+            sendMessageInternal(message);
         }
     }
 }
 
 void SerialPortThread::sendMessageInternal(NCEMessage &message)
 {
-    QByteArray a = message.getMessageData();
-    m_serialPort->write(a);
+    QVector<quint8> a = message.getMessageData();
+    const quint8 *p = a.data();
+    m_serialPort->write((const char *)p, a.size());
     m_serialPort->waitForReadyRead(5000);
     int size = m_serialPort->bytesAvailable();
     while(size < message.getExpectedSize())
         size = m_serialPort->bytesAvailable();
-    message.setResultData(m_serialPort->readAll());
-    size = m_serialPort->bytesAvailable();
+    QByteArray data = m_serialPort->readAll();
+    QVector<quint8> result;
+    result.resize(data.size());
+    for(int x = 0; x < data.size(); x++)
+        result.append(data[x]);
+    message.setResultData(result);
+//    size = m_serialPort->bytesAvailable();
 }

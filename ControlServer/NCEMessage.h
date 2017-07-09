@@ -1,7 +1,7 @@
 #ifndef NCEMESSAGE_H
 #define NCEMESSAGE_H
 
-#include <QByteArray>
+#include <QVector>
 
 class NCEMessage
 {
@@ -62,27 +62,27 @@ public:
 
     // NCE Command 0xA2 sends speed or function packets to a locomotive
     // 0xA2 sub commands speed and functions
-    const unsigned char LOCO_CMD_REV_28SPEED = 0x01;  // set loco speed 28 steps reverse
-    const unsigned char LOCO_CMD_FWD_28SPEED = 0x02;  // set loco speed 28 steps forward
-    const unsigned char LOCO_CMD_REV_128SPEED = 0x03; // set loco speed 128 steps reverse
-    const unsigned char LOCO_CMD_FWD_128SPEED = 0x04; // set loco speed 128 steps forward
-    const unsigned char LOCO_CMD_REV_ESTOP = 0x05;    // emergency stop reverse
-    const unsigned char LOCO_CMD_FWD_ESTOP = 0x06;    // emergency stop forward
-    const unsigned char LOCO_CMD_FG1 = 0x07;          // function group 1
-    const unsigned char LOCO_CMD_FG2 = 0x08;          // function group 2
-    const unsigned char LOCO_CMD_FG3 = 0x09;          // function group 3
-    const unsigned char LOCO_CMD_FG4 = 0x15;          // function group 4
-    const unsigned char LOCO_CMD_FG5 = 0x16;          // function group 5
+    const quint8 LOCO_CMD_REV_28SPEED = 0x01;  // set loco speed 28 steps reverse
+    const quint8 LOCO_CMD_FWD_28SPEED = 0x02;  // set loco speed 28 steps forward
+    const quint8 LOCO_CMD_REV_128SPEED = 0x03; // set loco speed 128 steps reverse
+    const quint8 LOCO_CMD_FWD_128SPEED = 0x04; // set loco speed 128 steps forward
+    const quint8 LOCO_CMD_REV_ESTOP = 0x05;    // emergency stop reverse
+    const quint8 LOCO_CMD_FWD_ESTOP = 0x06;    // emergency stop forward
+    const quint8 LOCO_CMD_FG1 = 0x07;          // function group 1
+    const quint8 LOCO_CMD_FG2 = 0x08;          // function group 2
+    const quint8 LOCO_CMD_FG3 = 0x09;          // function group 3
+    const quint8 LOCO_CMD_FG4 = 0x15;          // function group 4
+    const quint8 LOCO_CMD_FG5 = 0x16;          // function group 5
 
     // OxA2 sub commands consist
-    const unsigned char LOCO_CMD_REV_CONSIST_LEAD = 0x0A;    // reverse consist address for lead loco
-    const unsigned char LOCO_CMD_FWD_CONSIST_LEAD = 0x0B;    // forward consist address for lead loco
-    const unsigned char LOCO_CMD_REV_CONSIST_REAR = 0x0C;    // reverse consist address for rear loco
-    const unsigned char LOCO_CMD_FWD_CONSIST_REAR = 0x0D;    // forward consist address for rear loco
-    const unsigned char LOCO_CMD_REV_CONSIST_MID = 0x0E;     // reverse consist address for additional loco
-    const unsigned char LOCO_CMD_FWD_CONSIST_MID = 0x0F;     // forward consist address for additional loco
-    const unsigned char LOCO_CMD_DELETE_LOCO_CONSIST = 0x10; // Delete loco from consist
-    const unsigned char LOCO_CMD_KILL_CONSIST = 0x11;        // Kill consist
+    const quint8 LOCO_CMD_REV_CONSIST_LEAD = 0x0A;    // reverse consist address for lead loco
+    const quint8 LOCO_CMD_FWD_CONSIST_LEAD = 0x0B;    // forward consist address for lead loco
+    const quint8 LOCO_CMD_REV_CONSIST_REAR = 0x0C;    // reverse consist address for rear loco
+    const quint8 LOCO_CMD_FWD_CONSIST_REAR = 0x0D;    // forward consist address for rear loco
+    const quint8 LOCO_CMD_REV_CONSIST_MID = 0x0E;     // reverse consist address for additional loco
+    const quint8 LOCO_CMD_FWD_CONSIST_MID = 0x0F;     // forward consist address for additional loco
+    const quint8 LOCO_CMD_DELETE_LOCO_CONSIST = 0x10; // Delete loco from consist
+    const quint8 LOCO_CMD_KILL_CONSIST = 0x11;        // Kill consist
 
     NCEMessage(void);
     NCEMessage(int command) : m_command(command) { }
@@ -95,9 +95,9 @@ public:
     }
 
     int getCommand(void) const { return m_command; }
-    QByteArray getMessageData(void) const { return m_messageData; }
-    QByteArray getResultData(void) const { return m_resultData; }
-    void setResultData(const QByteArray &value) { m_resultData = value; }
+    QVector<quint8> getMessageData(void) const { return m_messageData; }
+    QVector<quint8> getResultData(void) const { return m_resultData; }
+    void setResultData(const QVector<quint8> &value) { m_resultData = value; }
 
     void accDecoder(int number, bool closed);
     void accMemoryRead(int address);
@@ -113,9 +113,8 @@ private:
     }
 
     int m_command;
-    QByteArray m_messageData;
-    QByteArray m_resultData;
-
+    QVector<quint8> m_messageData;
+    QVector<quint8> m_resultData;
 };
 
 #endif // NCEMESSAGE_H
