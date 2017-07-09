@@ -22,11 +22,13 @@ protected slots:
 
     void onDeviceStatusChanged(int deviceID, int status);
     void onPinStateChanged(int moduleIndex, int pinNumber, int pinMode);
+    void onNCEDataChanged(quint8 data, int blockIndex, int byteIndex);
 
 private:
     void setupControllerList(void);
     void setupDeviceList(void);
     void setupPanelList(void);
+    void setupNCEStatusList(void);
 
     Ui::StatusDialog *ui;
 };

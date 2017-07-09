@@ -24,6 +24,9 @@ void NCEInterface::setup(void)
 //    connect(m_pollThread, SIGNAL(newMessage(NCEMessage)), this, SLOT(newMessageSlot(NCEMessage)), Qt::QueuedConnection);
 //    connect(this, SIGNAL(sendMessageSignal(NCEMessage)), m_pollThread, SLOT(sendMessage(NCEMessage)), Qt::QueuedConnection);
 
+    connect(m_pollThread, SIGNAL(bufferInitialized()), this, SIGNAL(bufferInitialized()));
+    connect(m_pollThread, SIGNAL(bufferDataChanged(quint8,int,int)), this, SIGNAL(bufferDataChanged(quint8,int,int)));
+
     m_pollThread->start();
 }
 
@@ -123,32 +126,30 @@ void SerialPortThread::openPort()
     m_serialPort->setDataBits(QSerialPort::Data8);
     m_serialPort->setParity(QSerialPort::NoParity);
     m_serialPort->setStopBits(QSerialPort::OneStop);
-    m_serialPort->setFlowControl(QSerialPort::HardwareControl);
+    m_serialPort->setFlowControl(QSerialPort::NoFlowControl);
+    m_serialPort->setRequestToSend(true);
+    m_serialPort->setDataTerminalReady(true);
 
     if(m_serialPort->open(QIODevice::ReadWrite))
     {
+        m_serialPort->setTextModeEnabled(false);
         qDebug("NCE Serail Port OPEN!");
-
-        int address = CS_ACCY_MEMORY;
-        int addr_h;
-        addr_h = (address / 256);
-        int addr_l;
-        addr_l = (address & 0xFF);
 
         AddressUnion a;
         a.addressInt = CS_ACCY_MEMORY;
 
-        unsigned char command[4];
-        command[0] = 0x8F;
-        command[1] = a.addressStruct.byteH;
-        command[2] = a.addressStruct.byteL;
-        command[3] = 0;
-//        NCEMessage message;
-//        message.accMemoryRead(CS_ACCY_MEMORY);
-//        int size = message.getMessageData().length();
-        m_serialPort->write((const char *)command, 3);
+//        unsigned char command[4];
+//        command[0] = 0x8F;
+//        command[1] = a.addressStruct.byteH;
+//        command[2] = a.addressStruct.byteL;
+//        command[3] = 0;
+
+        NCEMessage message;
+        message.accMemoryRead(CS_ACCY_MEMORY);
+        int size = message.getMessageData().length();
+        m_serialPort->write((const char *)message.getMessageData().constData(), 3);
         m_serialPort->waitForReadyRead(5000);
-        int size = m_serialPort->bytesAvailable();
+        size = m_serialPort->bytesAvailable();
 //        while(size < 16)
 //            size = m_serialPort->bytesAvailable();
         QByteArray versionData = m_serialPort->readAll();
@@ -174,6 +175,7 @@ void SerialPortThread::pollRouteChanges()
         QVector<quint8> data = message.getResultData();
         for (int i = 0; i < REPLY_LEN; i++)
         {
+            emit bufferDataChanged(data[i], x, i);
             if(m_firstTime == false)
             {
                 if(m_nceBuffer[i + x * BLOCK_LEN] != data[i])
@@ -184,6 +186,10 @@ void SerialPortThread::pollRouteChanges()
             m_nceBuffer[i + x * BLOCK_LEN] = data[i];
         }
     }
+
+    if(m_firstTime)
+        emit bufferInitialized();
+
     m_firstTime = false;
 }
 

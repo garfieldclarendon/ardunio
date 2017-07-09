@@ -7,14 +7,14 @@
 
 #include "NCEMessage.h"
 
-const int CS_ACCY_MEMORY = 0xEC00;
+const unsigned int CS_ACCY_MEMORY = 0xEC00;
 const int NUM_BLOCK = 16;
 const int BLOCK_LEN = 16;
 const int REPLY_LEN = 16;
 
 struct AddressStruct {
-    unsigned char byteL;
-    unsigned char byteH;
+    quint8 byteL;
+    quint8 byteH;
 };
 
 union AddressUnion {
@@ -39,6 +39,8 @@ public:
 
 signals:
     void newMessage(const NCEMessage &message);
+    void bufferInitialized(void);
+    void bufferDataChanged(quint8 byte, int blockIndex, int byteIndex);
 
 public slots:
     void sendMessage(const NCEMessage &message);
@@ -71,6 +73,8 @@ public:
 
 signals:
     void sendMessageSignal(const NCEMessage &message);
+    void bufferInitialized(void);
+    void bufferDataChanged(quint8 byte, int blockIndex, int byteIndex);
 
 public slots:
     void newMessageSlot(const NCEMessage &message);

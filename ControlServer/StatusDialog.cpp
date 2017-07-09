@@ -15,6 +15,7 @@ StatusDialog::StatusDialog(QWidget *parent) :
     setupControllerList();
     setupDeviceList();
     setupPanelList();
+    setupNCEStatusList();
 }
 
 StatusDialog::~StatusDialog()
@@ -131,6 +132,43 @@ void StatusDialog::onPinStateChanged(int moduleIndex, int pinNumber, int pinMode
     }
 }
 
+void StatusDialog::onNCEDataChanged(quint8 data, int blockIndex, int byteIndex)
+{
+    QString idText;
+    QString statusText;
+
+    QTableWidgetItem *item(NULL);
+
+    for(int bit = 0; bit < 8; bit++)
+    {
+        int id = 1 + bit + (byteIndex * 8) + (blockIndex * 128);
+        idText = QString("%1").arg(id);
+        if(((data >> bit) & 0x01) == 1)
+            statusText = "OFF";
+        else
+            statusText = "ON";
+
+        item = ui->nceStatusTable->item(id - 1, 1);
+        if(item == NULL)
+        {
+            ui->nceStatusTable->insertRow(ui->deviceTable->rowCount());
+            item = new QTableWidgetItem(idText);
+            ui->nceStatusTable->setItem(ui->deviceTable->rowCount() - 1, 0, item);
+            item = new QTableWidgetItem(statusText);
+            ui->nceStatusTable->setItem(ui->deviceTable->rowCount() - 1, 1, item);
+        }
+        else
+        {
+            item = ui->nceStatusTable->item(item->row(), 1);
+            item->setText(statusText);
+        }
+        if(statusText == "ON")
+            item->setBackgroundColor(Qt::red);
+        else
+            item->setBackgroundColor(Qt::white);
+    }
+}
+
 void StatusDialog::setupControllerList()
 {
     QStringList header;
@@ -177,4 +215,14 @@ void StatusDialog::setupPanelList()
 
     PanelHandler *handler = qobject_cast<PanelHandler *>(DeviceManager::instance()->getHandler(ClassPanel));
     connect(handler, &PanelHandler::pinStateChanged, this, &StatusDialog::onPinStateChanged);
+}
+
+void StatusDialog::setupNCEStatusList()
+{
+    QStringList header;
+    header << "ID" << "Status";
+    ui->nceStatusTable->setColumnCount(header.count());
+    ui->nceStatusTable->setHorizontalHeaderLabels(header);
+    ui->nceStatusTable->horizontalHeader()->setStyleSheet("color: blue");
+    ui->nceStatusTable->verticalHeader()->setStyleSheet("color: blue");
 }
