@@ -12,7 +12,7 @@
 #include "WebServer.h"
 
 BlockHandler::BlockHandler(QObject *parent)
-    : DeviceHandler(ClassTurnout, parent)
+    : DeviceHandler(ClassBlock, parent)
 {
     connect(ControllerManager::instance(), SIGNAL(controllerRemoved(int)), this, SLOT(controllerRemoved(int)));
 }

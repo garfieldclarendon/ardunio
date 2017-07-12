@@ -8,7 +8,7 @@
 #include "NCEMessage.h"
 
 const unsigned int CS_ACCY_MEMORY = 0xEC00;
-const int NUM_BLOCK = 16;
+const int NUM_BLOCK = 1; //16;
 const int BLOCK_LEN = 16;
 const int REPLY_LEN = 16;
 
@@ -22,6 +22,8 @@ union AddressUnion {
     AddressStruct addressStruct;
 };
 
+class QTimer;
+
 class SerialPortThread : public QThread
 {
     Q_OBJECT
@@ -33,9 +35,10 @@ public:
 
     void setQuit(void)
     {
-        quit();
+        exit();
         this->wait();
     }
+    void openPort(void);
 
 signals:
     void newMessage(const NCEMessage &message);
@@ -47,7 +50,6 @@ public slots:
     void timerProc(void);
 
 private:
-    void openPort(void);
     void pollRouteChanges(void);
     void processRouteBlock(const quint8 data, int blockIndex, int byteIndex);
     void sendMessageInternal(NCEMessage &message);
@@ -56,6 +58,12 @@ private:
     quint8 m_nceBuffer[NUM_BLOCK * BLOCK_LEN]; // Copy of NCE CS accessory memory
     quint8 m_pollBuffer[NUM_BLOCK * BLOCK_LEN]; // place to store reply messages
     bool m_firstTime;
+    int m_timerID;
+    QTimer *m_timer;
+
+    // QObject interface
+protected:
+    void timerEvent(QTimerEvent *);
 };
 
 class NCEInterface : public QObject
