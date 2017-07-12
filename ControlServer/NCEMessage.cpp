@@ -7,12 +7,12 @@ NCEMessage::NCEMessage(void)
 
 }
 
-void NCEMessage::accDecoder(int number, bool closed)
+void NCEMessage::accDecoder(int number, bool normal)
 {
     m_messageData.clear();
     m_command = ACC_CMD;
     char op_1;
-    if (closed)
+    if (normal)
     {
         op_1 = 0x03;
     } else

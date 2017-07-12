@@ -100,7 +100,7 @@ public:
     QVector<quint8> getResultData(void) const { return m_resultData; }
     void setResultData(const QVector<quint8> &value) { m_resultData = value; }
 
-    void accDecoder(int number, bool closed);
+    void accDecoder(int number, bool normal);
     void accMemoryRead(int address);
     void getVersion(void);
 

@@ -152,15 +152,18 @@ void SerialPortThread::openPort(void)
     {
         m_serialPort->setTextModeEnabled(false);
         qDebug("NCE Serail Port OPEN!");
+        m_portStatus = Connected;
     }
     else
     {
         qDebug("NCE Serail Port FAILED TO OPEN!");
+        m_portStatus = Disconnected;
     }
 }
 
 void SerialPortThread::pollRouteChanges()
 {
+    bool valid = false;
     for(int x = 0; x < NUM_BLOCK; x++)
     {
         int nceAccAddress = CS_ACCY_MEMORY + (x * BLOCK_LEN);
@@ -173,6 +176,7 @@ void SerialPortThread::pollRouteChanges()
         QVector<quint8> data = message.getResultData();
         if(data.size() == REPLY_LEN)
         {
+            valid = true;
             for (int i = 0; i < REPLY_LEN; i++)
             {
                 emit bufferDataChanged(data[i], x, i);
@@ -183,15 +187,28 @@ void SerialPortThread::pollRouteChanges()
                         processRouteBlock(data[i], x, i);
                     }
                 }
+                else
+                {
+                    // Make sure the NCE route is set to off
+                    // Reset the accessory entry back to normal
+                    for(int bit = 0; bit < 8; bit++)
+                    {
+                        int routeID = 1 + bit + (i * 8) + (x * 128);
+                        NCEMessage message;
+                        message.accDecoder(routeID, true);
+                        sendMessageInternal(message);
+                    }
+                }
                 m_nceBuffer[i + x * BLOCK_LEN] = data[i];
             }
         }
     }
 
-    if(m_firstTime)
+    if(m_firstTime && valid)
+    {
         emit bufferInitialized();
-
-    m_firstTime = false;
+        m_firstTime = false;
+    }
 }
 
 void SerialPortThread::processRouteBlock(const quint8 data, int blockIndex, int byteIndex)
@@ -221,10 +238,21 @@ void SerialPortThread::sendMessageInternal(NCEMessage &message)
     m_serialPort->waitForBytesWritten(5);
     m_serialPort->waitForReadyRead(5000);
     int size = m_serialPort->bytesAvailable();
-    while(size < message.getExpectedSize() && m_serialPort->waitForReadyRead(1))
+    int timeout = 0;
+    while(size < message.getExpectedSize())
     {
+        if(m_serialPort->waitForReadyRead(1000) == false)
+        {
+            timeout += 1;
+            if(timeout >= 5)
+            {
+                m_portStatus = Disconnected;
+                break;
+            }
+        }
         size = m_serialPort->bytesAvailable();
     }
+
     QByteArray data = m_serialPort->readAll();
     QVector<quint8> result;
     result.resize(data.size());
@@ -244,7 +272,7 @@ void SerialPortThread::checkVersionNumber()
 
     if(data.size() == 3)
     {
-        if(data[0] == 6)
+        if(data[0] >= 6)
             m_portStatus = Running;
         else // Wrong version !
             m_portStatus = Disconnected;
