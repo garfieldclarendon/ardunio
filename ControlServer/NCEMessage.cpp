@@ -43,6 +43,14 @@ void NCEMessage::accMemoryRead(int address)
     m_messageData.append(add.addressStruct.byteL);    // low address
 }
 
+void NCEMessage::getVersion()
+{
+    m_messageData.clear();
+    m_command = SW_REV_CMD;
+
+    m_messageData.append((char) m_command);
+}
+
 int NCEMessage::getExpectedSize() const
 {
     int ret = 1;

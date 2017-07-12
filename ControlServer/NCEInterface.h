@@ -29,14 +29,20 @@ class SerialPortThread : public QThread
     Q_OBJECT
 public:
 
+    enum PortStatusEnum {
+        Disconnected,
+        Connected,
+        Running
+    };
+
     SerialPortThread(QObject *parent);
     ~SerialPortThread(void);
     virtual void run(void) Q_DECL_OVERRIDE;
 
     void setQuit(void)
     {
-        exit();
-        this->wait();
+        m_quit = true;
+        wait();
     }
     void openPort(void);
 
@@ -47,23 +53,20 @@ signals:
 
 public slots:
     void sendMessage(const NCEMessage &message);
-    void timerProc(void);
+    void pollCommandStation(void);
 
 private:
     void pollRouteChanges(void);
     void processRouteBlock(const quint8 data, int blockIndex, int byteIndex);
     void sendMessageInternal(NCEMessage &message);
+    void checkVersionNumber(void);
 
-    QSerialPort *m_serialPort;
     quint8 m_nceBuffer[NUM_BLOCK * BLOCK_LEN]; // Copy of NCE CS accessory memory
     quint8 m_pollBuffer[NUM_BLOCK * BLOCK_LEN]; // place to store reply messages
     bool m_firstTime;
-    int m_timerID;
-    QTimer *m_timer;
-
-    // QObject interface
-protected:
-    void timerEvent(QTimerEvent *);
+    bool m_quit;
+    QSerialPort *m_serialPort;
+    PortStatusEnum m_portStatus;
 };
 
 class NCEInterface : public QObject

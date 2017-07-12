@@ -88,6 +88,7 @@ public:
     NCEMessage(int command) : m_command(command) { }
     NCEMessage(const NCEMessage &other) { copy(other); }
 
+    bool isValid(void) const { return m_messageData.size() > 0; }
     NCEMessage& operator = (const NCEMessage &other)
     {
         copy(other);
@@ -101,6 +102,7 @@ public:
 
     void accDecoder(int number, bool closed);
     void accMemoryRead(int address);
+    void getVersion(void);
 
     int getExpectedSize(void) const;
 

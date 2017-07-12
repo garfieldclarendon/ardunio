@@ -76,7 +76,7 @@ void NCEInterface::sendMessage(const NCEMessage &message)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SerialPortThread::SerialPortThread(QObject *parent)
-    : QThread(parent), m_firstTime(true), m_timerID(0)
+    : QThread(parent), m_firstTime(true), m_quit(false), m_portStatus(Disconnected)
 {
     memset(m_nceBuffer, 0, NUM_BLOCK * BLOCK_LEN);
     memset(m_pollBuffer, 0, NUM_BLOCK * BLOCK_LEN);
@@ -84,20 +84,34 @@ SerialPortThread::SerialPortThread(QObject *parent)
 
 SerialPortThread::~SerialPortThread()
 {
-    delete m_serialPort;
+    if(m_quit == false)
+    {
+        m_quit = true;
+        wait();
+    }
 }
 
 void SerialPortThread::run()
 {
-    openPort();
-    m_timer = new QTimer(QThread::currentThread());
-    m_timer->moveToThread(QThread::currentThread());
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(timerProc()), Qt::QueuedConnection);
-    m_timer->start(2000);
+    QSerialPort serial;
+    m_serialPort = &serial;
 
-//    QTimer::singleShot(200, this, SLOT(timerProc()));
-//    m_timerID = startTimer(200);
-    QThread::run();
+    while(m_quit == false)
+    {
+        switch (m_portStatus)
+        {
+        case Disconnected:
+            openPort();
+            break;
+        case Connected:
+            checkVersionNumber();
+            break;
+        case Running:
+            pollCommandStation();
+            break;
+        }
+        msleep(200);
+    }
 }
 
 void SerialPortThread::sendMessage(const NCEMessage &message)
@@ -111,24 +125,20 @@ void SerialPortThread::sendMessage(const NCEMessage &message)
     emit newMessage(returnMessage);
 }
 
-void SerialPortThread::timerProc()
+void SerialPortThread::pollCommandStation()
 {
-//    m_timer->stop();
     if(m_serialPort->isOpen())
     {
         pollRouteChanges();
     }
-//    m_timer->start(2000);
-//    QTimer::singleShot(200, this, SLOT(timerProc()));
 }
 
-void SerialPortThread::openPort()
+void SerialPortThread::openPort(void)
 {
     QSettings settings("AppServer.ini", QSettings::IniFormat);
     QString serialPort = settings.value("serialPort", "COM5").toString();
 
-    m_serialPort = new QSerialPort;
-//    m_serialPort->moveToThread(this);
+    m_serialPort->close();
     m_serialPort->setPortName(serialPort);
     m_serialPort->setBaudRate(QSerialPort::Baud9600);
     m_serialPort->setDataBits(QSerialPort::Data8);
@@ -142,23 +152,6 @@ void SerialPortThread::openPort()
     {
         m_serialPort->setTextModeEnabled(false);
         qDebug("NCE Serail Port OPEN!");
-
-        AddressUnion a;
-        a.addressInt = CS_ACCY_MEMORY;
-
-        NCEMessage message;
-        message.accMemoryRead(CS_ACCY_MEMORY);
-        int size = message.getMessageData().length();
-        m_serialPort->write((const char *)message.getMessageData().constData(), 3);
-        m_serialPort->waitForReadyRead(5000);
-        size = m_serialPort->bytesAvailable();
-        while(size < 16)
-        {
-            QApplication::processEvents();
-            size = m_serialPort->bytesAvailable();
-        }
-        QByteArray versionData = m_serialPort->readAll();
-        Q_UNUSED(versionData);
     }
     else
     {
@@ -225,14 +218,11 @@ void SerialPortThread::sendMessageInternal(NCEMessage &message)
     QVector<quint8> a = message.getMessageData();
     const quint8 *p = a.data();
     m_serialPort->write((const char *)p, a.size());
+    m_serialPort->waitForBytesWritten(5);
     m_serialPort->waitForReadyRead(5000);
     int size = m_serialPort->bytesAvailable();
-    int timeout = 0;
-    while(size < message.getExpectedSize() && timeout < 5000)
+    while(size < message.getExpectedSize() && m_serialPort->waitForReadyRead(1))
     {
-        QApplication::processEvents();
-        wait(100);
-        timeout += 100;
         size = m_serialPort->bytesAvailable();
     }
     QByteArray data = m_serialPort->readAll();
@@ -241,9 +231,26 @@ void SerialPortThread::sendMessageInternal(NCEMessage &message)
     for(int x = 0; x < data.size(); x++)
         result[x] = data[x];
     message.setResultData(result);
-    //    size = m_serialPort->bytesAvailable();
 }
 
-void SerialPortThread::timerEvent(QTimerEvent *)
+void SerialPortThread::checkVersionNumber()
 {
+    NCEMessage message;
+
+    message.getVersion();
+    sendMessageInternal(message);
+
+    QVector<quint8> data = message.getResultData();
+
+    if(data.size() == 3)
+    {
+        if(data[0] == 6)
+            m_portStatus = Running;
+        else // Wrong version !
+            m_portStatus = Disconnected;
+    }
+    else // Wrong size!
+    {
+        m_portStatus = Disconnected;
+    }
 }
