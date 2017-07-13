@@ -1,7 +1,6 @@
 #include <QSerialPortInfo>
 #include <QSettings>
 #include <QTimer>
-#include <QApplication>
 
 #include "NCEInterface.h"
 #include "RouteHandler.h"
@@ -133,12 +132,22 @@ void SerialPortThread::pollCommandStation()
     }
 }
 
+void SerialPortThread::reset()
+{
+    m_firstTime = false;
+    m_portStatus = Disconnected;
+    m_serialPort->close();
+}
+
 void SerialPortThread::openPort(void)
 {
     QSettings settings("AppServer.ini", QSettings::IniFormat);
+#ifdef Q_OS_WIN
     QString serialPort = settings.value("serialPort", "COM5").toString();
+#else
+    QString serialPort = settings.value("serialPort", "ttyUSB0").toString();
+#endif
 
-    m_serialPort->close();
     m_serialPort->setPortName(serialPort);
     m_serialPort->setBaudRate(QSerialPort::Baud9600);
     m_serialPort->setDataBits(QSerialPort::Data8);
@@ -246,7 +255,7 @@ void SerialPortThread::sendMessageInternal(NCEMessage &message)
             timeout += 1;
             if(timeout >= 5)
             {
-                m_portStatus = Disconnected;
+                reset();
                 break;
             }
         }
@@ -275,10 +284,10 @@ void SerialPortThread::checkVersionNumber()
         if(data[0] >= 6)
             m_portStatus = Running;
         else // Wrong version !
-            m_portStatus = Disconnected;
+            reset();
     }
     else // Wrong size!
     {
-        m_portStatus = Disconnected;
+        reset();
     }
 }

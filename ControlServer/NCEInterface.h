@@ -56,6 +56,7 @@ public slots:
     void pollCommandStation(void);
 
 private:
+    void reset(void);
     void pollRouteChanges(void);
     void processRouteBlock(const quint8 data, int blockIndex, int byteIndex);
     void sendMessageInternal(NCEMessage &message);
