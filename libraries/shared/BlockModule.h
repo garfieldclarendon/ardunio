@@ -35,7 +35,7 @@ private:
 	BlockControllerConfigStruct m_config;
 
 
-	const byte block1Pin = 0;
-	const byte block2Pin = 1;
+        const byte block1Pin = 2;
+        const byte block2Pin = 3;
 };
 

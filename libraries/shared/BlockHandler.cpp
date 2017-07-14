@@ -2,7 +2,7 @@
 #include "BlockHandler.h"
 
 BlockHandler::BlockHandler(void)
-	: m_blockPin(0), m_currentState(0), m_current(HIGH), m_lastRead(HIGH), m_currentTimeout(0)
+        : m_blockPin(0), m_currentState(0), m_current(LOW), m_lastRead(LOW), m_currentTimeout(0)
 {
 	memset(&m_config, 0, sizeof(BlockConfigStruct));
 }
@@ -21,7 +21,7 @@ bool BlockHandler::process(byte &data)
 
 	if (raw == m_lastRead)
 	{
-		if (raw != m_current && (t - m_currentTimeout) > 50)
+                if (raw != m_current /*&& (t - m_currentTimeout) > 50 */)
 		{
 			m_currentTimeout = t;
 			m_current = raw;

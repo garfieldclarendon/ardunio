@@ -20,6 +20,8 @@
 #include "configStructures.h"
 #include "ConfigDownload.h"
 #include "TurnoutModule.h"
+#include "BlockModule.h"
+#include "SignalModule.h"
 
 #define BASE_ADDRESS 0x20  // MCP23008 is on I2C port 0x20
 
@@ -308,6 +310,18 @@ void createModules(void)
 			TurnoutModule *turnout = new TurnoutModule();
 			modules[index] = turnout;
 		}
+    else if (controllerConfig.moduleConfigs[index].moduleClass == ClassBlock)
+    {
+      DEBUG_PRINT("CreateModules:  Creating Block Module\n");
+      BlockModule *block = new BlockModule();
+      modules[index] = block;
+    }
+    else if (controllerConfig.moduleConfigs[index].moduleClass == ClassSignal)
+    {
+      DEBUG_PRINT("CreateModules:  Creating Signal Module\n");
+      SignalModule *signalMod = new SignalModule();
+      modules[index] = signalMod;
+    }
 		else
 		{
 			allModulesCreated = false;

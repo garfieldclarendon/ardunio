@@ -54,11 +54,11 @@ bool BlockModule::process(byte &data)
 	for (byte x = 0; x < MAX_BLOCKS; x++)
 		if (m_blocks[x].process(data))
 			sendStatus = true;
-//	DEBUG_PRINT("process:  CURRENT_STATE %d === %d\n  STATUS_1 %d  STATUS_2 %d\n", m_currentState, data, m_blocks[0].getCurrentState(), m_blocks[1].getCurrentState());
+//        DEBUG_PRINT("process:  CURRENT_STATE %d === %d\n  STATUS_1 %d  STATUS_2 %d\n", m_currentState, data, m_blocks[0].getCurrentState(), m_blocks[1].getCurrentState());
 
 	if (m_currentState != data)
 	{
-//		DEBUG_PRINT("process:  CURRENT_STATE %d != %d\n  STATUS_1 %d  STATUS_2 %d\n", m_currentState, data, m_blocks[0].getCurrentState(), m_blocks[1].getCurrentState());
+                DEBUG_PRINT("process:  CURRENT_STATE %d != %d\n  STATUS_1 %d  STATUS_2 %d\n", m_currentState, data, m_blocks[0].getCurrentState(), m_blocks[1].getCurrentState());
 		m_currentState = data;
 	}
 

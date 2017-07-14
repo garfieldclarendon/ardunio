@@ -85,13 +85,13 @@ void BlockHandler::updateBlockState(const QJsonObject &json, int serialNumber, i
             QJsonObject obj = array.at(x).toObject();
             int port = obj["port"].toInt();
 
-            int blockID;
+            int blockID = 0;
 
             BlockState blockState;
 
             getBlockID(serialNumber, moduleIndex, port, blockID);
 
-            blockState = obj["pinSetting"].toInt() == 0 ? BlockOccupied : BlockClear;
+            blockState = obj["blockPin"].toInt() == 0 ? BlockOccupied : BlockClear;
 
             if(blockID > 0 && blockState != BlockUnknown)
             {
