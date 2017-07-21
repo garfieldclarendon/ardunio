@@ -4,9 +4,9 @@ A project that uses ESP8266 WiFi modules that communicate with a Raspberry Pi se
 
 ### Prerequisites
 
-The code running on the ESP8266 are developed using the Arduino IDE
+The code running on the ESP8266 is developed using the Arduino IDE
 
-The ControlServer application running on the Raspberry Pi makes use of the Qt framework.
+The ControlServer application running on the Raspberry Pi makes use of the Qt framework.  The ESP8266 uses WebSockets to communicate with the ControlServer application.  A separate RESTful API provides access to commands to activate routes, set turnouts and update data in the configuration database.
 
 ## Built With
 
