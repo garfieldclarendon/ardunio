@@ -32,6 +32,8 @@ bool TurnoutHandler::process(byte &data)
 		bitWrite(data, m_motorBPin, 0);
 	}
 
+	// Debounce the read of the input pins.  Make sure their current state has been stable for at least 100 milliseconds
+
 	// Process the inputA pin
 	long t = millis();
 	byte current = bitRead(data, m_feedbackAPin);
@@ -50,8 +52,6 @@ bool TurnoutHandler::process(byte &data)
 		m_currentATimeout = t;
 	}
 	m_lastARead = current;
-
-	// Debounce the read of the input pins.  Make sure their current state has been stable for at least 50 milliseconds
 	//
 	// Process the inputB pin
 	current = bitRead(data, m_feedbackBPin);

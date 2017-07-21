@@ -12,8 +12,8 @@ byte BlockModule::getIODirConfig(void) const
 {
 	byte iodir = 0;
 
-	bitWrite(iodir, block1Pin, INPUT);
-	bitWrite(iodir, block2Pin, INPUT);
+	bitWrite(iodir, block1Pin, 1);
+	bitWrite(iodir, block2Pin, 1);
 
 	return iodir;
 }

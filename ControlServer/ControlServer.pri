@@ -18,7 +18,8 @@ HEADERS += AppService.h \
     $$PWD/BlockHandler.h \
     $$PWD/NotificationServer.h \
     $$PWD/NCEInterface.h \
-    $$PWD/NCEMessage.h
+    $$PWD/NCEMessage.h \
+    $$PWD/API.h
 
 #Source files
 SOURCES += main.cpp \
@@ -54,3 +55,5 @@ SOURCES += $$PWD/PIGPIO.cpp
 }
 FORMS += \
     $$PWD/StatusDialog.ui
+
+DISTFILES +=

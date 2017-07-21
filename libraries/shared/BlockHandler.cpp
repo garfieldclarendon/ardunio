@@ -21,7 +21,7 @@ bool BlockHandler::process(byte &data)
 
 	if (raw == m_lastRead)
 	{
-                if (raw != m_current /*&& (t - m_currentTimeout) > 50 */)
+        if (raw != m_current /*&& (t - m_currentTimeout) > 50 */)
 		{
 			m_currentTimeout = t;
 			m_current = raw;

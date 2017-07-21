@@ -87,49 +87,61 @@ void SignalHandler::updateSignal(int signalId)
 
     while(query1.next())
     {
-        if(currentCondition == 0)
+        // When currentCondition changes we know we've gone through all of the conditions for this signal aspect entry.  If "found" is TRUE,
+        // then all of the conditions past their tests which means we should set the signal to this aspect....send out the
+        // signal aspect defined in this entry.  If any of the conditions fails the test, then we skip this entry and go on to the next
+        if(currentCondition != query1.value("signalAspectConditionID").toInt())
         {
-            currentCondition = query1.value("signalAspectConditionID").toInt();
-        }
-        else
-        {
-            if(found)
+            // The first time through, currentCondition will be 0 so we can skip sending the update
+            if(currentCondition != 0)
             {
-                aspectRed = redMode;
-                aspectYellow = yellowMode;
-                aspectGreen = greenMode;
+                // If we've gone through all of the conditions for this signal entry and found is still TRUE, then this is the aspect
+                // we should use for the signal so break out of the loop
+                if(found)
+                    break;
             }
 
-            sendSignalUpdateMessage(serialNumber, moduleIndex, port, aspectRed, aspectYellow, aspectGreen);
-
+            // if we get this far then at least one of the condition entries for this aspect failed the test so we need to reset
+            // for the next signal aspect entry.
             found = true;
-            aspectRed = 1;
-            aspectYellow = 0;
-            aspectGreen = 0;
         }
-        serialNumber = query1.value("serialNumber").toInt();
-        moduleIndex = query1.value("moduleIndex").toInt();
-        port = query1.value("port").toInt();
-        condition = query1.value("conditionOperand").toInt();
-        deviceState = query1.value("deviceState").toInt();
-        redMode = query1.value("redMode").toInt();
-        yellowMode = query1.value("yellowMode").toInt();
-        greenMode = query1.value("greenMode").toInt();
-        deviceID = query1.value("deviceID").toInt();
 
-        currentState = DeviceManager::instance()->getDeviceStatus(deviceID);
+        // Only process the remaining conditions in this aspect entry if "found" is still true.  If it's already failed a a test
+        // skip the remaining conditions
+        if(found)
+        {
+            serialNumber = query1.value("serialNumber").toInt();
+            moduleIndex = query1.value("moduleIndex").toInt();
+            port = query1.value("port").toInt();
+            condition = query1.value("conditionOperand").toInt();
+            deviceState = query1.value("deviceState").toInt();
+            redMode = query1.value("redMode").toInt();
+            yellowMode = query1.value("yellowMode").toInt();
+            greenMode = query1.value("greenMode").toInt();
+            deviceID = query1.value("deviceID").toInt();
 
-        if(condition == ConditionEquals)
-        {
-            if(deviceState != currentState)
-                found = false;
+            currentState = DeviceManager::instance()->getDeviceStatus(deviceID);
+
+            if(condition == ConditionEquals)
+            {
+                if(deviceState != currentState)
+                    found = false;
+            }
+            else if(condition == ConditionNotEquals)
+            {
+                if(deviceState == currentState)
+                    found = false;
+            }
         }
-        else if(condition == ConditionNotEquals)
-        {
-            if(deviceState == currentState)
-                found = false;
-        }
+        // before going to the next record, get the signalAspectConditionID and save it in the currentCondition variable.  This gets
+        // tested above.  When this id changes, we know we've processed all of the conditions for this signal aspect.
+        currentCondition = query1.value("signalAspectConditionID").toInt();
     }
+
+    // By this point we either found an entry that passed all of the condition tests in which case, "found" will be true which means we should use this
+    // entries LED settings for this signal.  If found is false at this point then we've gone through all of the possible signal aspect entries
+    // without a match.  In this case we default to RED or the most restrictive aspect for the signal.  This implies that you only need to enter
+    // entries in the database of non-RED signal aspects.
     if(found)
     {
         aspectRed = redMode;

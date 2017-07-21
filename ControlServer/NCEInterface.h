@@ -63,7 +63,6 @@ private:
     void checkVersionNumber(void);
 
     quint8 m_nceBuffer[NUM_BLOCK * BLOCK_LEN]; // Copy of NCE CS accessory memory
-    quint8 m_pollBuffer[NUM_BLOCK * BLOCK_LEN]; // place to store reply messages
     bool m_firstTime;
     bool m_quit;
     QSerialPort *m_serialPort;
