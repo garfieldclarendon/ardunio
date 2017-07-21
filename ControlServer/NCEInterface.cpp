@@ -9,7 +9,6 @@ NCEInterface * NCEInterface::m_instance = NULL;
 
 NCEInterface::NCEInterface(QObject *parent) : QObject(parent), m_pollThread(NULL)
 {
-
 }
 
 NCEInterface::~NCEInterface()
@@ -78,7 +77,6 @@ SerialPortThread::SerialPortThread(QObject *parent)
     : QThread(parent), m_firstTime(true), m_quit(false), m_portStatus(Disconnected)
 {
     memset(m_nceBuffer, 0, NUM_BLOCK * BLOCK_LEN);
-    memset(m_pollBuffer, 0, NUM_BLOCK * BLOCK_LEN);
 }
 
 SerialPortThread::~SerialPortThread()

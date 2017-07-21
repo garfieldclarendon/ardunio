@@ -1,5 +1,4 @@
 # ardunio
-# Project Title
 
 A project that uses ESP8266 WiFi modules that communicate with a Raspberry Pi server to control accessories on the Garfield-Clarendon Model Railroad Club.
 
