@@ -139,32 +139,39 @@ void SerialPortThread::reset()
 
 void SerialPortThread::openPort(void)
 {
-    QSettings settings("AppServer.ini", QSettings::IniFormat);
+    QSettings settings("ControlServer.ini", QSettings::IniFormat);
+#ifdef QT_DEBUG
 #ifdef Q_OS_WIN
     QString serialPort = settings.value("serialPort", "COM5").toString();
 #else
     QString serialPort = settings.value("serialPort", "ttyUSB0").toString();
 #endif
+#else
+    QString serialPort = settings.value("serialPort", "").toString();
+#endif
 
-    m_serialPort->setPortName(serialPort);
-    m_serialPort->setBaudRate(QSerialPort::Baud9600);
-    m_serialPort->setDataBits(QSerialPort::Data8);
-    m_serialPort->setParity(QSerialPort::NoParity);
-    m_serialPort->setStopBits(QSerialPort::OneStop);
-    m_serialPort->setFlowControl(QSerialPort::HardwareControl);
-//    m_serialPort->setRequestToSend(true);
-//    m_serialPort->setDataTerminalReady(true);
+    if(serialPort.length() > 0)
+    {
+        m_serialPort->setPortName(serialPort);
+        m_serialPort->setBaudRate(QSerialPort::Baud9600);
+        m_serialPort->setDataBits(QSerialPort::Data8);
+        m_serialPort->setParity(QSerialPort::NoParity);
+        m_serialPort->setStopBits(QSerialPort::OneStop);
+        m_serialPort->setFlowControl(QSerialPort::HardwareControl);
+    //    m_serialPort->setRequestToSend(true);
+    //    m_serialPort->setDataTerminalReady(true);
 
-    if(m_serialPort->open(QIODevice::ReadWrite))
-    {
-        m_serialPort->setTextModeEnabled(false);
-        qDebug("NCE Serail Port OPEN!");
-        m_portStatus = Connected;
-    }
-    else
-    {
-        qDebug("NCE Serail Port FAILED TO OPEN!");
-        m_portStatus = Disconnected;
+        if(m_serialPort->open(QIODevice::ReadWrite))
+        {
+            m_serialPort->setTextModeEnabled(false);
+            qDebug(QString("NCE Serail Port '%1' OPEN!").arg(serialPort).toLatin1());
+            m_portStatus = Connected;
+        }
+        else
+        {
+            qDebug(QString("NCE Serail Port '%1' FAILED TO OPEN!").arg(serialPort).toLatin1());
+            m_portStatus = Disconnected;
+        }
     }
 }
 

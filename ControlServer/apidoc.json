@@ -1,0 +1,7 @@
+{
+  "name": "LayoutControl",
+  "version": "1.0.0",
+  "description": "GCMRR Layout Control REST API",
+  "title": "GCMRR Layout Control REST API",
+  "url" : "https://localhost:8080/api"
+}
