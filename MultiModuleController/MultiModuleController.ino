@@ -70,6 +70,7 @@ Serial.setDebugOutput(true);
 
 	for (byte x = 0; x < totalModules; x++)
 	{
+		DEBUG_PRINT("CALLING SETUPWIRE FOR ADDRESS: %d\n", x);
 		modules[x]->setupWire(x);
 	}
 

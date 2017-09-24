@@ -53,6 +53,13 @@ void SignalHandler::setup(byte pin1, byte pin2, byte pin3)
 		pinMode(m_pin3, OUTPUT);
 }
 
+void SignalHandler::setupWire(byte pin1, byte pin2, byte pin3)
+{
+	m_pin1 = pin1;
+	m_pin2 = pin2;
+	m_pin3 = pin3;
+}
+
 void SignalHandler::addBlinkingPin(byte pin)
 {
 	bool found = false;

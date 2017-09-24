@@ -13,7 +13,8 @@ public:
 	int getDeviceID(void) const { return m_deviceID; }
 	void setDeviceID(int value) { m_deviceID = value; }
   
-	void setup(byte m_pin1, byte m_pin2, byte m_pin3);
+	void setup(byte pin1, byte pin2, byte pin3);
+	void setupWire(byte pin1, byte pin2, byte pin3);
 	bool process(byte &data);
 	void setSignal(PinStateEnum pin1State, PinStateEnum pin2State, PinStateEnum pin3State, byte &data);
 	void setSignal(byte pin, PinStateEnum pinState, byte &data);

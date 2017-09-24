@@ -50,6 +50,7 @@ void TurnoutModule::setup(void)
 
 void TurnoutModule::setupWire(byte address)
 {
+	DEBUG_PRINT("TurnoutModule::setupWire  Address: %d\n", address);
 	setAddress(address);
 
 	setup(0, motorAPin1, motorBPin1, feedbackAPin1, feedbackBPin1);

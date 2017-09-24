@@ -28,13 +28,14 @@ void SignalModule::setup(void)
 
 void SignalModule::setupWire(byte address)
 {
+	DEBUG_PRINT("SignalModule::setupWire:  address %d\n", address);
 	setAddress(address);
 	byte iodir = getIODirConfig();
 
 	byte bit = 0;
 	for (byte x = 0; x < MAX_SIGNALS; x++)
 	{
-		setup(x, bit, bit + 1, bit + 2);
+		m_signals[x].setupWire(bit, bit + 1, bit + 2);
 		bit += 3;
 	}
 
@@ -42,10 +43,12 @@ void SignalModule::setupWire(byte address)
 	delay(100);
 	byte data = getCurrentState();
 	expanderWrite(GPIO, data);
+	DEBUG_PRINT("SignalModule::setupWire:  address %d DONE!!!!\n", address);
 }
 
 void SignalModule::setup(byte index, byte pin1, byte pin2, byte pin3)
 {
+	DEBUG_PRINT("SignalModule::setup:  index %d\n", index);
 	m_signals[index].setup(pin1, pin2, pin3);
 }
 
