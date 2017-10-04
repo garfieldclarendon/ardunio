@@ -15,18 +15,10 @@ INCLUDEPATH += "../libraries/shared"
 
 SOURCES += main.cpp\
         MainWindow.cpp \
-    MessageMonitorWidget.cpp \
     TrackSchematic.cpp \
-    UDPMessage.cpp \
     TrackTrunout.cpp \
-    MessageBroadcaster.cpp \
-    Database.cpp \
-    TcpClientHandler.cpp \
-    SystemMessageHandler.cpp \
     ControllerTab.cpp \
     DeviceTab.cpp \
-    WebServer.cpp \
-    UpdateServer.cpp \
     ControllerWidget.cpp \
     ControllerModel.cpp \
     TurnoutModel.cpp \
@@ -34,24 +26,16 @@ SOURCES += main.cpp\
     PanelInputModel.cpp \
     PanelOutputModel.cpp \
     UI.cpp \
-    TcpServer.cpp \
-    bonjourserviceregister.cpp \
     ControllerModuleModel.cpp \
-    ControllerModuleWidget.cpp
+    ControllerModuleWidget.cpp \
+    JSonModel.cpp \
+    API.cpp
 
 HEADERS  += MainWindow.h \
-    MessageMonitorWidget.h \
     TrackSchematic.h \
-    UDPMessage.h \
     TrackTrunout.h \
-    MessageBroadcaster.h \
-    Database.h \
-    TcpClientHandler.h \
-    SystemMessageHandler.h \
     ControllerTab.h \
     DeviceTab.h \
-    WebServer.h \
-    UpdateServer.h \
     ControllerWidget.h \
     ControllerModel.h \
     TurnoutModel.h \
@@ -59,11 +43,10 @@ HEADERS  += MainWindow.h \
     PanelInputModel.h \
     PanelOutputModel.h \
     UI.h \
-    TcpServer.h \
-    BonjourRecord.h \
-    bonjourserviceregister.h \
     ControllerModuleModel.h \
-    ControllerModuleWidget.h
+    ControllerModuleWidget.h \
+    JSonModel.h \
+    API.h
 
 RESOURCES += \
     Resources.qrc

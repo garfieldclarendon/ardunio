@@ -31,7 +31,6 @@ public:
     QModelIndex parent(const QModelIndex &child) const override;
 
 protected slots:
-    void onNewMessage(const UDPMessage &message);
 
     // QAbstractProxyModel interface
 public:

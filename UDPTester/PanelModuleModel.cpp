@@ -1,17 +1,10 @@
 #include <QSqlTableModel>
 
 #include "PanelModuleModel.h"
-#include "Database.h"
 
 PanelModuleModel::PanelModuleModel(QObject *parent)
     : QSortFilterProxyModel(parent), m_controllerID(0)
 {
-    Database db;
-    m_tableModel = new QSqlTableModel(this, db.getDatabase());
-    m_tableModel->setTable("controllerModule");
-    m_tableModel->select();
-
-    this->setSourceModel(m_tableModel);
 }
 
 QHash<int, QByteArray> PanelModuleModel::roleNames(void) const

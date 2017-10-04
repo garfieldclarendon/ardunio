@@ -4,23 +4,10 @@
 #include <QSqlQuery>
 
 #include "ControllerModuleModel.h"
-#include "Database.h"
 
 ControllerModuleModel::ControllerModuleModel(QObject *parent)
     : QSortFilterProxyModel(parent), m_controllerID(0), m_controllerClass(-1)
 {
-    Database db;
-    m_tableModel = new QSqlTableModel(this, db.getDatabase());
-    m_tableModel->setTable("controllerModule");
-    m_tableModel->select();
-    if(m_tableModel->select() == false)
-    {
-        qDebug("ERROR LOADING controllerModule MODEL");
-        qDebug(db.getDatabase().lastError().text().toLatin1());
-    }
-
-    this->setSourceModel(m_tableModel);
-    qDebug(QString("controllerModule MODEL OPEN.  TOTAL ROWS: %1").arg(this->rowCount()).toLatin1());
 }
 
 QHash<int, QByteArray> ControllerModuleModel::roleNames(void) const
@@ -90,9 +77,6 @@ int ControllerModuleModel::addNew(const QString &moduleName, int moduleIndex, in
 
 int ControllerModuleModel::createDeviceEntry(int moduleID, int moduleIndex, const QString &deviceName)
 {
-    Database db;
-    QSqlQuery query(db.getDatabase());
-    query.exec(QString("INSERT device (moduleIndex, controllerModuleID, deviceName) VALUES(%1, %2, '%3')").arg(moduleIndex).arg(moduleID).arg(deviceName));
     return 0;
 }
 

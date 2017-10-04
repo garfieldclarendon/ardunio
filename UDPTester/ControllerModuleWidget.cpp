@@ -30,18 +30,6 @@ void ControllerModuleWidget::setCurrentControllerID(int controllerID)
 
 void ControllerModuleWidget::setupModel()
 {
-    tableModel = new QSqlRelationalTableModel(this, db.getDatabase());
-    tableModel->setTable("controllerModule");
-    tableModel->setRelation(0, QSqlRelation("classCode", "id", "className"));
-
-    tableModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Class"));
-    tableModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Controller ID"));
-    tableModel->setHeaderData(2, Qt::Horizontal, QObject::tr("ID"));
-    tableModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Index"));
-    tableModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Name"));
-
-    tableModel->setFilter("controllerID = 0");
-    tableModel->select();
 }
 
 void ControllerModuleWidget::setupUI()

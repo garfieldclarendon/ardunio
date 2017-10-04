@@ -6,8 +6,6 @@
 #include <QPen>
 #include <QPoint>
 
-#include "UDPMessage.h"
-
 class TrackTrunout : public QWidget
 {
     Q_OBJECT
@@ -23,7 +21,6 @@ public:
 signals:
 
 public slots:
-    void newMessage(const UDPMessage &message);
 
 protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;

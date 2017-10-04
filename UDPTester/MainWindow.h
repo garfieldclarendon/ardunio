@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "Database.h"
 
 class MainWindow : public QMainWindow
 {
@@ -21,7 +20,6 @@ protected:
 
 private:
     void createControllerTab(QTabWidget *tab);
-    Database db;
 
     // QWidget interface
 protected:

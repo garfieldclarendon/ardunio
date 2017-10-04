@@ -3,8 +3,6 @@
 
 #include <QWidget>
 
-#include "Database.h"
-
 class QSqlRelationalTableModel;
 class QTableView;
 
@@ -24,7 +22,6 @@ private:
     void setupUI(void);
     void setupModel(void);
 
-    Database db;
     QTableView *tableView;
     QSqlRelationalTableModel *tableModel;
 };

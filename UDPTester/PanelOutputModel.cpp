@@ -1,17 +1,10 @@
 #include <QSqlTableModel>
 
 #include "PanelOutputModel.h"
-#include "Database.h"
 
 PanelOutputModel::PanelOutputModel(QObject *parent)
     : QSortFilterProxyModel(parent), m_panelModuleID(0)
 {
-    Database db;
-    m_tableModel = new QSqlTableModel(this, db.getDatabase());
-    m_tableModel->setTable("panelOutputEntry");
-    m_tableModel->select();
-
-    this->setSourceModel(m_tableModel);
 }
 
 

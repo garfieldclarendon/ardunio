@@ -1,18 +1,10 @@
 #include <QSqlTableModel>
 
 #include "PanelInputModel.h"
-#include "Database.h"
 
 PanelInputModel::PanelInputModel(QObject *parent)
     : QSortFilterProxyModel(parent), m_panelModuleID(0)
 {
-    Database db;
-    m_tableModel = new QSqlTableModel(this, db.getDatabase());
-    m_tableModel->setTable("panelInputEntry");
-    m_tableModel->setSort(m_tableModel->fieldIndex("pinIndex"), Qt::AscendingOrder);
-    m_tableModel->select();
-
-    this->setSourceModel(m_tableModel);
 }
 
 QHash<int, QByteArray> PanelInputModel::roleNames(void) const

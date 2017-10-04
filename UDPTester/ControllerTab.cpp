@@ -21,17 +21,6 @@ void ControllerTab::selectionChanged()
 
 void ControllerTab::setupModel()
 {
-    tableModel = new QSqlRelationalTableModel(this, db.getDatabase());
-    tableModel->setTable("controller");
-    tableModel->setRelation(3, QSqlRelation("classCode", "id", "className"));
-
-    tableModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Serial #"));
-    tableModel->setHeaderData(1, Qt::Horizontal, QObject::tr("ID"));
-    tableModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Name"));
-    tableModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Class/Type"));
-    tableModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Description"));
-
-    tableModel->select();
 }
 
 void ControllerTab::setupUI()

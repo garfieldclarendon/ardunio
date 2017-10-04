@@ -3,7 +3,6 @@
 
 #include <QObject>
 class QTcpSocket;
-class UDPMessage;
 
 class TcpClientHandler : public QObject
 {

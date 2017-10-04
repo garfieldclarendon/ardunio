@@ -43,19 +43,16 @@ protected slots:
     void processUdpBuffer(void);
     void tcpIncomingConnection(void);
     void sendMessageSlot(void);
-    void sendHeartbeatSlot(void);
 
 private:
     void setupSocket(void);
     void setupBonjour(void);
-    QHostAddress getLocalAddress(void) const;
 
     static MessageBroadcaster *_this;
     QUdpSocket *socket;
     QTcpServer *tcpServer;
     qint64 lastMessageSentTime;
     QList<UDPMessage> sendList;
-    bool m_sendHeartbeat;
     quint16 m_udpPort;
     QByteArray m_udpBuffer;
 };

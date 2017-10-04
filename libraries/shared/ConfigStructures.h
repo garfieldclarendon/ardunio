@@ -51,7 +51,7 @@ typedef TurnoutControllerConfigStruct TurnoutControllerConfigStruct;
 //////////////////////////////////////////////////////////////////////////////////////////
 struct PanelControllerConfigStruct
 {
-	byte totalModules;
+        unsigned char totalModules;
 	PinModeEnum extraPin0Mode;
 	PinModeEnum extraPin1Mode;
 	PinModeEnum extraPin2Mode;

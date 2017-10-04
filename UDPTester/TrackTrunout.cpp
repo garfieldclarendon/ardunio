@@ -2,7 +2,6 @@
 #include <QPainter>
 
 #include "TrackTrunout.h"
-#include "MessageBroadcaster.h"
 
 TrackTrunout::TrackTrunout(QWidget *parent)
     : QWidget(parent), turnoutID(2)
@@ -10,8 +9,6 @@ TrackTrunout::TrackTrunout(QWidget *parent)
     currentState = "Unknown";
     brush = Qt::black;
     adjustPoints();
-
-    connect(MessageBroadcaster::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(newMessage(UDPMessage)));
 }
 
 QSize TrackTrunout::minimumSizeHint() const
@@ -22,37 +19,6 @@ QSize TrackTrunout::minimumSizeHint() const
 QSize TrackTrunout::sizeHint() const
 {
     return QSize(400, 200);
-}
-
-void TrackTrunout::newMessage(const UDPMessage &message)
-{
-    if(message.getMessageID() == 101 && message.getIntValue2() == turnoutID)
-    {
-        int turnoutState = message.getByteValue2();
-        if(turnoutState == 1)
-        {
-            currentState = "Normal";
-            brush = Qt::black;
-        }
-        else if(turnoutState == 2)
-        {
-            currentState = "To Diverging";
-        }
-        else if(turnoutState == 3)
-        {
-            currentState = "Diverging";
-            brush = Qt::red;
-        }
-        else if(turnoutState == 4)
-        {
-            currentState = "To Normal";
-        }
-        else if(turnoutState == 0)
-        {
-            currentState = "Unknown";
-        }
-        update();
-    }
 }
 
 void TrackTrunout::paintEvent(QPaintEvent * /*event*/)
@@ -104,14 +70,5 @@ void TrackTrunout::adjustPoints()
 
 void TrackTrunout::sendMessage(bool toDiverging)
 {
-//    QString str(QString("102,9999,1\n0,%1\n\n").arg(toDiverging ? 1 : 0));
-    UDPMessage message;
-    message.setMessageID(102);
-    message.setMessageVersion(1);
-    message.setDeviceID(turnoutID);
-//    message.setField(0, 0);
-    message.setField(0, toDiverging ? 3 : 1);
-
-    MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 

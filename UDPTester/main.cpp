@@ -22,8 +22,6 @@ int main(int argc, char *argv[])
         f.setPointSize(12);
         QApplication::setFont(f);
     }
-    qRegisterMetaType<UDPMessage>("UDPMessage");
-
     qmlRegisterType<ControllerModel>("Utils", 1, 0, "ControllerModel");
     qmlRegisterType<TurnoutModel>("Utils", 1, 0, "TurnoutModel");
     qmlRegisterType<PanelModuleModel>("Utils", 1, 0, "PanelModuleModel");

@@ -18,19 +18,6 @@ DeviceTab::DeviceTab(QWidget *parent) : QWidget(parent), controllerModuleID(0)
 
 void DeviceTab::addButtonClicked()
 {
-    Database db;
-    int deviceID = db.getNextID("device");
-
-    if(deviceID > 0)
-    {
-        int row = tableModel->rowCount();
-        tableModel->insertRow(row);
-        QSqlRecord r = tableModel->record(row);
-        r.setValue(0, 0);
-        r.setValue(2, controllerModuleID);
-        r.setValue(4, deviceID);
-        tableModel->setRecord(row, r);
-    }
 }
 
 void DeviceTab::deleteButtonClicked()
@@ -47,16 +34,6 @@ void DeviceTab::saveModel()
 
 void DeviceTab::setupModel()
 {
-    tableModel = new QSqlRelationalTableModel(this, db.getDatabase());
-    tableModel->setTable("device");
-
-    tableModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Index"));
-    tableModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Description"));
-    tableModel->setHeaderData(2, Qt::Horizontal, QObject::tr("ModuleID"));
-    tableModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Name"));
-    tableModel->setHeaderData(4, Qt::Horizontal, QObject::tr("ID"));
-    setModuleID(0, controllerID);
-    tableModel->select();
 }
 
 void DeviceTab::sendConfigClicked()

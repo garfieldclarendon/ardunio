@@ -4,27 +4,11 @@
 #include <QSqlError>
 
 #include "ControllerModel.h"
-#include "Database.h"
-#include "MessageBroadcaster.h"
-#include "TcpServer.h"
 #include "GlobalDefs.h"
 
 ControllerModel::ControllerModel(QObject *parent)
     : QSortFilterProxyModel(parent), m_tableModel(NULL), m_filterByOnline(-1)
 {
-    Database db;
-    m_tableModel = new QSqlTableModel(this, db.getDatabase());
-    m_tableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
-    m_tableModel->setTable("controller");
-    m_tableModel->select();
-    initArrays();
-
-    this->setSourceModel(m_tableModel);
-
-    QTimer::singleShot(1000, this, SLOT(timerProc()));
-//QTimer::singleShot(5000, this, SLOT(tmpTimerSlot()));
-    connect(MessageBroadcaster::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(onNewMessage(UDPMessage)));
-//    connect(TcpServer::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(onNewMessage(UDPMessage)));
 }
 
 QHash<int, QByteArray> ControllerModel::roleNames(void) const
@@ -113,26 +97,6 @@ bool ControllerModel::setData(const QModelIndex &index, const QVariant &value, i
 QVariant ControllerModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     return QSortFilterProxyModel::headerData(section, orientation, role);
-}
-
-void ControllerModel::onNewMessage(const UDPMessage &message)
-{
-    int controllerID = message.getControllerID();
-    if(controllerID > 0)
-    {
-        int rows = rowCount() - 1;
-        int cols = columnCount() - 1;
-        m_versionMap[controllerID] = QString("%1").arg(message.getMessageVersion());
-        if(message.getMessageID() == SYS_RESTARTING)
-            m_onlineStatusMap[controllerID] = "Restarting";
-        else
-            m_onlineStatusMap[controllerID] = "Online";
-        m_timeoutMap[controllerID] = QDateTime::currentDateTime().toTime_t();
-
-        QModelIndex start = this->index(0, cols);
-        QModelIndex end = this->index(rows, cols);
-        emit dataChanged(start, end);
-    }
 }
 
 void ControllerModel::timerProc()
@@ -325,18 +289,6 @@ void ControllerModel::initArrays()
         m_versionMap[controllerID] = "?";
         m_onlineStatusMap[controllerID] = "?";
         m_timeoutMap[controllerID] = QDateTime::currentDateTime().toTime_t();
-    }
-}
-
-void ControllerModel::handleNewControllerMessage(const UDPMessage &message)
-{
-    Database db;
-    QString serialNumber = QString("%1").arg(message.getLValue());
-    int deviceID = db.getControllerID(message.getLValue());
-
-    if(deviceID == -1)
-    {
-        emit newController(serialNumber, message.getByteValue1());
     }
 }
 

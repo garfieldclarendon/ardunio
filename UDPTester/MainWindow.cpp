@@ -5,12 +5,10 @@
 #include <QStandardPaths>
 
 #include "MainWindow.h"
-#include "MessageMonitorWidget.h"
 #include "TrackSchematic.h"
 #include "TrackTrunout.h"
 #include "ControllerTab.h"
 #include "DeviceTab.h"
-#include "MessageBroadcaster.h"
 #include "ControllerWidget.h"
 #include "GlobalDefs.h"
 #include "UI.h"
@@ -19,9 +17,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    db.init(QString("%1/RRDatabase.db").arg(QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation).value(0)));
     setupUI();
-    MessageBroadcaster::instance(true)->enableHeartbeat(false);
 }
 
 MainWindow::~MainWindow()
@@ -31,29 +27,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::sendConfigData(int controllerID)
 {
-    UDPMessage message;
-    message.setMessageID(SYS_CONFIG_CHANGED);
-    message.setControllerID(controllerID);
-
-    MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 
 void MainWindow::sendResetCommand(int controllerID)
 {
-    UDPMessage message;
-    message.setMessageID(SYS_REBOOT_CONTROLLER);
-    message.setControllerID(controllerID);
-
-    MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 
 void MainWindow::sendFirmware(int controllerID)
 {
-    UDPMessage message;
-    message.setMessageID(SYS_DOWNLOAD_FIRMWARE);
-    message.setControllerID(controllerID);
-
-    MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 
 void MainWindow::setupUI()
@@ -69,16 +50,10 @@ void MainWindow::setupUI()
     controllerWidget->setFocusPolicy(Qt::StrongFocus);
     tab->addTab(controllerWidget, "Manage Controllers");
 
-    MessageMonitorWidget *widget = new MessageMonitorWidget(this);
-    connect(&db, SIGNAL(logError(int,int,QString)), widget, SLOT(logError(int,int,QString)));
-    tab->addTab(widget, "Messages");
-
     TrackSchematic *widget2 = new TrackSchematic(this);
 
     TrackTrunout *turnOut = new TrackTrunout(widget2);
     widget2->addTrackSection(turnOut);
-
-    db.checkDatabase();
 
     tab->addTab(widget2, "Track Plan");
 

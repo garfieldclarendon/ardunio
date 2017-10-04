@@ -2,7 +2,6 @@
 #define CONTROLLERMODEL_H
 
 #include <QSortFilterProxyModel>
-#include "UDPMessage.h"
 
 class QSqlTableModel;
 
@@ -42,7 +41,6 @@ public:
     QModelIndex parent(const QModelIndex &child) const override;
 
 protected slots:
-    void onNewMessage(const UDPMessage &message);
     void timerProc(void);
 
     // QAbstractProxyModel interface
@@ -56,7 +54,6 @@ protected:
 
 private:
     void initArrays(void);
-    void handleNewControllerMessage(const UDPMessage &message);
 
     QSqlTableModel *m_tableModel;
     QMap<int, long> m_timeoutMap;

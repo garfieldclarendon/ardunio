@@ -17,7 +17,7 @@
 MessageBroadcaster *MessageBroadcaster::_this = NULL;
 
 MessageBroadcaster::MessageBroadcaster(QObject *parent, bool runAsServer)
-    : QObject(parent), socket(NULL), tcpServer(NULL), lastMessageSentTime(0), m_sendHeartbeat(false), m_udpPort(45454)
+    : QObject(parent), socket(NULL), tcpServer(NULL), lastMessageSentTime(0), m_udpPort(45454)
 {
     setupSocket();
     if(runAsServer)
@@ -72,27 +72,6 @@ void MessageBroadcaster::setupSocket()
     else
         qDebug(QString("ERROR STARTING TCP SERVER!!!!  %1").arg(tcpServer->errorString()).toLatin1());
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(tcpIncomingConnection()));
-}
-
-QHostAddress MessageBroadcaster::getLocalAddress() const
-{
-    QList<QHostAddress> list = QNetworkInterface::allAddresses();
-    QHostAddress address;
-
-    for(int nIter=0; nIter<list.count(); nIter++)
-    {
-        if(!list[nIter].isLoopback())
-        {
-            if (list[nIter].protocol() == QAbstractSocket::IPv4Protocol )
-            {
-                address = list[nIter];
-                if(address.toString().startsWith("192."))
-                    break;
-            }
-        }
-    }
-
-    return address;
 }
 
 void MessageBroadcaster::sendUDPMessage(const UDPMessage &message)
@@ -214,37 +193,6 @@ void MessageBroadcaster::sendMessageSlot()
     sendUDPMessage(message);
     if(sendList.count() > 0)
         QTimer::singleShot(sendTimeout, this, SLOT(sendMessageSlot()));
-}
-
-void MessageBroadcaster::enableHeartbeat(bool enable)
-{
-    m_sendHeartbeat = enable;
-    if(enable)
-    {
-        QTimer::singleShot(100, this, SLOT(sendHeartbeatSlot()));
-    }
-}
-
-void MessageBroadcaster::sendHeartbeatSlot()
-{
-    if(m_sendHeartbeat)
-    {
-        UDPMessage message;
-        message.setMessageID(SYS_HEARTBEAT);
-        message.setMessageClass(ClassSystem);
-        QHostAddress address = getLocalAddress();
-        IP4AddressUnion a;
-        a.address32 = address.toIPv4Address();
-        message.setField(0, a.bytes[3]);
-        message.setField(1, a.bytes[2]);
-        message.setField(2, a.bytes[1]);
-        message.setField(3, a.bytes[0]);
-        message.setField(4, 81);
-
-        sendUDPMessage(message);
-
-        QTimer::singleShot(5000, this, SLOT(sendHeartbeatSlot()));
-    }
 }
 
 void MessageBroadcaster::sendConfigData(int controllerID)
