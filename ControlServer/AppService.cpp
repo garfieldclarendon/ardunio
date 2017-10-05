@@ -102,7 +102,7 @@ void CAppService::start(void)
         dir.mkdir(path);
         db.init(path +"/RRDatabase.db");
 
-        MessageBroadcaster::instance();
+        connect(MessageBroadcaster::instance(), SIGNAL(controllerResetting(long)), ControllerManager::instance(), SLOT(controllerResetting(long)));
 
         startWebServer();
 

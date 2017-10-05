@@ -122,7 +122,7 @@ void ControllerManager::getConnectedInfo(int serialNumber, int &version, Control
     }
 }
 
-void ControllerManager::controllerResetting(int serialNumber)
+void ControllerManager::controllerResetting(long serialNumber)
 {
     qDebug(QString("Controller %1 restarting!!!!!!!").arg(serialNumber).toLatin1());
 

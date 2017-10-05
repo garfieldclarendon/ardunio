@@ -7,21 +7,45 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QSettings>
+#include <QEventLoop>
+
+#include "../ControlServer/MessageBroadcaster.h"
 
 #include "API.h"
+
+API *API::m_instance = NULL;
 
 API::API(const QString &server, const int port, QObject *parent)
     : QObject(parent), m_server(server), m_port(port), m_notificationSocket(NULL)
 {
     if(m_server.endsWith('/') || m_server.endsWith('\\'))
         m_server.chop(1);
-    setupNotificationSocket();
+    setupUDPSocket();
+    if(m_server.length() > 0)
+        setupNotificationSocket();
+}
+
+API::API(QObject *parent)
+    : QObject(parent), m_notificationSocket(NULL)
+{
+    QSettings settings("AppServer.ini", QSettings::IniFormat);
+    m_port = settings.value("httpPort", 8080).toInt();
+    setupUDPSocket();
 }
 
 API::~API()
 {
     if(m_notificationSocket)
         m_notificationSocket->deleteLater();
+}
+
+API *API::instance()
+{
+    if(m_instance == NULL)
+        m_instance = new API;
+
+    return m_instance;
 }
 
 QString API::getControllerList()
@@ -81,16 +105,41 @@ void API::connectNotificationSocket()
     m_notificationSocket->open(url);
 }
 
+void API::newUDPMessage(const UDPMessage &message)
+{
+    if(message.getMessageID() == SYS_SERVER_HEARTBEAT)
+    {
+        QString address = QString("%1.%2.%3.%4").arg(message.getField(0)).arg(message.getField(1)).arg(message.getField(2)).arg(message.getField(3));
+        if(address != m_server)
+        {
+            m_server = address;
+            setupNotificationSocket();
+            emit apiReady();
+        }
+    }
+}
+
 void API::setupNotificationSocket()
 {
     if(m_server.length() > 0 && m_port > 0)
     {
+        if(m_notificationSocket)
+            m_notificationSocket->deleteLater();
         m_notificationSocket = new QWebSocket;
         connect(m_notificationSocket, SIGNAL(textMessageReceived(QString)), this, SLOT(textMessageReceived(QString)));
         connect(m_notificationSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(notificationStateChanged(QAbstractSocket::SocketState)));
 
         connectNotificationSocket();
     }
+}
+
+void API::setupUDPSocket()
+{
+    MessageBroadcaster::setRunAsClient(true);
+    connect(MessageBroadcaster::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(newUDPMessage(UDPMessage)));
+    UDPMessage message;
+    message.setMessageID(SYS_FIND_SERVER);
+    MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 
 QUrl API::buildNotifcationUrl(const QString &path)
@@ -118,15 +167,11 @@ QString API::sendToServer(const QUrl &url, const QString &json, NetActionType ne
     else if(netAction == NetActionAdd)
         reply = manager.put(request, json.toLatin1());
 
-    while(true)
-    {
-        reply->waitForReadyRead(200);
-        if(reply->bytesAvailable() >= reply->header(QNetworkRequest::ContentLengthHeader).toInt())
-        {
-            ret = reply->readAll();
-            break;
-        }
-    }
+    QEventLoop loop;
+    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    loop.exec();
+
+    ret = reply->readAll();
 
     return ret;
 }

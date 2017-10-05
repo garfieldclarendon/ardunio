@@ -142,7 +142,8 @@ void SerialPortThread::openPort(void)
     QSettings settings("ControlServer.ini", QSettings::IniFormat);
 #ifdef QT_DEBUG
 #ifdef Q_OS_WIN
-    QString serialPort = settings.value("serialPort", "COM5").toString();
+//    QString serialPort = settings.value("serialPort", "COM5").toString();
+    QString serialPort = settings.value("serialPort", "").toString();
 #else
     QString serialPort = settings.value("serialPort", "ttyUSB0").toString();
 #endif

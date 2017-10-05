@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "API.h"
 
 class MainWindow : public QMainWindow
 {
@@ -20,6 +21,7 @@ protected:
 
 private:
     void createControllerTab(QTabWidget *tab);
+    API m_api;
 
     // QWidget interface
 protected:

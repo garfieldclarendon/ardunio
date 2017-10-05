@@ -1,14 +1,23 @@
-#include <QSqlTableModel>
 #include <QTimer>
 #include <QDateTime>
-#include <QSqlError>
 
 #include "ControllerModel.h"
 #include "GlobalDefs.h"
+#include "JSonModel.h"
+#include "API.h"
 
 ControllerModel::ControllerModel(QObject *parent)
     : QSortFilterProxyModel(parent), m_tableModel(NULL), m_filterByOnline(-1)
 {
+    connect(API::instance(), SIGNAL(apiReady()), this, SLOT(apiReady()));
+    QJsonDocument jsonDoc;
+    if(API::instance()->getApiReady())
+    {
+        QString json = API::instance()->getControllerList();
+        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+    }
+    m_tableModel = new JSonModel(jsonDoc, this);
+    setSourceModel(m_tableModel);
 }
 
 QHash<int, QByteArray> ControllerModel::roleNames(void) const
@@ -28,40 +37,36 @@ QHash<int, QByteArray> ControllerModel::roleNames(void) const
 
 int ControllerModel::getControllerID(int row) const
 {
-    QModelIndex index = this->index(row, m_tableModel->fieldIndex("id"));
-    return QSortFilterProxyModel::data(index, Qt::EditRole).toInt();
+    QModelIndex index = this->index(row, 0);
+    QModelIndex i = mapToSource(index);
+    return m_tableModel->data(i.row(), "controllerID", Qt::EditRole).toInt();
 }
 
 QVariant ControllerModel::data(const QModelIndex &index, int role) const
 {
     QVariant v;
 
+    QModelIndex i = mapToSource(index);
     int controllerID = getControllerID(index.row());
     if(role >= Qt::UserRole)
     {
-        QModelIndex i;
         int col = role - Qt::UserRole;
         switch(col)
         {
         case 0:
-            i = this->index(index.row(), m_tableModel->fieldIndex("id"));
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
+            v = m_tableModel->data(i.row(), "controllerID").toInt();
             break;
         case 1:
-            i = this->index(index.row(), m_tableModel->fieldIndex("controllerName"));
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
+            v = m_tableModel->data(i.row(), "controllerName");
             break;
         case 2:
-            i = this->index(index.row(), m_tableModel->fieldIndex("controllerClass"));
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
+            v = m_tableModel->data(i.row(), "controllerClass").toInt();
             break;
         case 3:
-            i = this->index(index.row(), m_tableModel->fieldIndex("controllerDescription"));
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
+            v = m_tableModel->data(i.row(), "controllerDescription");
             break;
         case 4:
-            i = this->index(index.row(), m_tableModel->fieldIndex("serialNumber"));
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
+            v = m_tableModel->data(i.row(), "serialNumber").toInt();
             break;
         case 5:
             v = m_onlineStatusMap.value(controllerID);
@@ -122,21 +127,34 @@ void ControllerModel::timerProc()
     QTimer::singleShot(1000, this, SLOT(timerProc()));
 }
 
+void ControllerModel::apiReady()
+{
+    QJsonDocument jsonDoc;
+    if(API::instance()->getApiReady())
+    {
+        QString json = API::instance()->getControllerList();
+        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+        beginResetModel();
+        m_tableModel->setJson(jsonDoc, false);
+        initArrays();
+        endResetModel();
+    }
+}
+
 QVariant ControllerModel::getData(int row, const QString &fieldName) const
 {
-    QModelIndex index = this->index(row, m_tableModel->fieldIndex(fieldName));
-    return this->data(index, Qt::EditRole);
+    QModelIndex index = this->index(row, 0);
+    QModelIndex i = mapToSource(index);
+    return m_tableModel->data(i.row(), fieldName);
 }
 
 void ControllerModel::setData(int row, const QString &fieldName, const QVariant &value)
 {
-    QModelIndex index = this->index(row, m_tableModel->fieldIndex(fieldName));
+    QModelIndex index = this->index(row, 0);
     QModelIndex i = mapToSource(index);
 
-    m_tableModel->setData(i, value, Qt::EditRole);
+    m_tableModel->setData(i.row(), fieldName, value);
 //    m_tableModel->submitAll();
-    QString errorText = m_tableModel->lastError().text();
-    qDebug(errorText.toLatin1());
 }
 
 void ControllerModel::setNewSerialNumber(int controllerID, const QString &serialNumber)
@@ -145,14 +163,28 @@ void ControllerModel::setNewSerialNumber(int controllerID, const QString &serial
     int newSerialNumber = serialNumber.toInt();
     for(int x = 0; x < m_tableModel->rowCount(); x++)
     {
-        index = m_tableModel->index(x, m_tableModel->fieldIndex("id"));
-        int id = m_tableModel->data(index, Qt::EditRole).toInt();
+        int id = m_tableModel->data(x, "controllerID", Qt::EditRole).toInt();
 
         if(id == controllerID)
         {
-            index = m_tableModel->index(x, m_tableModel->fieldIndex("serialNumber"));
-            m_tableModel->setData(index, newSerialNumber);
-            m_tableModel->submitAll();
+            m_tableModel->setData(x, "serialNumber", newSerialNumber);
+            break;
+        }
+    }
+}
+
+void ControllerModel::controllerChanged(int serialNumber, ControllerStatus status)
+{
+    for(int x = 0; x < m_tableModel->rowCount(); x++)
+    {
+        int s = m_tableModel->data(x, "serialNumber", Qt::EditRole).toInt();
+        if(s == serialNumber)
+        {
+            int id = m_tableModel->data(x, "controllerID").toInt();
+            m_onlineStatusMap[id] = status;
+            QModelIndex index = m_tableModel->index(x, 5);
+            QModelIndex i = mapFromSource(index);
+            emit dataChanged(i, i);
             break;
         }
     }
@@ -173,9 +205,6 @@ void ControllerModel::deleteRow(int row)
 
 void ControllerModel::save()
 {
-    m_tableModel->submitAll();
-    QString errorText = m_tableModel->lastError().text();
-    qDebug(errorText.toLatin1());
 }
 
 void ControllerModel::filterByOnline(bool online)
@@ -244,8 +273,7 @@ bool ControllerModel::filterAcceptsRow(int source_row, const QModelIndex &) cons
     bool ret = true;
     if(m_filterByOnline != -1)
     {
-        QModelIndex i = m_tableModel->index(source_row, m_tableModel->fieldIndex("currentStatus"));
-        bool online = m_tableModel->data(i, Qt::EditRole).toBool();
+        bool online = m_tableModel->data(source_row, "currentStatus", Qt::EditRole).toBool();
         if(m_filterByOnline == 0 && online)
             ret = false;
         else if(m_filterByOnline == 1 && !online)
@@ -254,17 +282,13 @@ bool ControllerModel::filterAcceptsRow(int source_row, const QModelIndex &) cons
     else if(m_textFilter.length() > 0)
     {
         QString id, name, desc, serial;
-        QModelIndex i = m_tableModel->index(source_row, m_tableModel->fieldIndex("id"));
-        id = m_tableModel->data(i, Qt::EditRole).toString();
+        id = m_tableModel->data(source_row, "controllerID", Qt::EditRole).toString();
 
-        i = m_tableModel->index(source_row, m_tableModel->fieldIndex("controllerName"));
-        name = m_tableModel->data(i, Qt::EditRole).toString();
+        name = m_tableModel->data(source_row, "controllerName", Qt::EditRole).toString();
 
-        i = m_tableModel->index(source_row, m_tableModel->fieldIndex("controllerDescription"));
-        desc = m_tableModel->data(i, Qt::EditRole).toString();
+        desc = m_tableModel->data(source_row, "controllerDescription", Qt::EditRole).toString();
 
-        i = m_tableModel->index(source_row, m_tableModel->fieldIndex("serialNumber"));
-        serial = m_tableModel->data(i, Qt::EditRole).toString();
+        serial = m_tableModel->data(source_row, "serialNumber", Qt::EditRole).toString();
 
         qDebug(QString("filterAcceptsRow: %1 %2 %3 %4").arg(id).arg(name).arg(desc).arg(serial).toLatin1());
         if(id.startsWith(m_textFilter, Qt::CaseInsensitive) || name.startsWith(m_textFilter, Qt::CaseInsensitive) || desc.startsWith(m_textFilter, Qt::CaseInsensitive) || serial.startsWith(m_textFilter, Qt::CaseInsensitive))
@@ -283,8 +307,7 @@ void ControllerModel::initArrays()
 
     for(int x = 0; x < m_tableModel->rowCount(); x++)
     {
-        QModelIndex i = m_tableModel->index(x, m_tableModel->fieldIndex("id"));
-        int controllerID = m_tableModel->data(i, Qt::EditRole).toInt();
+        int controllerID = m_tableModel->data(x, "controllerID", Qt::EditRole).toInt();
 
         m_versionMap[controllerID] = "?";
         m_onlineStatusMap[controllerID] = "?";

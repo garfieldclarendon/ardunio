@@ -47,7 +47,7 @@ Item {
                 else if(classID === 9)
                     return "Application";
 
-                return "";
+                return classID;
             }
 
             MouseArea {
@@ -63,49 +63,53 @@ Item {
                     editClicked(index);
                 }
             }
-            ColumnLayout {
-                spacing: ui.margin
+            GridLayout {
+//                spacing: ui.margin
+                columns: 3
+                rows: 4
                 anchors.fill: parent
                 anchors.margins: ui.margin
-                RowLayout {
-                    spacing: ui.margin
-                    Text
-                    {
-                        id: controllerNameText
-                        text: controllerName
-                        font.bold: true
-                        font.pointSize: ui.applyFontRatio(ui.baseFontSize + 4)
-                        anchors.margins: ui.margin
-                        color: "blue"
-                        Layout.fillWidth: true
-                    }
-                    Text {
-                        text: '<b>Status:</b> ' + currentStatus
-                        verticalAlignment: Text.AlignVCenter
-                        height: parent.height
-                        color: currentStatus === "Offline" ? "red" : currentStatus === "?" ? "black" : "blue"
-                    }
-
-                    Text {
-                        text: '<b>Version:</b> ' + version
-                        verticalAlignment: Text.AlignVCenter
-                        height: parent.height
-                    }
+                Text
+                {
+                    id: controllerNameText
+                    text: controllerName
+                    font.bold: true
+                    font.pointSize: ui.applyFontRatio(ui.baseFontSize + 4)
+                    anchors.margins: ui.margin
+                    color: "blue"
+                    Layout.fillWidth: true
+                }
+                Text {
+                    text: '<b>Status:</b> ' + currentStatus
+                    verticalAlignment: Text.AlignVCenter
+                    height: parent.height
+                    color: currentStatus === "Offline" ? "red" : currentStatus === "?" ? "black" : "blue"
+                }
+                Text {
+                    text: '<b>Version:</b> ' + version
+                    verticalAlignment: Text.AlignVCenter
+                    height: parent.height
                 }
                 Text
                 {
                     text: '<b>ID:</b> ' + id
                     anchors.margins: ui.margin
+                    Layout.column: 0
+                    Layout.row: 1
                 }
                 Text
                 {
                     text: '<b>Class:</b> ' + getClassName(controllerClass)
                     anchors.margins: ui.margin
+                    Layout.column: 0
+                    Layout.row: 2
                 }
                 Text
                 {
                     text: '<b>Serail #:</b> ' + serialNumber
                     anchors.margins: ui.margin
+                    Layout.column: 0
+                    Layout.row: 3
                 }
             }
         }
@@ -118,6 +122,7 @@ Item {
         spacing: ui.applyRatio(2)
         delegate: modelDelegate
         focus: true
+        clip: true
         highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
     }
 }

@@ -16,10 +16,12 @@ signals:
 
 public slots:
     void deviceStatusChanged(int deviceID, int status);
+    void routeChanged(int routeID, bool isActive);
     void newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
 
 private:
     int getRouteID(int serialNumber, int moduleIndex, int buttonIndex);
+    void fillRouteStatusMap(QMap<int, int> statusMap, int routeID);
 };
 
 #endif // PANELHANDLER_H

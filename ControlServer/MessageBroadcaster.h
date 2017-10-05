@@ -24,10 +24,12 @@ public:
 
     void broadcastMessage(const QString &data);
     static MessageBroadcaster *instance();
+    static void setRunAsClient(bool value) { m_runAsClient = value; }
 
 signals:
     void newMessage(const UDPMessage &message);
     void newRawUDPMessage(const QString &message);
+    void controllerResetting(long serialNumber);
 
 public slots:
     void sendResetCommand(int serialNumber);
@@ -55,6 +57,7 @@ private:
     QList<UDPMessage> sendList;
     quint16 m_udpPort;
     QByteArray m_udpBuffer;
+    static bool m_runAsClient;
 };
 
 #endif // MESSAGEBROADCASTER_H

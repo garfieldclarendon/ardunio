@@ -3,7 +3,9 @@
 
 #include <QSortFilterProxyModel>
 
-class QSqlTableModel;
+#include "GlobalDefs.h"
+
+class JSonModel;
 
 class ControllerModel : public QSortFilterProxyModel
 {
@@ -20,6 +22,7 @@ public slots:
     QVariant getData(int row, const QString &fieldName) const;
     void setData(int row, const QString &fieldName, const QVariant &value);
     void setNewSerialNumber(int controllerID, const QString &serialNumber);
+    void controllerChanged(int serialNumber, ControllerStatus status);
 
     int addNew(void);
     void deleteRow(int row);
@@ -42,6 +45,7 @@ public:
 
 protected slots:
     void timerProc(void);
+    void apiReady(void);
 
     // QAbstractProxyModel interface
 public:
@@ -55,7 +59,7 @@ protected:
 private:
     void initArrays(void);
 
-    QSqlTableModel *m_tableModel;
+    JSonModel *m_tableModel;
     QMap<int, long> m_timeoutMap;
     QMap<int, QString> m_onlineStatusMap;
     QMap<int, QString> m_versionMap;

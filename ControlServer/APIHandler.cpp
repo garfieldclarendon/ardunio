@@ -260,7 +260,7 @@ void APIHandler::handleGetControllerList(QTcpSocket *socket, const QUrl & /*url*
     qDebug(QString("handleGetModuleList.").toLatin1());
     Database db;
 
-    QString sql = QString("SELECT serialNumber, id as controllerID, controllerName, controllerDescription FROM controller");
+    QString sql = QString("SELECT serialNumber, id as controllerID, controllerName, controllerDescription, controllerClass FROM controller");
     sql += QString(" ORDER BY controllerName");
 
     QJsonArray jsonArray = db.fetchItems(sql);

@@ -25,7 +25,6 @@ public:
     int getConnectionCount(void) const { return m_socketList.count(); }
     int getConnectionSerialNumber(int index) const;
     void getConnectedInfo(int serialNumber, int &version, ControllerStatus &status);
-    void controllerResetting(int serialNumber);
 
 signals:
     void newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
@@ -43,6 +42,7 @@ public slots:
     void onNewConnection(void);
     void connectionClosed(void);
     void processTextMessage(QString message);
+    void controllerResetting(long serialNumber);
 
 protected slots:
     void sendMessageSlot(int serialNumber, const QString &data);

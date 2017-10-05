@@ -5,9 +5,18 @@
 JSonModel::JSonModel(const QJsonDocument &jsonDoc, QObject *parent)
     : QAbstractTableModel(parent)
 {
+    setJson(jsonDoc, true);
+}
+
+void JSonModel::setJson(const QJsonDocument &jsonDoc, bool emitReset)
+{
     if(jsonDoc.isArray())
     {
+        if(emitReset)
+            beginResetModel();
         m_jsonArray = jsonDoc.array();
+        if(emitReset)
+            endResetModel();
     }
 }
 
@@ -106,6 +115,22 @@ bool JSonModel::setData(const QModelIndex &index, const QVariant &value, int rol
         {
             QString key(obj.keys().value(index.row()));
             obj[key] = QJsonValue::fromVariant(value);
+            emit dataChanged(index, index, QVector<int>() << role);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool JSonModel::setData(int row, const QString &key, const QVariant &value, int role)
+{
+    if (role == Qt::EditRole && data(row, key, role) != value)
+    {
+        QJsonObject obj(m_jsonArray[row].toObject());
+        if(obj.isEmpty() == false)
+        {
+            obj[key] = QJsonValue::fromVariant(value);
+            QModelIndex index = this->index(row, obj.keys().indexOf(key));
             emit dataChanged(index, index, QVector<int>() << role);
             return true;
         }

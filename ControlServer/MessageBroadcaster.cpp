@@ -8,9 +8,9 @@
 
 #include "MessageBroadcaster.h"
 #include "GlobalDefs.h"
-#include "ControllerManager.h"
 
 MessageBroadcaster *MessageBroadcaster::_this = NULL;
+bool MessageBroadcaster::m_runAsClient = false;
 
 MessageBroadcaster::MessageBroadcaster(QObject *parent)
     : QObject(parent), socket(NULL), lastMessageSentTime(0), m_udpPort(UdpPort)
@@ -35,7 +35,8 @@ void MessageBroadcaster::setupSocket()
 
     connect(socket, SIGNAL(readyRead()),
             this, SLOT(processPendingMessages()));
-    sendHeartbeatSlot(UDPMessage());
+    if(!m_runAsClient)
+        sendHeartbeatSlot(UDPMessage());
 //    QTimer::singleShot(60000, this, SLOT(sendKeepAliveMessageSlot()));
 }
 
@@ -180,7 +181,7 @@ void MessageBroadcaster::processUdpBuffer()
             QString str(QString("Message: %1, Controller: %2 Version: %3 byteValue1 %4 byteValue2 %5").arg(datagram.messageID).arg(datagram.serialNumber).arg(datagram.version).arg(datagram.payload[0]).arg(datagram.payload[1]));
             qDebug(str.toLatin1());
             emit newRawUDPMessage(str);
-            if(message.getMessageID() == SYS_FIND_SERVER)
+            if(message.getMessageID() == SYS_FIND_SERVER && !m_runAsClient)
                 sendHeartbeatSlot(message);
             else if(message.getMessageID() == SYS_RESTARTING)
                 controllerRestarting(message);
@@ -230,7 +231,7 @@ void MessageBroadcaster::sendKeepAliveMessageSlot()
 
 void MessageBroadcaster::controllerRestarting(const UDPMessage &message)
 {
-    ControllerManager::instance()->controllerResetting(message.getSerialNumber());
+    emit controllerResetting(message.getSerialNumber());
 }
 
 void MessageBroadcaster::sendResetCommand(int serialNumber)

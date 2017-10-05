@@ -17,6 +17,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+
     setupUI();
 }
 
@@ -50,14 +51,14 @@ void MainWindow::setupUI()
     controllerWidget->setFocusPolicy(Qt::StrongFocus);
     tab->addTab(controllerWidget, "Manage Controllers");
 
-    TrackSchematic *widget2 = new TrackSchematic(this);
+//    TrackSchematic *widget2 = new TrackSchematic(this);
 
-    TrackTrunout *turnOut = new TrackTrunout(widget2);
-    widget2->addTrackSection(turnOut);
+//    TrackTrunout *turnOut = new TrackTrunout(widget2);
+//    widget2->addTrackSection(turnOut);
 
-    tab->addTab(widget2, "Track Plan");
+//    tab->addTab(widget2, "Track Plan");
 
-    createControllerTab(tab);
+//    createControllerTab(tab);
 
     this->setCentralWidget(tab);
 }

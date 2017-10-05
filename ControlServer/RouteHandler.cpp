@@ -100,7 +100,7 @@ void RouteHandler::deviceStatusChanged(int deviceID, int status)
 bool RouteHandler::isRouteActive(int routeID)
 {
     Database db;
-    QString sql = QString("SELECT turnoutID, turnoutState FROM routeEntry WHERE routeID = %1 ORDER BY routeID").arg(routeID);
+    QString sql = QString("SELECT turnoutID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID);
     QSqlQuery query2 = db.executeQuery(sql);
     bool isActive = true;
     bool foundRoute = false;

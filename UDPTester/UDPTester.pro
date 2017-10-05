@@ -29,7 +29,9 @@ SOURCES += main.cpp\
     ControllerModuleModel.cpp \
     ControllerModuleWidget.cpp \
     JSonModel.cpp \
-    API.cpp
+    API.cpp \
+    ../ControlServer/UDPMessage.cpp \
+    ../ControlServer/MessageBroadcaster.cpp
 
 HEADERS  += MainWindow.h \
     TrackSchematic.h \
@@ -46,7 +48,9 @@ HEADERS  += MainWindow.h \
     ControllerModuleModel.h \
     ControllerModuleWidget.h \
     JSonModel.h \
-    API.h
+    API.h \
+    ../ControlServer/UDPMessage.h \
+    ../ControlServer/MessageBroadcaster.h
 
 RESOURCES += \
     Resources.qrc

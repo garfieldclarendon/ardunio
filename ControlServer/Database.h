@@ -70,6 +70,7 @@ private:
     bool createBlockTable(void);
     bool createDeviceTable(void);
     bool createDevicePropertyTable(void);
+    bool createPanelRouteTable(void);
 
     void updateDatabaseSchema(int currentVersion);
 

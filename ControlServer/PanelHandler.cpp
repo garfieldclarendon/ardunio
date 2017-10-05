@@ -15,6 +15,7 @@ PanelHandler::PanelHandler(QObject *parent)
     : DeviceHandler(ClassPanel, parent)
 {
     connect(DeviceManager::instance(), SIGNAL(deviceStatusChanged(int,int)), this, SLOT(deviceStatusChanged(int,int)));
+    connect(RouteHandler::instance(), SIGNAL(routeStatusChanged(int,bool)), this, SLOT(routeChanged(int, bool)));
 }
 
 void PanelHandler::deviceStatusChanged(int deviceID, int status)
@@ -57,6 +58,93 @@ void PanelHandler::deviceStatusChanged(int deviceID, int status)
                 obj["pinState"] = (int)PinOn;
             else if(flashingValue == status)
                 obj["pinState"] = (int)PinFlashing;
+            else
+                obj["pinState"] = (int)PinOff;
+#ifdef Q_OS_WIN
+            emit pinStateChanged(moduleIndex, pinIndex, obj["pinState"].toInt());
+#endif
+            jsonArray.append(obj);
+            if(currentSerialNumber != serialNumber || currentModuleIndex != moduleIndex)
+            {
+                QJsonObject root;
+                root["messageUri"] = "/controller/module";
+                root["moduleIndex"] = moduleIndex;
+                root["class"] = (int)ClassPanel;
+                root["action"] = (int)NetActionUpdate;
+                root["pins"] = jsonArray;
+
+                QString uri = QString("/controller/module?moduleIndex=%1").arg(moduleIndex);
+                ips << ipAddress;
+                urls << uri;
+                jsons << root;
+            }
+        }
+    }
+    if(ipAddress.length() > 0)
+    {
+        QJsonObject root;
+        root["messageUri"] = "/controller/module";
+        root["moduleIndex"] = moduleIndex;
+        root["class"] = (int)ClassPanel;
+        root["action"] = (int)NetActionUpdate;
+        root["pins"] = jsonArray;
+
+        QString uri = QString("/controller/module?moduleIndex=%1").arg(moduleIndex);
+        ips << ipAddress;
+        urls << uri;
+        jsons << root;
+    }
+    for(int x = 0; x < urls.count(); x++)
+    {
+        ControllerManager::instance()->sendMessage(serialNumber, jsons.value(x));
+    }
+}
+
+void PanelHandler::routeChanged(int routeID, bool isActive)
+{
+    qDebug(QString("PanelHandler::routeChanged.  routeID: %1  isActive: %2").arg(routeID).arg(isActive).toLatin1());
+
+    int pinIndex;
+    int moduleIndex;
+    int serialNumber;
+    int onValue;
+    int flashingValue;
+    int pinRouteID;
+    QString ipAddress;
+    QStringList ips;
+    QStringList urls;
+    QList<QJsonObject> jsons;
+    int currentSerialNumber = 0, currentModuleIndex = 0;
+    QMap<int, int> routeStatusMap;
+
+    fillRouteStatusMap(routeStatusMap, routeID);
+
+    QString sql = QString("SELECT pinIndex, onValue, flashingValue, moduleIndex, serialNumber, routeID FROM panelOutputEntry JOIN panelRoute ON panelOutputEntry.id = panelRoute.panelOutputID JOIN controllerModule ON panelOutputEntry.panelModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE panelOutputEntry.id IN (SELECT panelOutputID FROM panelRoute WHERE routeID = %1) ORDER BY controller.id, controllerModule.moduleIndex").arg(routeID);
+    Database db;
+    QSqlQuery query1 = db.executeQuery(sql);
+
+    QJsonArray jsonArray;
+    while(query1.next())
+    {
+        pinIndex = query1.value("pinIndex").toInt();
+        moduleIndex = query1.value("moduleIndex").toInt();
+        serialNumber = query1.value("serialNumber").toInt();
+        onValue = query1.value("onValue").toInt();
+        flashingValue = query1.value("flashingValue").toInt();
+        pinRouteID = query1.value("routeID").toInt();
+
+        if(currentSerialNumber == 0)
+        {
+            currentSerialNumber = serialNumber;
+            currentModuleIndex = moduleIndex;
+        }
+        ipAddress = ControllerManager::instance()->getControllerIPAddress(serialNumber);
+        if(ipAddress.length() > 0)
+        {
+            QJsonObject obj;
+            obj["pinIndex"] = pinIndex;
+            if(onValue == routeStatusMap[pinRouteID])
+                obj["pinState"] = (int)PinOn;
             else
                 obj["pinState"] = (int)PinOff;
 #ifdef Q_OS_WIN
@@ -165,4 +253,24 @@ int PanelHandler::getRouteID(int serialNumber, int moduleIndex, int buttonIndex)
     }
 
     return routeID;
+}
+
+void PanelHandler::fillRouteStatusMap(QMap<int, int> statusMap, int routeID)
+{
+    QList<int> routes;
+    {
+        QString sql = QString("SELECT routeID FROM panelOutputEntry JOIN panelRoute ON panelOutputEntry.id = panelRoute.panelOutputID WHERE panelOutputEntry.id IN (SELECT panelOutputID FROM panelRoute WHERE routeID = %1)").arg(routeID);
+        Database db;
+        QSqlQuery query1 = db.executeQuery(sql);
+        while(query1.next())
+        {
+            int id = query1.value("routeID").toInt();
+            if(routes.contains(id) == false)
+                routes << id;
+        }
+    }
+    for(int x = 0; x < routes.count(); x++)
+    {
+        statusMap[routes.value(x)] = RouteHandler::instance()->isRouteActive(routes.value(x));
+    }
 }

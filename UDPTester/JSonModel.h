@@ -12,6 +12,8 @@ class JSonModel : public QAbstractTableModel
 public:
     explicit JSonModel(const QJsonDocument &jsonDoc = QJsonDocument(), QObject *parent = nullptr);
 
+    void setJson(const QJsonDocument &jsonDoc, bool emitReset);
+
     // Header:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
@@ -26,7 +28,7 @@ public:
 
     // Editable:
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-    bool setData(int row, const QString &key, int role = Qt::EditRole);
+    bool setData(int row, const QString &key, const QVariant &value, int role = Qt::EditRole);
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 

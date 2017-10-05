@@ -72,7 +72,8 @@ bool Database::createDatabase(void)
                                                     if(createSignalTable())
                                                         if(createSignalAspectCondition())
                                                             if(createSignalConditionTable())
-                                                                ret = createBlockTable();
+                                                                if(createBlockTable())
+                                                                    ret = createPanelRouteTable();
     }
     else
     {
@@ -798,6 +799,22 @@ bool Database::createBlockTable()
                      "controllerID INTEGER, "
                      "blockName VARCHAR(20), "
                      "blockDescription VARCHAR(50))");
+    if(ret == false)
+    {
+        qDebug(query.lastError().text().toLatin1());
+        emit logError(1, query.lastError().number(), query.lastError().text());
+    }
+    return ret;
+}
+
+bool Database::createPanelRouteTable()
+{
+    bool ret = false;
+    QSqlQuery query(db);
+    ret = query.exec("CREATE TABLE IF NOT EXISTS panelRoute "
+                     "(id INTEGER primary key, "
+                     "panelOutputID INTEGER, "
+                     "routeID INTEGER)");
     if(ret == false)
     {
         qDebug(query.lastError().text().toLatin1());
