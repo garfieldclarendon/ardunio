@@ -58,7 +58,6 @@ void PanelHandler::deviceStatusChanged(int deviceID, int status)
 #ifdef Q_OS_WIN
         emit pinStateChanged(moduleIndex, pinIndex, obj["pinState"].toInt());
 #endif
-        jsonArray.append(obj);
         if(currentSerialNumber != serialNumber || currentModuleIndex != moduleIndex)
         {
             QJsonObject root;
@@ -74,17 +73,18 @@ void PanelHandler::deviceStatusChanged(int deviceID, int status)
             currentModuleIndex = moduleIndex;
             jsonArray = QJsonArray();
         }
+        jsonArray.append(obj);
     }
 
     QJsonObject root;
     root["messageUri"] = "/controller/module";
-    root["moduleIndex"] = moduleIndex;
+    root["moduleIndex"] = currentModuleIndex;
     root["class"] = (int)ClassPanel;
     root["action"] = (int)NetActionUpdate;
     root["pins"] = jsonArray;
 
     jsons << root;
-    serialNumbers << serialNumber;
+    serialNumbers << currentSerialNumber;
 
     for(int x = 0; x < jsons.count(); x++)
     {
