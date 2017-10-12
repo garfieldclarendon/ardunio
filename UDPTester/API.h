@@ -21,6 +21,7 @@ public:
 
 signals:
     void controllerChanged(int serialNumber, ControllerStatus status);
+    void deviceChanged(int deviceID, int status);
     void apiReady(void);
 
 public slots:

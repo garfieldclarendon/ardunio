@@ -13,7 +13,7 @@ class DeviceStatus
 {
 public:
     DeviceStatus(void)
-        : m_currentStatus(-1)
+        : m_currentStatus(0)
     {
 
     }

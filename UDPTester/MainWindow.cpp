@@ -47,7 +47,11 @@ void MainWindow::setupUI()
 
     QTabWidget *tab = new QTabWidget(this);
 
-    ControllerWidget *controllerWidget = new ControllerWidget;
+    ControllerWidget *controllerWidget = new ControllerWidget("qrc:/ManageDevices2.qml");
+    controllerWidget->setFocusPolicy(Qt::StrongFocus);
+    tab->addTab(controllerWidget, "Manage Devices");
+
+    controllerWidget = new ControllerWidget("qrc:/ManageControllers.qml");
     controllerWidget->setFocusPolicy(Qt::StrongFocus);
     tab->addTab(controllerWidget, "Manage Controllers");
 

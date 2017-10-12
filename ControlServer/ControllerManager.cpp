@@ -313,8 +313,8 @@ void ControllerManager::createAndSendNotificationMessage(int serialNumber, Contr
 {
     QString uri("/api/notification/controller");
     QJsonObject obj;
-    obj["serialNumber"] = serialNumber;
-    obj["status"] = status;
+    obj["serialNumber"] = QString("%1").arg(serialNumber);
+    obj["status"] = QString("%1").arg(status);
 
     emit sendNotificationMessage(uri, obj);
 }

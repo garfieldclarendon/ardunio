@@ -4,7 +4,7 @@
 #include <QSortFilterProxyModel>
 #include "UDPMessage.h"
 
-class QSqlTableModel;
+class JSonModel;
 
 class TurnoutModel : public QSortFilterProxyModel
 {
@@ -21,6 +21,9 @@ public:
 signals:
     void controllerIDChanged(void);
 
+public slots:
+    void deviceChanged(int deviceID, int status);
+
     // QAbstractItemModel interface
 public:
     QVariant data(const QModelIndex &index, int role) const override;
@@ -31,6 +34,7 @@ public:
     QModelIndex parent(const QModelIndex &child) const override;
 
 protected slots:
+    void apiReady(void);
 
     // QAbstractProxyModel interface
 public:
@@ -42,10 +46,8 @@ protected:
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
 
 private:
-    void initArrays(void);
     int m_controllerModuleID;
-    QSqlTableModel *m_tableModel;
-    QMap<int, QString> m_statusMap;
+    JSonModel *m_tableModel;
 
 };
 

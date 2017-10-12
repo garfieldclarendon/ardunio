@@ -4,7 +4,7 @@
 #include "ControllerWidget.h"
 #include "UI.h"
 
-ControllerWidget::ControllerWidget(QWidget *parent)
+ControllerWidget::ControllerWidget(const QString &urlText, QWidget *parent)
     : QQuickWidget(parent)
 {
     setFocusPolicy(Qt::StrongFocus);
@@ -12,6 +12,6 @@ ControllerWidget::ControllerWidget(QWidget *parent)
     UI *ui = new UI(this);
     engine()->rootContext()->setContextProperty("ui", ui);
 
-    setSource(QUrl("qrc:/ManageControllers.qml"));
+    setSource(QUrl(urlText));
 }
 

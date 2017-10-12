@@ -7,7 +7,7 @@ class ControllerWidget : public QQuickWidget
 {
     Q_OBJECT
 public:
-    ControllerWidget(QWidget *parent = NULL);
+    ControllerWidget(const QString &urlText, QWidget *parent = NULL);
 
 signals:
 

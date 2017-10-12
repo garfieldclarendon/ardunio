@@ -61,6 +61,10 @@ QString API::getControllerList()
 QString API::getDeviceList()
 {
     QString json;
+    QUrl url(buildUrl("device_list"));
+
+    json = sendToServer(url, QString(), NetActionGet);
+
     return json;
 }
 
@@ -72,9 +76,19 @@ void API::textMessageReceived(const QString &message)
 
     if(urlText == "/api/notification/controller")
     {
-        int serialNumber = obj["serialNumber"].toInt();
-        ControllerStatus status = (ControllerStatus)obj["status"].toInt();
+        QString s = obj["serialNumber"].toString();
+        int serialNumber = s.toInt();
+        s = obj["status"].toString();
+        ControllerStatus status = (ControllerStatus)s.toInt();
         emit controllerChanged(serialNumber, status);
+    }
+    else if(urlText == "/api/notification/turnout")
+    {
+        QString s = obj["turnoutID"].toString();
+        int deviceID = s.toInt();
+        s = obj["state"].toString();
+        int status = s.toInt();
+        emit deviceChanged(deviceID, status);
     }
 }
 

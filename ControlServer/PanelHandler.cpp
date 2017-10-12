@@ -25,70 +25,75 @@ void PanelHandler::deviceStatusChanged(int deviceID, int status)
     QString sql = QString("SELECT pinIndex, onValue, flashingValue, moduleIndex, serialNumber FROM panelOutputEntry JOIN controllerModule ON panelOutputEntry.panelModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE itemID = %1 ORDER BY controller.serialNumber, controllerModule.moduleIndex").arg(deviceID);
     Database db;
     QSqlQuery query1 = db.executeQuery(sql);
-    int pinIndex;
-    int moduleIndex;
-    int serialNumber;
-    int onValue;
-    int flashingValue;
-    QList<QJsonObject> jsons;
-    QList<int> serialNumbers;
-    int currentSerialNumber = 0, currentModuleIndex = 0;
 
-    QJsonArray jsonArray;
-    while(query1.next())
+    if(query1.next())
     {
-        pinIndex = query1.value("pinIndex").toInt();
-        moduleIndex = query1.value("moduleIndex").toInt();
-        serialNumber = query1.value("serialNumber").toInt();
-        onValue = query1.value("onValue").toInt();
-        flashingValue = query1.value("flashingValue").toInt();
-        if(currentSerialNumber == 0)
+        int pinIndex;
+        int moduleIndex;
+        int serialNumber;
+        int onValue;
+        int flashingValue;
+        QList<QJsonObject> jsons;
+        QList<int> serialNumbers;
+        QJsonArray jsonArray;
+
+        int currentSerialNumber = query1.value("serialNumber").toInt();
+        int currentModuleIndex = query1.value("moduleIndex").toInt();
+
+        do
         {
-            currentSerialNumber = serialNumber;
-            currentModuleIndex = moduleIndex;
+            moduleIndex = query1.value("moduleIndex").toInt();
+            serialNumber = query1.value("serialNumber").toInt();
+
+            if(currentSerialNumber != serialNumber || currentModuleIndex != moduleIndex)
+            {
+                QJsonObject root;
+                root["messageUri"] = "/controller/module";
+                root["moduleIndex"] = currentModuleIndex;
+                root["class"] = (int)ClassPanel;
+                root["action"] = (int)NetActionUpdate;
+                root["pins"] = jsonArray;
+
+                jsons << root;
+                serialNumbers << currentSerialNumber;
+                currentSerialNumber = serialNumber;
+                currentModuleIndex = moduleIndex;
+                jsonArray = QJsonArray();
+            }
+
+            pinIndex = query1.value("pinIndex").toInt();
+            onValue = query1.value("onValue").toInt();
+            flashingValue = query1.value("flashingValue").toInt();
+            QJsonObject obj;
+            obj["pinIndex"] = pinIndex;
+            if(onValue == status)
+                obj["pinState"] = (int)PinOn;
+            else if(flashingValue == status)
+                obj["pinState"] = (int)PinFlashing;
+            else
+                obj["pinState"] = (int)PinOff;
+
+    #ifdef Q_OS_WIN
+            emit pinStateChanged(moduleIndex, pinIndex, obj["pinState"].toInt());
+    #endif
+            jsonArray.append(obj);
         }
-        QJsonObject obj;
-        obj["pinIndex"] = pinIndex;
-        if(onValue == status)
-            obj["pinState"] = (int)PinOn;
-        else if(flashingValue == status)
-            obj["pinState"] = (int)PinFlashing;
-        else
-            obj["pinState"] = (int)PinOff;
-#ifdef Q_OS_WIN
-        emit pinStateChanged(moduleIndex, pinIndex, obj["pinState"].toInt());
-#endif
-        if(currentSerialNumber != serialNumber || currentModuleIndex != moduleIndex)
+        while(query1.next());
+
+        QJsonObject root;
+        root["messageUri"] = "/controller/module";
+        root["moduleIndex"] = currentModuleIndex;
+        root["class"] = (int)ClassPanel;
+        root["action"] = (int)NetActionUpdate;
+        root["pins"] = jsonArray;
+
+        jsons << root;
+        serialNumbers << currentSerialNumber;
+
+        for(int x = 0; x < jsons.count(); x++)
         {
-            QJsonObject root;
-            root["messageUri"] = "/controller/module";
-            root["moduleIndex"] = currentModuleIndex;
-            root["class"] = (int)ClassPanel;
-            root["action"] = (int)NetActionUpdate;
-            root["pins"] = jsonArray;
-
-            jsons << root;
-            serialNumbers << currentSerialNumber;
-            currentSerialNumber = serialNumber;
-            currentModuleIndex = moduleIndex;
-            jsonArray = QJsonArray();
+            ControllerManager::instance()->sendMessage(serialNumbers.value(x), jsons.value(x));
         }
-        jsonArray.append(obj);
-    }
-
-    QJsonObject root;
-    root["messageUri"] = "/controller/module";
-    root["moduleIndex"] = currentModuleIndex;
-    root["class"] = (int)ClassPanel;
-    root["action"] = (int)NetActionUpdate;
-    root["pins"] = jsonArray;
-
-    jsons << root;
-    serialNumbers << currentSerialNumber;
-
-    for(int x = 0; x < jsons.count(); x++)
-    {
-        ControllerManager::instance()->sendMessage(serialNumbers.value(x), jsons.value(x));
     }
 }
 

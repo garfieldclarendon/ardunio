@@ -61,8 +61,6 @@ private:
 
     JSonModel *m_tableModel;
     QMap<int, long> m_timeoutMap;
-    QMap<int, QString> m_onlineStatusMap;
-    QMap<int, QString> m_versionMap;
     int m_filterByOnline;
     QString m_textFilter;
 };

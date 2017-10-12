@@ -233,8 +233,8 @@ void TurnoutHandler::createAndSendNotificationMessage(int turnoutID, TurnoutStat
 {
     QString uri("/api/notification/turnout");
     QJsonObject obj;
-    obj["turnoutID"] = turnoutID;
-    obj["state"] = newState;
+    obj["turnoutID"] = QString("%1").arg(turnoutID);
+    obj["state"] = QString("%1").arg(newState);
 
     emit sendNotificationMessage(uri, obj);
 }

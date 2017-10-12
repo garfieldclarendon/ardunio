@@ -121,8 +121,8 @@ void BlockHandler::createAndSendNotificationMessage(int blockID, BlockState newS
 {
     QString uri("/api/notification/block");
     QJsonObject obj;
-    obj["blockID"] = blockID;
-    obj["state"] = newState;
+    obj["blockID"] = QString("%1").arg(blockID);
+    obj["state"] = QString("%1").arg(newState);
 
     emit sendNotificationMessage(uri, obj);
 }

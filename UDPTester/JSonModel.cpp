@@ -130,8 +130,9 @@ bool JSonModel::setData(int row, const QString &key, const QVariant &value, int 
         if(obj.isEmpty() == false)
         {
             obj[key] = QJsonValue::fromVariant(value);
+            m_jsonArray[row] = obj;
             QModelIndex index = this->index(row, obj.keys().indexOf(key));
-            emit dataChanged(index, index, QVector<int>() << role);
+            emit dataChanged(index, index);
             return true;
         }
     }

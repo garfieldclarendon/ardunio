@@ -15,5 +15,7 @@
         <file>MultiModule.qml</file>
         <file>NewModuleWindow.qml</file>
         <file>NewDeviceWindow.qml</file>
+        <file>ManageDevices.qml</file>
+        <file>ManageDevices2.qml</file>
     </qresource>
 </RCC>

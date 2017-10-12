@@ -10,6 +10,7 @@ ControllerModel::ControllerModel(QObject *parent)
     : QSortFilterProxyModel(parent), m_tableModel(NULL), m_filterByOnline(-1)
 {
     connect(API::instance(), SIGNAL(apiReady()), this, SLOT(apiReady()));
+    connect(API::instance(), SIGNAL(controllerChanged(int,ControllerStatus)), this, SLOT(controllerChanged(int,ControllerStatus)));
     QJsonDocument jsonDoc;
     if(API::instance()->getApiReady())
     {
@@ -24,12 +25,12 @@ QHash<int, QByteArray> ControllerModel::roleNames(void) const
 {
     QHash<int, QByteArray> roleNames;
 
-    roleNames[Qt::UserRole + 0] = QByteArray("id");
+    roleNames[Qt::UserRole + 0] = QByteArray("controllerID");
     roleNames[Qt::UserRole + 1] = QByteArray("controllerName");
     roleNames[Qt::UserRole + 2] = QByteArray("controllerClass");
     roleNames[Qt::UserRole + 3] = QByteArray("controllerDescription");
     roleNames[Qt::UserRole + 4] = QByteArray("serialNumber");
-    roleNames[Qt::UserRole + 5] = QByteArray("currentStatus");
+    roleNames[Qt::UserRole + 5] = QByteArray("status");
     roleNames[Qt::UserRole + 6] = QByteArray("version");
 
     return roleNames;
@@ -47,44 +48,10 @@ QVariant ControllerModel::data(const QModelIndex &index, int role) const
     QVariant v;
 
     QModelIndex i = mapToSource(index);
-    int controllerID = getControllerID(index.row());
     if(role >= Qt::UserRole)
     {
-        int col = role - Qt::UserRole;
-        switch(col)
-        {
-        case 0:
-            v = m_tableModel->data(i.row(), "controllerID").toInt();
-            break;
-        case 1:
-            v = m_tableModel->data(i.row(), "controllerName");
-            break;
-        case 2:
-            v = m_tableModel->data(i.row(), "controllerClass").toInt();
-            break;
-        case 3:
-            v = m_tableModel->data(i.row(), "controllerDescription");
-            break;
-        case 4:
-            v = m_tableModel->data(i.row(), "serialNumber").toInt();
-            break;
-        case 5:
-            v = m_onlineStatusMap.value(controllerID);
-            break;
-        case 6:
-            v = m_versionMap.value(controllerID);
-            break;
-        default:
-            break;
-        }
-    }
-    else if(index.column() == 6 && (role == Qt::DisplayRole || role == Qt::EditRole))
-    {
-        v = m_onlineStatusMap.value(controllerID);
-    }
-    else if(index.column() == 7 && (role == Qt::DisplayRole || role == Qt::EditRole))
-    {
-        v = m_versionMap.value(controllerID);
+        QHash<int, QByteArray> roles(roleNames());
+        v = m_tableModel->data(i.row(), QString(roles[role]), Qt::EditRole);
     }
     else
     {
@@ -112,15 +79,13 @@ void ControllerModel::timerProc()
         i.next();
         if(QDateTime::currentDateTime().toTime_t() - i.value() > HEARTBEAT_INTERVAL * 2)
         {
-            if(m_onlineStatusMap[i.key()] != "?")
+            for(int x = 0; x < m_tableModel->rowCount(); x++)
             {
-                m_onlineStatusMap[i.key()] = "Offline";
-
-                int rows = rowCount() - 1;
-                int cols = columnCount() - 1;
-                QModelIndex start = this->index(0, cols);
-                QModelIndex end = this->index(rows, cols);
-                emit dataChanged(start, end);
+                if(i.key() == m_tableModel->data(x, "controllerID").toInt())
+                {
+                    m_tableModel->setData(x, "status", "Offline");
+                    break;
+                }
             }
         }
     }
@@ -180,11 +145,7 @@ void ControllerModel::controllerChanged(int serialNumber, ControllerStatus statu
         int s = m_tableModel->data(x, "serialNumber", Qt::EditRole).toInt();
         if(s == serialNumber)
         {
-            int id = m_tableModel->data(x, "controllerID").toInt();
-            m_onlineStatusMap[id] = status;
-            QModelIndex index = m_tableModel->index(x, 5);
-            QModelIndex i = mapFromSource(index);
-            emit dataChanged(i, i);
+            m_tableModel->setData(x, "status", status);
             break;
         }
     }
@@ -302,15 +263,10 @@ bool ControllerModel::filterAcceptsRow(int source_row, const QModelIndex &) cons
 
 void ControllerModel::initArrays()
 {
-    m_versionMap.clear();
-    m_onlineStatusMap.clear();
-
     for(int x = 0; x < m_tableModel->rowCount(); x++)
     {
         int controllerID = m_tableModel->data(x, "controllerID", Qt::EditRole).toInt();
 
-        m_versionMap[controllerID] = "?";
-        m_onlineStatusMap[controllerID] = "?";
         m_timeoutMap[controllerID] = QDateTime::currentDateTime().toTime_t();
     }
 }

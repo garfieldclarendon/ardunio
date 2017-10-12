@@ -3,23 +3,36 @@
 
 #include "TurnoutModel.h"
 #include "GlobalDefs.h"
+#include "JSonModel.h"
+#include "API.h"
 
 TurnoutModel::TurnoutModel(QObject *parent)
     : QSortFilterProxyModel(parent), m_controllerModuleID(0)
 {
-    this->setSourceModel(m_tableModel);
-    initArrays();
+    connect(API::instance(), SIGNAL(apiReady()), this, SLOT(apiReady()));
+    QJsonDocument jsonDoc;
+    if(API::instance()->getApiReady())
+    {
+        QString json = API::instance()->getDeviceList();
+        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+    }
+    m_tableModel = new JSonModel(jsonDoc, this);
+    setSourceModel(m_tableModel);
+    connect(API::instance(), SIGNAL(deviceChanged(int,int)), this, SLOT(deviceChanged(int,int)));
 }
 
 QHash<int, QByteArray> TurnoutModel::roleNames(void) const
 {
     QHash<int, QByteArray> roleNames;
 
-    roleNames[Qt::UserRole + m_tableModel->fieldIndex("id")] = QByteArray("id");
-    roleNames[Qt::UserRole + m_tableModel->fieldIndex("deviceName")] = QByteArray("deviceName");
-    roleNames[Qt::UserRole + m_tableModel->fieldIndex("deviceDescription")] = QByteArray("deviceDescription");
-    roleNames[Qt::UserRole + m_tableModel->fieldIndex("controllerModuleID")] = QByteArray("controllerModuleID");
-    roleNames[Qt::UserRole + m_tableModel->columnCount()] = QByteArray("currentState");
+    roleNames[Qt::UserRole + 0] = QByteArray("deviceID");
+    roleNames[Qt::UserRole + 1] = QByteArray("deviceName");
+    roleNames[Qt::UserRole + 2] = QByteArray("deviceDescription");
+    roleNames[Qt::UserRole + 3] = QByteArray("port");
+    roleNames[Qt::UserRole + 4] = QByteArray("moduleIndex");
+    roleNames[Qt::UserRole + 5] = QByteArray("moduleClass");
+    roleNames[Qt::UserRole + 6] = QByteArray("serialNumber");
+    roleNames[Qt::UserRole + 7] = QByteArray("deviceState");
 
     return roleNames;
 }
@@ -39,24 +52,11 @@ QVariant TurnoutModel::data(const QModelIndex &index, int role) const
 {
     QVariant v;
 
-    QModelIndex i;
-    i = this->index(index.row(), m_tableModel->fieldIndex("id"));
-    v = QSortFilterProxyModel::data(i, Qt::EditRole);
-    int deviceID = QSortFilterProxyModel::data(i, Qt::EditRole).toInt();
+    QModelIndex i(mapToSource(index));
     if(role >= Qt::UserRole)
     {
-        int col = role - Qt::UserRole;
-        int statusCol = m_tableModel->columnCount();
-        if(col == statusCol)
-        {
-            v = m_statusMap.value(deviceID);
-        }
-        else
-        {
-            int col = role - Qt::UserRole;
-            i = this->index(index.row(), col);
-            v = QSortFilterProxyModel::data(i, Qt::EditRole);
-        }
+        QHash<int, QByteArray> roles(roleNames());
+        v = m_tableModel->data(i.row(), QString(roles[role]), Qt::EditRole);
     }
     else
     {
@@ -76,8 +76,7 @@ bool TurnoutModel::filterAcceptsRow(int source_row, const QModelIndex &) const
     bool ret = true;
     if(m_controllerModuleID > 0)
     {
-        QModelIndex i = m_tableModel->index(source_row, m_tableModel->fieldIndex("controllerModuleID"));
-        if(m_tableModel->data(i, Qt::EditRole).toInt() != m_controllerModuleID)
+        if(m_tableModel->data(source_row, "controllerModuleID", Qt::EditRole).toInt() != m_controllerModuleID)
             ret = false;
     }
     return ret;
@@ -96,12 +95,12 @@ QModelIndex TurnoutModel::index(int row, int column, const QModelIndex &parent) 
 
 int TurnoutModel::columnCount(const QModelIndex &parent) const
 {
-    return m_tableModel->columnCount(parent) + 1;
+    return m_tableModel->columnCount(parent);
 }
 
 int TurnoutModel::rowCount(const QModelIndex &) const
 {
-    return 2;
+    return m_tableModel->rowCount();
 }
 
 QModelIndex TurnoutModel::mapToSource(const QModelIndex &proxyIndex) const
@@ -120,19 +119,6 @@ QModelIndex TurnoutModel::mapFromSource(const QModelIndex &sourceIndex) const
         return QModelIndex(sourceIndex);
 }
 
-void TurnoutModel::initArrays()
-{
-    m_statusMap.clear();
-
-    for(int x = 0; x < m_tableModel->rowCount(); x++)
-    {
-        QModelIndex i = m_tableModel->index(x, m_tableModel->fieldIndex("id"));
-        int deviceID = m_tableModel->data(i, Qt::EditRole).toInt();
-
-        m_statusMap[deviceID] = "?";
-    }
-}
-
 QModelIndex TurnoutModel::parent(const QModelIndex &child) const
 {
     if(child.column() < m_tableModel->columnCount())
@@ -141,4 +127,28 @@ QModelIndex TurnoutModel::parent(const QModelIndex &child) const
         return QModelIndex();
 }
 
+void TurnoutModel::apiReady()
+{
+    QJsonDocument jsonDoc;
+    if(API::instance()->getApiReady())
+    {
+        QString json = API::instance()->getDeviceList();
+        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+        beginResetModel();
+        m_tableModel->setJson(jsonDoc, false);
+        endResetModel();
+    }
+}
 
+void TurnoutModel::deviceChanged(int deviceID, int status)
+{
+    for(int x = 0; x < m_tableModel->rowCount(); x++)
+    {
+        int d = m_tableModel->data(x, "deviceID", Qt::EditRole).toInt();
+        if(d == deviceID)
+        {
+            m_tableModel->setData(x, "deviceState", status);
+            break;
+        }
+    }
+}

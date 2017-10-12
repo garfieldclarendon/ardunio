@@ -28,26 +28,40 @@ Item {
             {
                 if(classID === 0)
                     return "Unknown";
-                else if(classID === 1)
+                else if(classID === "1")
                     return "Turnout";
-                else if(classID === 2)
+                else if(classID === "2")
                     return "Panel";
-                else if(classID === 3)
+                else if(classID === "3")
                     return "Route";
-                else if(classID === 4)
+                else if(classID === "4")
                     return "Signal";
-                else if(classID === 5)
+                else if(classID === "5")
                     return "Semaphore";
-                else if(classID === 6)
+                else if(classID === "6")
                     return "Block";
-                else if(classID === 7)
+                else if(classID === "7")
                     return "Multi-Controller";
-                else if(classID === 8)
+                else if(classID === "8")
                     return "System";
-                else if(classID === 9)
+                else if(classID === "9")
                     return "Application";
 
                 return classID;
+            }
+
+            function getControllerStatus(status)
+            {
+                if(status === 0)
+                    return "Unknown";
+                else if(status === 1)
+                    return "Offline";
+                else if(status === 2)
+                    return "Online";
+                else if(status === 3)
+                    return "Restarting";
+
+                return status;
             }
 
             MouseArea {
@@ -56,7 +70,7 @@ Item {
                     listView.currentIndex = index
                     currentControllerClass = controllerClass;
                     currentSerialNumber = serialNumber;
-                    controllerID = id;
+                    controllerID = controllerID;
                     console.debug("current index: " + index + " class: " + controllerClass + " controllerID: " + controllerID + " serial Number: " + currentSerialNumber);
                 }
                 onDoubleClicked: {
@@ -80,10 +94,10 @@ Item {
                     Layout.fillWidth: true
                 }
                 Text {
-                    text: '<b>Status:</b> ' + currentStatus
+                    text: '<b>Status:</b> ' + getControllerStatus(status)
                     verticalAlignment: Text.AlignVCenter
                     height: parent.height
-                    color: currentStatus === "Offline" ? "red" : currentStatus === "?" ? "black" : "blue"
+                    color: status === 1 ? "red" : status === 2 ? "blue" : "black"
                 }
                 Text {
                     text: '<b>Version:</b> ' + version
@@ -92,7 +106,7 @@ Item {
                 }
                 Text
                 {
-                    text: '<b>ID:</b> ' + id
+                    text: '<b>ID:</b> ' + controllerID
                     anchors.margins: ui.margin
                     Layout.column: 0
                     Layout.row: 1

@@ -242,6 +242,14 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     sql += QString(" ORDER BY deviceName");
 
     QJsonArray jsonArray = db.fetchItems(sql);
+    for(int x = 0; x < jsonArray.size(); x++)
+    {
+        QJsonObject obj = jsonArray[x].toObject();
+        int deviceID = obj["deviceID"].toInt();
+        int deviceState = DeviceManager::instance()->getDeviceStatus(deviceID);
+        obj["deviceState"] = deviceState;
+        jsonArray[x] = obj;
+    }
 
     QJsonDocument doc;
     doc.setArray(jsonArray);
