@@ -39,7 +39,7 @@ bool TurnoutHandler::process(byte &data)
 	byte current = bitRead(data, m_feedbackAPin);
 	if (current == m_lastARead)
 	{
-		if (current != m_currentFeedbackA && (t - m_currentATimeout) > 100)
+		if (current != m_currentFeedbackA && (t - m_currentATimeout) > 250)
 		{
 			m_currentATimeout = t;
 			m_currentFeedbackA = current;
@@ -57,7 +57,7 @@ bool TurnoutHandler::process(byte &data)
 	current = bitRead(data, m_feedbackBPin);
 	if (current == m_lastBRead)
 	{
-		if (current != m_currentFeedbackB && (t - m_currentBTimeout) > 100)
+		if (current != m_currentFeedbackB && (t - m_currentBTimeout) > 250)
 		{
 			m_currentBTimeout = t;
 			m_currentFeedbackB = current;
