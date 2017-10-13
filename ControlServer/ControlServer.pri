@@ -19,7 +19,7 @@ HEADERS += AppService.h \
     $$PWD/NotificationServer.h \
     $$PWD/NCEInterface.h \
     $$PWD/NCEMessage.h \
-    $$PWD/API.h
+    $$PWD/message.h
 
 #Source files
 SOURCES += main.cpp \
@@ -42,7 +42,8 @@ SOURCES += main.cpp \
     $$PWD/BlockHandler.cpp \
     $$PWD/NotificationServer.cpp \
     $$PWD/NCEInterface.cpp \
-    $$PWD/NCEMessage.cpp
+    $$PWD/NCEMessage.cpp \
+    $$PWD/message.cpp
 
 win32 {
 HEADERS += $$PWD/StatusDialog.h
