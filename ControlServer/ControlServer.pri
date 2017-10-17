@@ -1,9 +1,9 @@
 #Header files
-HEADERS += AppService.h \
-            Database.h \
-            WebServer.h \
-            MessageBroadcaster.h \
-            UDPMessage.h \
+HEADERS += $$PWD/AppService.h \
+            $$PWD/Database.h \
+            $$PWD/WebServer.h \
+            $$PWD/MessageBroadcaster.h \
+            $$PWD/UDPMessage.h \
     $$PWD/ControllerHandler.h \
     $$PWD/TurnoutHandler.h \
     $$PWD/DeviceManager.h \
@@ -19,15 +19,15 @@ HEADERS += AppService.h \
     $$PWD/NotificationServer.h \
     $$PWD/NCEInterface.h \
     $$PWD/NCEMessage.h \
-    $$PWD/message.h
+    $$PWD/controllermessage.h
 
 #Source files
-SOURCES += main.cpp \
-           AppService.cpp \
-           Database.cpp \
-           WebServer.cpp \
-           MessageBroadcaster.cpp \
-           UDPMessage.cpp \
+SOURCES += $$PWD/main.cpp \
+           $$PWD/AppService.cpp \
+           $$PWD/Database.cpp \
+           $$PWD/WebServer.cpp \
+           $$PWD/MessageBroadcaster.cpp \
+           $$PWD/UDPMessage.cpp \
     $$PWD/ControllerHandler.cpp \
     $$PWD/TurnoutHandler.cpp \
     $$PWD/DeviceManager.cpp \
@@ -43,7 +43,7 @@ SOURCES += main.cpp \
     $$PWD/NotificationServer.cpp \
     $$PWD/NCEInterface.cpp \
     $$PWD/NCEMessage.cpp \
-    $$PWD/message.cpp
+    $$PWD/controllermessage.cpp
 
 win32 {
 HEADERS += $$PWD/StatusDialog.h

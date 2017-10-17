@@ -46,6 +46,8 @@ protected:
 	void expanderBegin(void);
 	void expanderWrite(const byte reg, const byte data);
 	byte expanderRead(const byte reg);
+	int I2C_ClearBus(void);
+
 
 private:
 	byte m_address;

@@ -16,6 +16,7 @@ TurnoutHandler::TurnoutHandler(QObject *parent)
 {
 //    QTimer::singleShot(3000, this, SLOT(timerProc()));
     connect(ControllerManager::instance(), SIGNAL(controllerRemoved(int)), this, SLOT(controllerRemoved(int)));
+    connect(ControllerManager::instance(), SIGNAL(messageACKed(ControllerMessage)), this, SLOT(messageACKed(ControllerMessage)));
 }
 
 void TurnoutHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
@@ -46,14 +47,17 @@ void TurnoutHandler::activateTurnout(int deviceID, TurnoutState newState)
         int motorPinSetting = getMotorPinSetting(deviceID);
 
         getIPAddressAndModuleIndexForDevice(deviceID, ipAddress, moduleIndex, port, serialNumber);
+        obj["class"] = ClassTurnout;
+        obj["deviceID"] = deviceID;
+        obj["newState"] = newState;
         obj["moduleIndex"] = moduleIndex;
         obj["messageUri"] = "/controller/module";
         obj["action"] = NetActionUpdate;
         obj["port"] = port;
         obj["motorPinSetting"] = newState == TrnNormal ? motorPinSetting : !motorPinSetting;
 
-        ControllerManager::instance()->sendMessage(serialNumber, obj);
-        setCurrentState(deviceID, newState == TrnNormal ? TrnToNormal : TrnToDiverging);
+        ControllerMessage message(serialNumber, obj);
+        ControllerManager::instance()->sendMessage(message);
     }
 }
 
@@ -120,7 +124,8 @@ void TurnoutHandler::sendConfig(int serialNumber, int moduleIndex)
     obj["moduleIndex"] = moduleIndex;
     obj["motorPinSettings"] = array;
 
-    ControllerManager::instance()->sendMessage(serialNumber, obj);
+    ControllerMessage message(serialNumber, obj);
+    ControllerManager::instance()->sendMessage(message);
 }
 
 void TurnoutHandler::controllerRemoved(int serialNumber)
@@ -153,6 +158,22 @@ void TurnoutHandler::controllerConnected(int index)
     // get the correct state.
     int serialNumber = ControllerManager::instance()->getConnectionSerialNumber(index);
     controllerRemoved(serialNumber);
+}
+
+void TurnoutHandler::messageACKed(const ControllerMessage &message)
+{
+    QJsonObject obj(message.getObject());
+    int controllerClass = obj["class"].toInt();
+    if(controllerClass == ClassTurnout)
+    {
+        int deviceID = obj["deviceID"].toInt();
+        int ns = obj["newState"].toInt();
+        if(ns > 0 && deviceID > 0)
+        {
+            TurnoutState newState = (TurnoutState)ns;
+            setCurrentState(deviceID, newState == TrnNormal ? TrnToNormal : TrnToDiverging);
+        }
+    }
 }
 
 void TurnoutHandler::getIPAddressAndModuleIndexForDevice(int deviceID, QString &ipAddress, int &moduleIndex, int &port, int &serialNumber)

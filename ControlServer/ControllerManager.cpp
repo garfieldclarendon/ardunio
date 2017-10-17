@@ -43,7 +43,7 @@ ControllerManager * ControllerManager::m_instance = NULL;
 ControllerManager::ControllerManager(QObject *parent)
     : QObject(parent),
       m_server(new QWebSocketServer(QStringLiteral("Controller Server"), QWebSocketServer::NonSecureMode, this)),
-      m_pingTimer(NULL), m_transactionID(1)
+      m_pingTimer(NULL)
 {
     connect(this, &ControllerManager::sendNotificationMessage, NotificationServer::instance(), &NotificationServer::sendNotificationMessage);
     if (m_server->listen(QHostAddress::Any, UdpPort + 1))
@@ -82,19 +82,22 @@ QString ControllerManager::getControllerIPAddress(int serialNumber) const
     return ipAddress;
 }
 
-bool ControllerManager::sendMessage(int serialNumber, const QJsonObject &obj)
+bool ControllerManager::sendMessage(const ControllerMessage &message)
 {
     QJsonDocument doc;
     bool ret = true;
-    obj["transactionID"] = m_transactionID++;
+    QJsonObject obj(message.getObject());
+    obj["transactionID"] = message.getTransactionID();
     doc.setObject(obj);
+    m_messageMap[message.getTransactionID()] = message;
 
-    QByteArray normalizedSignature = QMetaObject::normalizedSignature("sendMessageSlot(int, QString)");
+    QByteArray normalizedSignature = QMetaObject::normalizedSignature("sendMessageSlot(int, int, QString)");
     int methodIndex = this->metaObject()->indexOfMethod(normalizedSignature);
     QMetaMethod method = this->metaObject()->method(methodIndex);
     method.invoke(this,
                   Qt::QueuedConnection,
-                  Q_ARG(int, serialNumber),
+                  Q_ARG(int, message.getTransactionID()),
+                  Q_ARG(int, message.getSerialNumber()),
                   Q_ARG(QString, QString(doc.toJson())));
     return ret;
 }
@@ -136,15 +139,21 @@ void ControllerManager::controllerResetting(long serialNumber)
     }
 }
 
-void ControllerManager::sendMessageSlot(int serialNumber, const QString &data)
+void ControllerManager::sendMessageSlot(int transactionID, int serialNumber, const QString &data)
 {
     for(int x = 0; x < m_socketList.count(); x++)
     {
         QWebSocket *socket = m_socketList.value(x);
-        if(socket->property("serialNumber").toInt() == serialNumber)
+        int socketSerialNumber = socket->property("serialNumber").toInt();
+        if(socketSerialNumber == serialNumber)
         {
             int count = socket->sendTextMessage(data);
-            socket->flush();
+            if(socket->flush() == false)
+            {
+                m_messageMap.remove(transactionID);
+                emit errorSendingMessage(m_messageMap.value(transactionID));
+                socket->close();
+            }
             qDebug(QString("ControllerManager::sendMessage length: %1  ret %2 ").arg(data.length()).arg(count).toLatin1());
         }
     }
@@ -192,6 +201,11 @@ void ControllerManager::processTextMessage(QString message)
 {
     if(message.startsWith("ACK_"))
     {
+        QStringList parts = message.split('_');
+        int transactionID = parts.value(1).toInt();
+        ControllerMessage message(m_messageMap.value(transactionID));
+        m_messageMap.remove(transactionID);
+        emit messageACKed(message);
         return;
     }
     QJsonDocument doc = QJsonDocument::fromJson(message.toLatin1());

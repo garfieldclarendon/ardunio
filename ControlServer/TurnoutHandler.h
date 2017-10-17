@@ -6,6 +6,7 @@
 
 #include "GlobalDefs.h"
 #include "DeviceHandler.h"
+#include "controllermessage.h"
 
 class TurnoutHandler : public DeviceHandler
 {
@@ -26,6 +27,8 @@ public slots:
     void sendConfig(int serialNumber, int moduleIndex);
     void controllerRemoved(int serialNumber);
     void controllerConnected(int index);
+
+    void messageACKed(const ControllerMessage &message);
 
 private:
     int getMotorPinSetting(int turnoutID);

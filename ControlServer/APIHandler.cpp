@@ -210,7 +210,7 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     qDebug(QString("handleGetDeviceList.  SerialNumber = %1 ModuleIndex = %2").arg(serialNumber).arg(moduleIndex).toLatin1());
     Database db;
 
-    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, device.moduleIndex as port, controllerModule.moduleIndex, moduleClass, serialNumber FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controller.id = controllerModule.controllerID");
+    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, device.moduleIndex as port, controllerModule.moduleIndex, moduleClass, serialNumber, controller.id as controllerID FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controller.id = controllerModule.controllerID");
 
     QString where(" WHERE ");
     bool useAnd = false;

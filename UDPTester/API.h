@@ -26,7 +26,7 @@ signals:
 
 public slots:
     QString getControllerList(void);
-    QString getDeviceList(void);
+    QString getDeviceList(ClassEnum deviceType = ClassUnknown);
 
     bool getApiReady(void) { return m_server.length() > 0; }
 

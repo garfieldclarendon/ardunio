@@ -6,6 +6,7 @@
 #include <QWebSocketServer>
 
 #include "GlobalDefs.h"
+#include "controllermessage.h"
 
 class ControllerEntry;
 class QWebSocket;
@@ -21,7 +22,7 @@ public:
 
     static ControllerManager *instance(void);
     QString getControllerIPAddress(int serialNumber) const;
-    bool sendMessage(int serialNumber, const QJsonObject &obj);
+    bool sendMessage(const ControllerMessage &message);
     int getConnectionCount(void) const { return m_socketList.count(); }
     int getConnectionSerialNumber(int index) const;
     void getConnectedInfo(int serialNumber, int &version, ControllerStatus &status);
@@ -37,6 +38,9 @@ signals:
     void controllerPing(int serialNumber, quint64 length);
     void sendNotificationMessage(const QString &uri, QJsonObject &obj);
 
+    void messageACKed(const ControllerMessage &message);
+    void errorSendingMessage(const ControllerMessage &message);
+
 public slots:
     //Web Socket slots
     void onNewConnection(void);
@@ -45,7 +49,7 @@ public slots:
     void controllerResetting(long serialNumber);
 
 protected slots:
-    void sendMessageSlot(int serialNumber, const QString &data);
+    void sendMessageSlot(int transactionID, int serialNumber, const QString &data);
 
 private:
     void sendControllerInfo(int serialNumber, QWebSocket *socket);
@@ -60,7 +64,7 @@ private:
     QWebSocketServer *m_server;
     QTimer *m_pingTimer;
     QList<QWebSocket *> m_socketList;
-    int m_transactionID;
+    QMap<int, ControllerMessage> m_messageMap;
 };
 
 #endif // CONTROLLERMANAGER_H

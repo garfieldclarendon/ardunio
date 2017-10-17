@@ -20,7 +20,7 @@ public:
 	void setup(void) override;
 	void setupWire(byte address) override;
 	bool process(byte &data) override;
-	void sendStatusMessage(void) { };
+	void sendStatusMessage(void) override;
 
 	void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json, byte &data);
 	void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json);

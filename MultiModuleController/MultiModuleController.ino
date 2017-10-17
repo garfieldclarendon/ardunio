@@ -211,7 +211,6 @@ void setupHardware(void)
 {
 	DEBUG_PRINT("setup hardware\n");
 	Wire.begin(4, 5); //creates a Wire object
-
 	//controller.addExtraPin(0, 2, controllerConfig.extraPin0Mode);
 	//controller.addExtraPin(1, 0, controllerConfig.extraPin1Mode);
 	//controller.addExtraPin(2, 12, controllerConfig.extraPin2Mode);
@@ -290,7 +289,6 @@ void loadModuleConfiguration(void)
 		else
 		{
 			DEBUG_PRINT("Configuration file %s is missing or can not be opened\n", fileName.c_str());
-			downloadModuleConfig = true;
 		}
 	}
 }
@@ -311,18 +309,18 @@ void createModules(void)
 			TurnoutModule *turnout = new TurnoutModule();
 			modules[index] = turnout;
 		}
-    else if (controllerConfig.moduleConfigs[index].moduleClass == ClassBlock)
-    {
-      DEBUG_PRINT("CreateModules:  Creating Block Module\n");
-      BlockModule *block = new BlockModule();
-      modules[index] = block;
-    }
-    else if (controllerConfig.moduleConfigs[index].moduleClass == ClassSignal)
-    {
-      DEBUG_PRINT("CreateModules:  Creating Signal Module\n");
-      SignalModule *signalMod = new SignalModule();
-      modules[index] = signalMod;
-    }
+		else if (controllerConfig.moduleConfigs[index].moduleClass == ClassBlock)
+		{
+		  DEBUG_PRINT("CreateModules:  Creating Block Module\n");
+		  BlockModule *block = new BlockModule();
+		  modules[index] = block;
+		}
+		else if (controllerConfig.moduleConfigs[index].moduleClass == ClassSignal)
+		{
+		  DEBUG_PRINT("CreateModules:  Creating Signal Module\n");
+		  SignalModule *signalMod = new SignalModule();
+		  modules[index] = signalMod;
+		}
 		else
 		{
 			allModulesCreated = false;

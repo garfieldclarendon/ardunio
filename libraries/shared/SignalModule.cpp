@@ -41,7 +41,8 @@ void SignalModule::setupWire(byte address)
 
 	expanderWrite(IODIR, iodir);
 	delay(100);
-	byte data = getCurrentState();
+	// Turn on all lights
+	byte data = 0;
 	expanderWrite(GPIO, data);
 	DEBUG_PRINT("SignalModule::setupWire:  address %d DONE!!!!\n", address);
 }
@@ -54,15 +55,20 @@ void SignalModule::setup(byte index, byte pin1, byte pin2, byte pin3)
 
 bool SignalModule::process(byte &data)
 {
-	bool sendStatus = false;
-	for (byte x = 0; x < MAX_SIGNALS; x++)
-		if (m_signals[x].process(data))
-			sendStatus = true;
+	if (Network.getIsConnected())
+	{
+		for (byte x = 0; x < MAX_SIGNALS; x++)
+			m_signals[x].process(data);
+	}
+	else
+	{
+		data = 0;
+	}
 //	DEBUG_PRINT("process:  CURRENT_STATE %d === %d\n  STATUS_1 %d  STATUS_2 %d\n", m_currentState, data, m_signals[0].getCurrentState(), m_signals[1].getCurrentState());
 
 	if (m_currentState != data)
 	{
-//		DEBUG_PRINT("process:  CURRENT_STATE %d != %d\n  STATUS_1 %d  STATUS_2 %d\n", m_currentState, data, m_signals[0].getCurrentState(), m_signals[1].getCurrentState());
+//		DEBUG_PRINT("process:  CURRENT_STATE %d != %d\n\n", m_currentState, data);
 		m_currentState = data;
 	}
 
@@ -80,6 +86,7 @@ void SignalModule::netModuleCallback(NetActionType action, byte moduleIndex, con
 		PinStateEnum pin3State = ((PinStateEnum)(int)json["pin3State"]);
 
 		setSignal(port, pin1State, pin2State, pin3State);
+		DEBUG_PRINT("netModuleCallback:  Setting Signal %d -- %d\n\n", m_currentState, data);
 		data = m_currentState;
 	}
 }
@@ -91,4 +98,15 @@ void SignalModule::netModuleConfigCallback(NetActionType /* action */, byte /* m
 void SignalModule::setSignal(byte port, PinStateEnum pin1State, PinStateEnum pin2State, PinStateEnum pin3State)
 {
 	m_signals[port].setSignal(pin1State, pin2State, pin3State, m_currentState);
+}
+
+void SignalModule::sendStatusMessage(void)
+{
+	StaticJsonBuffer<500> jsonBuffer;
+	JsonObject &out = jsonBuffer.createObject();
+	out["messageUri"] = "/controller/module";
+	out["moduleIndex"] = getAddress();
+	out["class"] = (int)ClassSignal;
+	out["action"] = (int)NetActionGet;
+	Network.sendMessageToServer(out);
 }

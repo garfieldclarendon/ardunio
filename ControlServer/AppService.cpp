@@ -24,6 +24,7 @@
 #include "RouteHandler.h"
 #include "PanelHandler.h"
 #include "SemaphoreHandler.h"
+#include "SignalHandler.h"
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -218,6 +219,9 @@ void CAppService::startWebServer()
 
         SemaphoreHandler *semaphoreHandler = new SemaphoreHandler(this);
         connect(ControllerManager::instance(), &ControllerManager::newMessage, semaphoreHandler, &SemaphoreHandler::newMessage, Qt::QueuedConnection);
+
+        SignalHandler *signalHandler = new SignalHandler(this);
+        connect(ControllerManager::instance(), &ControllerManager::newMessage, signalHandler, &SignalHandler::newMessage, Qt::QueuedConnection);
 
         qDebug(QObject::tr("ready to start HTTP server").toLatin1());
         webServer->startServer(httpPort);

@@ -39,7 +39,7 @@ void SignalHandler::deviceStatusChanged(int deviceID, int status)
 
 void SignalHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject & /*json*/)
 {
-    if(uri == "/controller/module" && classCode == ClassSemaphore)
+    if(uri == "/controller/module" && classCode == ClassSignal)
     {
         if(actionType == NetActionGet)
         {
@@ -64,7 +64,7 @@ void SignalHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum clas
 
 void SignalHandler::updateSignal(int signalId)
 {
-    QString sql = QString("SELECT  signalAspectConditionID, signal.moduleIndex AS port, controllerModule.moduleIndex, serialNumber, deviceID, conditionOperand, deviceState, redMode, yellowMode, greenMode FROM signal JOIN signalAspectCondition ON signal.id = signalAspectCondition.signalID JOIN signalCondition ON signalAspectCondition.id = signalCondition.signalAspectConditionID JOIN controllerModule ON signal.controllerModuleID = controllerModule.id  JOIN controller ON controllerModule.controllerID = controller.id WHERE signalAspectCondition.signalID = %1 ORDER BY signalAspectConditionID, signalAspectCondition.sortIndex, signalCondition.sortIndex").arg(signalId);
+    QString sql = QString("SELECT  signalAspectConditionID, signal.moduleIndex AS port, controllerModule.moduleIndex, serialNumber, deviceID, conditionOperand, deviceState, redMode, yellowMode, greenMode FROM signal JOIN signalAspectCondition ON signal.id = signalAspectCondition.signalID JOIN signalCondition ON signalAspectCondition.id = signalCondition.signalAspectConditionID JOIN controllerModule ON signal.controllerModuleID = controllerModule.id  JOIN controller ON controllerModule.controllerID = controller.id WHERE signalAspectCondition.signalID = %1 AND controllerModule.moduleClass = 4 ORDER BY signalAspectConditionID, signalAspectCondition.sortIndex, signalCondition.sortIndex").arg(signalId);
 
     Database db;
     QSqlQuery query1 = db.executeQuery(sql);
@@ -152,23 +152,19 @@ void SignalHandler::updateSignal(int signalId)
     sendSignalUpdateMessage(serialNumber, moduleIndex, port, aspectRed, aspectYellow, aspectGreen);
 }
 
-void SignalHandler::sendSignalUpdateMessage(int serialNumber, int moduleIndex, int port, int redMode, int , int greenMode)
+void SignalHandler::sendSignalUpdateMessage(int serialNumber, int moduleIndex, int port, int redMode, int yellowMode, int greenMode)
 {
-    int motorPinSetting = 0;
-
-    if(redMode == 1)
-        motorPinSetting = 0;
-    else if(greenMode == 1)
-        motorPinSetting = 1;
-
     QJsonObject obj;
 
     obj["moduleIndex"] = moduleIndex;
     obj["messageUri"] = "/controller/module";
     obj["action"] = NetActionUpdate;
     obj["port"] = port;
-    obj["motorPinSetting"] = motorPinSetting;
+    obj["pin1State"] = redMode;
+    obj["pin2State"] = greenMode;
+    obj["pin3State"] = yellowMode;
 
-    ControllerManager::instance()->sendMessage(serialNumber, obj);
+    ControllerMessage message(serialNumber, obj);
+    ControllerManager::instance()->sendMessage(message);
 }
 

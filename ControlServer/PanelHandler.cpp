@@ -92,7 +92,8 @@ void PanelHandler::deviceStatusChanged(int deviceID, int status)
 
         for(int x = 0; x < jsons.count(); x++)
         {
-            ControllerManager::instance()->sendMessage(serialNumbers.value(x), jsons.value(x));
+            ControllerMessage message(serialNumbers.value(x), jsons.value(x));
+            ControllerManager::instance()->sendMessage(message);
         }
     }
 }
@@ -180,7 +181,8 @@ void PanelHandler::routeChanged(int routeID, bool isActive)
     }
     for(int x = 0; x < urls.count(); x++)
     {
-        ControllerManager::instance()->sendMessage(serialNumber, jsons.value(x));
+        ControllerMessage message(serialNumber, jsons.value(x));
+        ControllerManager::instance()->sendMessage(message);
         QJsonDocument doc;
         doc.setObject(jsons.value(x));
         qDebug(doc.toJson());
@@ -235,7 +237,8 @@ void PanelHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum class
 
             }
             obj["pins"] = jsonArray;
-            ControllerManager::instance()->sendMessage(serialNumber, obj);
+            ControllerMessage message(serialNumber, obj);
+            ControllerManager::instance()->sendMessage(message);
         }
     }
 }

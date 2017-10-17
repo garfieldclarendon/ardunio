@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
         QApplication::setFont(f);
     }
     qmlRegisterType<ControllerModel>("Utils", 1, 0, "ControllerModel");
-    qmlRegisterType<TurnoutModel>("Utils", 1, 0, "TurnoutModel");
+    qmlRegisterType<DeviceModel>("Utils", 1, 0, "DeviceModel");
     qmlRegisterType<PanelModuleModel>("Utils", 1, 0, "PanelModuleModel");
     qmlRegisterType<PanelInputModel>("Utils", 1, 0, "PanelInputModel");
     qmlRegisterType<PanelOutputModel>("Utils", 1, 0, "PanelOutputModel");

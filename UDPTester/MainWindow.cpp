@@ -49,7 +49,7 @@ void MainWindow::setupUI()
 
     ControllerWidget *controllerWidget = new ControllerWidget("qrc:/ManageDevices2.qml");
     controllerWidget->setFocusPolicy(Qt::StrongFocus);
-    tab->addTab(controllerWidget, "Manage Devices");
+    tab->addTab(controllerWidget, "Manage Turnouts");
 
     controllerWidget = new ControllerWidget("qrc:/ManageControllers.qml");
     controllerWidget->setFocusPolicy(Qt::StrongFocus);

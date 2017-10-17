@@ -6,20 +6,29 @@
 
 class JSonModel;
 
-class TurnoutModel : public QSortFilterProxyModel
+class DeviceModel : public QSortFilterProxyModel
 {
     Q_OBJECT
     Q_PROPERTY(int controllerModuleID READ getControllerModuleID WRITE setControllerModuleID NOTIFY controllerIDChanged)
+    Q_PROPERTY(int controllerID READ getControllerID WRITE setControllerID NOTIFY controllerIDChanged)
+    Q_PROPERTY(int deviceClass READ getClass() WRITE setClass NOTIFY classChanged)
 
 public:
-    TurnoutModel(QObject *parent = NULL);
+    DeviceModel(QObject *parent = NULL);
     QHash<int, QByteArray> roleNames(void) const;
 
     void setControllerModuleID(int value);
     int getControllerModuleID(void) const { return m_controllerModuleID; }
 
+    void setControllerID(int value);
+    int getControllerID(void) const { return m_controllerID; }
+
+    void setClass(int value);
+    int getClass(void) const { return m_class; }
+
 signals:
     void controllerIDChanged(void);
+    void classChanged(void);
 
 public slots:
     void deviceChanged(int deviceID, int status);
@@ -28,10 +37,7 @@ public slots:
 public:
     QVariant data(const QModelIndex &index, int role) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-    int rowCount(const QModelIndex &parent= QModelIndex()) const override;
-    QModelIndex parent(const QModelIndex &child) const override;
 
 protected slots:
     void apiReady(void);
@@ -47,6 +53,9 @@ protected:
 
 private:
     int m_controllerModuleID;
+    int m_controllerID;
+    ClassEnum m_class;
+
     JSonModel *m_tableModel;
 
 };

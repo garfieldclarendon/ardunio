@@ -1,7 +1,7 @@
 #pragma once
 #include "Local.h"
 
-const int ControllerVersion = 12;
+const int ControllerVersion = 13;
 
 #ifdef PROJECT_DEBUG
 #define DEBUG_PRINT(...) Serial.printf( __VA_ARGS__ )

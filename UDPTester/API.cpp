@@ -58,10 +58,13 @@ QString API::getControllerList()
     return json;
 }
 
-QString API::getDeviceList()
+QString API::getDeviceList(ClassEnum deviceType)
 {
     QString json;
-    QUrl url(buildUrl("device_list"));
+    QString s("device_list");
+    if(deviceType != ClassUnknown)
+        s.append(QString("?classCode=%1").arg(deviceType));
+    QUrl url(buildUrl(s));
 
     json = sendToServer(url, QString(), NetActionGet);
 

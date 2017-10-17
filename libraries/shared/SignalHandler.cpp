@@ -35,7 +35,14 @@ void SignalHandler::setSignal(byte pin, PinStateEnum pinState, byte &data)
 	{
 		removeBlinkingPin(pin);
 		if (pin < 8)
-			bitWrite(data, pin, PinOn == pinState ? 1 : 0);
+		{
+			byte before = data;
+			if (pinState == PinOn)
+				bitWrite(data, pin,0);
+			else
+				bitWrite(data, pin, 1);
+//			DEBUG_PRINT("setSignal:  Setting Signal Pin: %d State: %d  %d -- %d\n\n", pin, pinState, before, data);
+		}
 	}
 }
 
