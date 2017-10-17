@@ -119,7 +119,7 @@ void PanelModuleClass::process(bool buttonPressed)
 
 		for (byte index = 0; index < MAX_PANEL_INPUTS; index++)
 		{
-			if (bitRead(m_inputs, index) == HIGH)
+			if (bitRead(m_inputs, index) == LOW)
 			{
 				handleButtonPressed(index);
 			}
