@@ -22,7 +22,7 @@ void SignalHandler::deviceStatusChanged(int deviceID, int status)
 
     QList<int> signalIDs;
     {
-        QString sql = QString("SELECT signalID FROM signalCondition JOIN signalAspectCondition ON signalCondition.signalAspectConditionID = signalAspectCondition.id WHERE deviceID = %1").arg(deviceID);
+        QString sql = QString("SELECT DISTINCT signalID FROM signalCondition JOIN signalAspectCondition ON signalCondition.signalAspectConditionID = signalAspectCondition.id WHERE deviceID = %1").arg(deviceID);
         Database db;
         QSqlQuery query1 = db.executeQuery(sql);
 
