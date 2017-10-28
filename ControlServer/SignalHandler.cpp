@@ -45,7 +45,7 @@ void SignalHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum clas
         {
             QList<int> signalIDs;
             {
-                QString sql = QString("SELECT signal.id as signalID FROM signal JOIN controllerModule ON controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2 ").arg(serialNumber).arg(moduleIndex);
+                QString sql = QString("SELECT device.id as signalID FROM device JOIN controllerModule ON controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2 ").arg(serialNumber).arg(moduleIndex);
                 Database db;
                 QSqlQuery query1 = db.executeQuery(sql);
 
@@ -64,15 +64,15 @@ void SignalHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum clas
 
 void SignalHandler::updateSignal(int signalId)
 {
-    QString sql = QString("SELECT  signalAspectConditionID, signal.moduleIndex AS port, controllerModule.moduleIndex, serialNumber, deviceID, conditionOperand, deviceState, redMode, yellowMode, greenMode FROM signal JOIN signalAspectCondition ON signal.id = signalAspectCondition.signalID JOIN signalCondition ON signalAspectCondition.id = signalCondition.signalAspectConditionID JOIN controllerModule ON signal.controllerModuleID = controllerModule.id  JOIN controller ON controllerModule.controllerID = controller.id WHERE signalAspectCondition.signalID = %1 AND controllerModule.moduleClass = 4 ORDER BY signalAspectConditionID, signalAspectCondition.sortIndex, signalCondition.sortIndex").arg(signalId);
+    QString sql = QString("SELECT DISTINCT signalAspectConditionID, device.moduleIndex AS port, controllerModule.moduleIndex, serialNumber, deviceID, conditionOperand, deviceState, redMode, yellowMode, greenMode FROM device JOIN signalAspectCondition ON device.id = signalAspectCondition.signalID JOIN signalCondition ON signalAspectCondition.id = signalCondition.signalAspectConditionID JOIN controllerModule ON device.controllerModuleID = controllerModule.id  JOIN controller ON controllerModule.controllerID = controller.id WHERE signalAspectCondition.signalID = %1 AND controllerModule.moduleClass = 4 ORDER BY signalAspectCondition.sortIndex, signalAspectConditionID").arg(signalId);
 
     Database db;
     QSqlQuery query1 = db.executeQuery(sql);
-    int redMode;
-    int yellowMode;
-    int greenMode;
+    int redMode = 0;
+    int yellowMode = 0;
+    int greenMode = 0;
     int moduleIndex;
-    int serialNumber;
+    int serialNumber = 0;
     int deviceState;
     int condition;
     int currentState;
@@ -149,7 +149,8 @@ void SignalHandler::updateSignal(int signalId)
         aspectGreen = greenMode;
     }
 
-    sendSignalUpdateMessage(serialNumber, moduleIndex, port, aspectRed, aspectYellow, aspectGreen);
+    if(serialNumber > 0)
+        sendSignalUpdateMessage(serialNumber, moduleIndex, port, aspectRed, aspectYellow, aspectGreen);
 }
 
 void SignalHandler::sendSignalUpdateMessage(int serialNumber, int moduleIndex, int port, int redMode, int yellowMode, int greenMode)

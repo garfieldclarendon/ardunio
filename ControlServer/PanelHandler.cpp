@@ -30,7 +30,7 @@ void PanelHandler::deviceStatusChanged(int deviceID, int status)
     {
         int pinIndex;
         int moduleIndex;
-        int serialNumber;
+        int serialNumber = 0;
         int onValue;
         int flashingValue;
         QList<QJsonObject> jsons;
@@ -104,13 +104,12 @@ void PanelHandler::routeChanged(int routeID, bool isActive)
 
     int pinIndex;
     int moduleIndex;
-    int serialNumber;
     int onValue;
-    int flashingValue;
     int pinRouteID;
     QString ipAddress;
     QStringList ips;
     QStringList urls;
+    QList<int> serialNumbers;
     QList<QJsonObject> jsons;
     int currentSerialNumber = 0, currentModuleIndex = 0;
     QMap<int, int> routeStatusMap;
@@ -126,9 +125,8 @@ void PanelHandler::routeChanged(int routeID, bool isActive)
     {
         pinIndex = query1.value("pinIndex").toInt();
         moduleIndex = query1.value("moduleIndex").toInt();
-        serialNumber = query1.value("serialNumber").toInt();
+        int serialNumber = query1.value("serialNumber").toInt();
         onValue = query1.value("onValue").toInt();
-        flashingValue = query1.value("flashingValue").toInt();
         pinRouteID = query1.value("routeID").toInt();
 
         if(currentSerialNumber == 0)
@@ -162,6 +160,7 @@ void PanelHandler::routeChanged(int routeID, bool isActive)
                 ips << ipAddress;
                 urls << uri;
                 jsons << root;
+                serialNumbers << currentSerialNumber;
             }
         }
     }
@@ -181,7 +180,7 @@ void PanelHandler::routeChanged(int routeID, bool isActive)
     }
     for(int x = 0; x < urls.count(); x++)
     {
-        ControllerMessage message(serialNumber, jsons.value(x));
+        ControllerMessage message(serialNumbers.value(x), jsons.value(x));
         ControllerManager::instance()->sendMessage(message);
         QJsonDocument doc;
         doc.setObject(jsons.value(x));

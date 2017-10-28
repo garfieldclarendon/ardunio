@@ -9,7 +9,7 @@ class ControllerMessage : public QObject
     Q_OBJECT
 public:
     explicit ControllerMessage(int serialNumber, const QJsonObject &obj, QObject *parent = 0);
-    ControllerMessage(const ControllerMessage &other) { copy(other); }
+    ControllerMessage(const ControllerMessage &other) : QObject(NULL) { copy(other); }
     ControllerMessage(void);
 
     ControllerMessage& operator = (const ControllerMessage &other)

@@ -114,10 +114,18 @@ private:
     void handleGetPanelList(QTcpSocket *socket, const QUrl &url);
     void handleGetDeviceList(QTcpSocket *socket, const QUrl &url);
     void handleGetControllerList(QTcpSocket *socket, const QUrl &url);
+    void handleGetControllerModuleList(QTcpSocket *socket, const QUrl &url);
+    void handleGetSignalAspectList(QTcpSocket *socket, const QUrl &url);
+    void handleGetSignalConditionList(QTcpSocket *socket, const QUrl &url);
     void handleSendModuleConfig(QTcpSocket *socket, const QUrl &url);
     void handleControllerFirmwareUpdate(QTcpSocket *socket, const QUrl &url);
     void handleControllerReset(QTcpSocket *socket, const QUrl &url);
     void handleControllerResetConfig(QTcpSocket *socket, const QUrl &url);
+
+    void handleSaveEntity(QTcpSocket *socket, const QUrl &, const QString &actionText, const QString &jsonText);
+    QString saveEntity(const QString &jsonText);
+    QString addEntity(const QString &jsonText);
+    void deleteEntity(const QString &jsonText);
 };
 
 #endif // APIHANDLER_H

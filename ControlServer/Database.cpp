@@ -233,7 +233,7 @@ QByteArray Database::getTurnoutConfig(quint32 serialNumber, int moduleIndex)
     return buffer.toLatin1();
 }
 
-QByteArray Database::getSignalConfig(quint32 serialNumber, int moduleIndex)
+QByteArray Database::getSignalConfig(quint32 , int )
 {
     QString buffer;
 
@@ -485,7 +485,8 @@ QSqlQuery Database::executeQuery(const QString &queryString)
 {
     if(db.isValid() == false)
         db = QSqlDatabase::database();
-    db.open();
+    if(db.isOpen() == false)
+        db.open();
     QSqlQuery query(db);
 
     bool ret = query.exec(queryString);
@@ -830,6 +831,7 @@ bool Database::createDeviceTable()
     ret = query.exec("CREATE TABLE IF NOT EXISTS device "
                      "(id INTEGER primary key, "
                      "controllerModuleID INTEGER, "
+                     "moduleIndex INTEGER, "
                      "deviceName VARCHAR(20), "
                      "deviceDescription VARCHAR(50))");
     if(ret == false)

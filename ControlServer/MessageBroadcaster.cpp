@@ -116,7 +116,6 @@ void MessageBroadcaster::processUdpBuffer()
 
     while(m_udpBuffer.size() >= structSize)
     {
-        int available = m_udpBuffer.size();
         unsigned char byte1(0);
         unsigned char byte2(0);
         // Find the start of a valid message.
@@ -138,7 +137,7 @@ void MessageBroadcaster::processUdpBuffer()
         }
         if(signitureFound)
         {
-            int size = sizeof(MessageStruct);
+            unsigned int size = sizeof(MessageStruct);
             MessageStruct datagram;
             memset(&datagram, 0, sizeof(MessageStruct));
             char *buffer = (char *)&datagram;
@@ -146,7 +145,6 @@ void MessageBroadcaster::processUdpBuffer()
             buffer++;
             *buffer = byte2;
             buffer++;
-            bool endFound = false;
             unsigned char data, nextByte;
             while(startIndex < m_udpBuffer.size())
             {
@@ -161,7 +159,6 @@ void MessageBroadcaster::processUdpBuffer()
                 if (data == 0xEF && nextByte == 0xEE) // found end of message signature
                 {
                     data = m_udpBuffer[startIndex += 2];
-                    endFound = true;
                     // Now remove any extra data
                     while (data != 0xEE && startIndex < m_udpBuffer.size())
                     {
@@ -174,7 +171,6 @@ void MessageBroadcaster::processUdpBuffer()
             }
 
             m_udpBuffer.remove(0, startIndex);
-            available = m_udpBuffer.size();
 
             UDPMessage message(datagram);
             emit newMessage(message);

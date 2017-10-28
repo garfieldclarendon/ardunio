@@ -58,19 +58,12 @@ void NotificationServer::onNewConnection()
 
 void NotificationServer::processTextMessage(const QString message)
 {
-    QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
-
-    if (pClient)
-    {
-    }
+    Q_UNUSED(message);
 }
 
 void NotificationServer::processBinaryMessage(const QByteArray message)
 {
-    QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
-    if (pClient)
-    {
-    }
+    Q_UNUSED(message);
 }
 
 void NotificationServer::socketDisconnected()

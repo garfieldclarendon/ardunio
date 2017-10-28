@@ -19,7 +19,8 @@ HEADERS += $$PWD/AppService.h \
     $$PWD/NotificationServer.h \
     $$PWD/NCEInterface.h \
     $$PWD/NCEMessage.h \
-    $$PWD/controllermessage.h
+    $$PWD/controllermessage.h \
+    $$PWD/EntityMetadata.h
 
 #Source files
 SOURCES += $$PWD/main.cpp \
@@ -43,7 +44,8 @@ SOURCES += $$PWD/main.cpp \
     $$PWD/NotificationServer.cpp \
     $$PWD/NCEInterface.cpp \
     $$PWD/NCEMessage.cpp \
-    $$PWD/controllermessage.cpp
+    $$PWD/controllermessage.cpp \
+    $$PWD/EntityMetadata.cpp
 
 win32 {
 HEADERS += $$PWD/StatusDialog.h

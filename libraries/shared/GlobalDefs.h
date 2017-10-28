@@ -89,10 +89,10 @@ enum ClassEnum
         ClassApp
 };
 
-static unsigned char UdpBroadcast[] = {0xFF, 0xFF, 0xFF, 0xFF};
+const unsigned char UdpBroadcast[] = {0xFF, 0xFF, 0xFF, 0xFF};
 const unsigned int UdpPort = 45457;
 const unsigned int LocalServerPort = 45455;
-const unsigned int sendTimeout = 100; 
+const unsigned int sendTimeout = 100;
 
 // config addresses for EEPROM
 #define CONTROLLER_ID_ADDRESS 7

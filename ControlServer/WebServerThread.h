@@ -13,7 +13,7 @@ public:
     WebServerThread(int socketDescriptor, QObject *parent);
     ~WebServerThread(void);
 
-    void run() override;
+    void run();
 
 public slots:
     void readClient(void);
