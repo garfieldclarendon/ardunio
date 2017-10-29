@@ -64,7 +64,7 @@ void SemaphoreHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum c
 
 void SemaphoreHandler::updateSignal(int signalId)
 {
-    QString sql = QString("SELECT signalAspectConditionID, device.moduleIndex AS port, controllerModule.moduleIndex, serialNumber, deviceID, conditionOperand, deviceState, redMode, yellowMode, greenMode FROM device JOIN signalAspectCondition ON device.id = signalAspectCondition.signalID JOIN signalCondition ON signalAspectCondition.id = signalCondition.signalAspectConditionID JOIN controllerModule ON device.controllerModuleID = controllerModule.id  JOIN controller ON controllerModule.controllerID = controller.id WHERE signalAspectCondition.signalID = %1 AND controllerModule.moduleClass = 5 ORDER BY signalAspectCondition.sortIndex, signalAspectConditionID").arg(signalId);
+    QString sql = QString("SELECT signalAspectConditionID, device.port, controllerModule.moduleIndex, serialNumber, deviceID, conditionOperand, deviceState, redMode, yellowMode, greenMode FROM device JOIN signalAspectCondition ON device.id = signalAspectCondition.signalID JOIN signalCondition ON signalAspectCondition.id = signalCondition.signalAspectConditionID JOIN controllerModule ON device.controllerModuleID = controllerModule.id  JOIN controller ON controllerModule.controllerID = controller.id WHERE signalAspectCondition.signalID = %1 AND controllerModule.moduleClass = 5 ORDER BY signalAspectCondition.sortIndex, signalAspectConditionID").arg(signalId);
 
     Database db;
     QSqlQuery query1 = db.executeQuery(sql);

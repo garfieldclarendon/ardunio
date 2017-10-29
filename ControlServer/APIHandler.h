@@ -111,6 +111,8 @@ private:
     void handleActivateTurnout(QTcpSocket *socket, const QUrl &url, const QString &actionText, const QString &payload);
     void handleActivateRoute(QTcpSocket *socket, const QUrl &url, const QString &actionText, const QString &payload);
     void handleGetPanelRouteList(QTcpSocket *socket, const QUrl &url);
+    void handleGetRouteList(QTcpSocket *socket, const QUrl &url);
+    void handleGetRouteEntryList(QTcpSocket *socket, const QUrl &url);
     void handleGetPanelList(QTcpSocket *socket, const QUrl &url);
     void handleGetDeviceList(QTcpSocket *socket, const QUrl &url);
     void handleGetControllerList(QTcpSocket *socket, const QUrl &url);

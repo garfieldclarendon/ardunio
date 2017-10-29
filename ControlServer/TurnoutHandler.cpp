@@ -98,7 +98,7 @@ int TurnoutHandler::getMotorPinSetting(int turnoutID)
 void TurnoutHandler::getTurnoutIDAndMotorSetting(int serialNumber, int moduleIndex, int port, int &turnoutID, int &motorPinSetting)
 {
     motorPinSetting = 0;
-    QString sql = QString("SELECT device.id, deviceProperty.key, deviceProperty.value FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerModuleID LEFT OUTER JOIN deviceProperty ON device.id = deviceProperty.deviceID WHERE controller.serialNumber = %1 AND controllerModule.moduleIndex = %2 AND device.moduleIndex = %3").arg(serialNumber).arg(moduleIndex).arg(port);
+    QString sql = QString("SELECT device.id, deviceProperty.key, deviceProperty.value FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerModuleID LEFT OUTER JOIN deviceProperty ON device.id = deviceProperty.deviceID WHERE controller.serialNumber = %1 AND controllerModule.moduleIndex = %2 AND device.port = %3").arg(serialNumber).arg(moduleIndex).arg(port);
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
@@ -113,7 +113,7 @@ void TurnoutHandler::sendConfig(int serialNumber, int moduleIndex)
 {
     qDebug("SENDCONFIG");
     QString queryString;
-    queryString = QString("SELECT device.id, device.moduleIndex as port, deviceProperty.value as motorPinSetting FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID LEFT OUTER JOIN deviceProperty on device.id = deviceProperty.deviceID WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2 ORDER BY controllerModule.moduleIndex").arg(serialNumber).arg(moduleIndex);
+    queryString = QString("SELECT device.id, device.port, deviceProperty.value as motorPinSetting FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID LEFT OUTER JOIN deviceProperty on device.id = deviceProperty.deviceID WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2 ORDER BY controllerModule.moduleIndex").arg(serialNumber).arg(moduleIndex);
     Database db;
     QJsonArray array = db.fetchItems(queryString);
 
@@ -178,7 +178,7 @@ void TurnoutHandler::messageACKed(const ControllerMessage &message)
 
 void TurnoutHandler::getIPAddressAndModuleIndexForDevice(int deviceID, QString &ipAddress, int &moduleIndex, int &port, int &serialNumber)
 {
-    QString sql = QString("SELECT serialNumber, controllerModule.moduleIndex, device.moduleIndex as port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1").arg(deviceID);
+    QString sql = QString("SELECT serialNumber, controllerModule.moduleIndex, device.port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1").arg(deviceID);
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())

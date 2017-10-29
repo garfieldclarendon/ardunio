@@ -31,13 +31,13 @@ public:
 	virtual bool process(byte &data) = 0;
 
 	virtual byte getIODirConfig(void) const = 0;
-	virtual byte getDeviceCount(void) const = 0;
-	virtual short getDeviceID(byte index) const = 0;
 	virtual byte getCurrentState(void) const = 0;
 	virtual void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json, byte &data) = 0;
 	virtual void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json) = 0;
 	virtual void sendStatusMessage(void) = 0;
 	virtual void netModuleCallbackWire(NetActionType action, byte moduleIndex, const JsonObject &json);
+	virtual void serverOffline(void) { }
+	virtual void serverOnline(void) { }
 
 	byte getAddress(void) const { return m_address; }
 

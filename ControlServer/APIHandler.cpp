@@ -102,6 +102,14 @@ void APIHandler::handleClient(QTcpSocket *socket, const QString &path, const QSt
     {
         handleGetSignalConditionList(socket, url);
     }
+    else if(url.path().contains("route_list"))
+    {
+        handleGetRouteList(socket, url);
+    }
+    else if(url.path().contains("route_entry_list"))
+    {
+        handleGetRouteEntryList(socket, url);
+    }
     else
     {
         QString result = QString("HTTP/1.0 200 OK\r\n"
@@ -198,6 +206,57 @@ void APIHandler::handleGetPanelRouteList(QTcpSocket *socket, const QUrl &url)
 
 }
 
+void APIHandler::handleGetRouteList(QTcpSocket *socket, const QUrl &)
+{
+    qDebug(QString("handleGetRouteList.").toLatin1());
+    Database db;
+
+    QString sql = QString("SELECT ID as routeID, routeName, routeDescription FROM Route ORDER BY routeName");
+    QJsonArray jsonArray = db.fetchItems(sql);
+
+    for(int x = 0; x < jsonArray.size(); x++)
+    {
+        QJsonObject obj = jsonArray[x].toObject();
+        QString routeID = obj["routeID"].toString();
+        bool isActive = RouteHandler::instance()->isRouteActive(routeID.toInt());
+        obj["isActive"] = isActive;
+        jsonArray[x] = obj;
+    }
+
+    QJsonDocument doc;
+    doc.setArray(jsonArray);
+    QByteArray data(doc.toJson());
+
+    QString header = WebServer::createHeader("200 OK", data.size());
+
+    socket->write(header.toLatin1());
+    socket->write(data);
+    socket->flush();
+    socket->close();
+}
+
+void APIHandler::handleGetRouteEntryList(QTcpSocket *socket, const QUrl &url)
+{
+    QUrlQuery urlQuery(url);
+    int routeID = urlQuery.queryItemValue("routeID").toInt();
+
+    qDebug(QString("handleGetRouteEntryList.  routeID = %1").arg(routeID).toLatin1());
+    Database db;
+
+    QString sql = QString("SELECT ID as routeEntryID, routeID, turnoutID, turnoutState FROM RouteEntry WHERE routeID = %1").arg(routeID);
+    QJsonArray jsonArray = db.fetchItems(sql);
+
+    QJsonDocument doc;
+    doc.setArray(jsonArray);
+    QByteArray data(doc.toJson());
+
+    QString header = WebServer::createHeader("200 OK", data.size());
+
+    socket->write(header.toLatin1());
+    socket->write(data);
+    socket->flush();
+    socket->close();}
+
 void APIHandler::handleGetPanelList(QTcpSocket *socket, const QUrl &)
 {
     qDebug(QString("handleGetPanelList.  SerialNumber = %1 ModuleIndex = %2").toLatin1());
@@ -222,15 +281,15 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
 {
     QUrlQuery urlQuery(url);
     int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
-    int moduleIndex = -1;
+    int port = -1;
     int classCode = urlQuery.queryItemValue("classCode").toInt();
     if(urlQuery.hasQueryItem("moduleIndex"))
-        moduleIndex = urlQuery.queryItemValue("moduleIndex").toInt();
+        port = urlQuery.queryItemValue("moduleIndex").toInt();
 
-    qDebug(QString("handleGetDeviceList.  SerialNumber = %1 ModuleIndex = %2").arg(serialNumber).arg(moduleIndex).toLatin1());
+    qDebug(QString("handleGetDeviceList.  SerialNumber = %1 ModuleIndex = %2").arg(serialNumber).arg(port).toLatin1());
     Database db;
 
-    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, device.moduleIndex as port, controllerModule.moduleIndex, controllerModule.id as controllerModuleID, moduleClass, serialNumber, controller.id as controllerID FROM device LEFT OUTER JOIN controllerModule ON device.controllerModuleID = controllerModule.id LEFT OUTER JOIN controller ON controller.id = controllerModule.controllerID");
+    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, device.port, controllerModule.moduleIndex, controllerModule.id as controllerModuleID, moduleClass, serialNumber, controller.id as controllerID FROM device LEFT OUTER JOIN controllerModule ON device.controllerModuleID = controllerModule.id LEFT OUTER JOIN controller ON controller.id = controllerModule.controllerID");
 
     QString where(" WHERE ");
     bool useAnd = false;
@@ -239,12 +298,12 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
         useAnd = true;
         where += QString("serialNumber = %1 ").arg(serialNumber);
     }
-    if(moduleIndex > -1)
+    if(port > -1)
     {
         if(useAnd)
-            where += QString("AND moduleIndex = %1 ").arg(moduleIndex);
+            where += QString("AND port = %1 ").arg(port);
         else
-            where += QString("moduleIndex = %1 ").arg(moduleIndex);
+            where += QString("port = %1 ").arg(port);
 
         useAnd = true;
     }
@@ -537,7 +596,7 @@ QString APIHandler::saveEntity(const QString &jsonText)
     }
     else
     {
-        obj["dbError"] = QString("Failed to find record in table '%1' with the key value '%2'").arg(tableName).arg(tableKey);
+        obj["dbError"] = QString("Failed to find record in table '%1' with the key value '%2'").arg(tableName).arg(id);
     }
     QJsonDocument retDoc;
     retDoc.setObject(obj);

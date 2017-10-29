@@ -22,6 +22,7 @@
 #include "TurnoutModule.h"
 #include "BlockModule.h"
 #include "SignalModule.h"
+#include "InputModule.h"
 
 #define BASE_ADDRESS 0x20  // MCP23008 is on I2C port 0x20
 
@@ -95,6 +96,7 @@ void serverReconnected(void)
 
 	for (byte x = 0; x < totalModules; x++)
 	{
+		modules[x]->serverOnline();
 		modules[x]->sendStatusMessage();
 	}
 }
@@ -223,6 +225,13 @@ void loop()
 	Network.process();
 	controller.process();
 
+	if (Network.getIsConnected())
+	{
+		for (byte x = 0; x < totalModules; x++)
+		{
+			modules[x]->serverOffline();
+		}
+	}
 	bool sendStatus = false;
 	for (byte x = 0; x < totalModules; x++)
 	{
@@ -320,6 +329,12 @@ void createModules(void)
 		  DEBUG_PRINT("CreateModules:  Creating Signal Module\n");
 		  SignalModule *signalMod = new SignalModule();
 		  modules[index] = signalMod;
+		}
+		else if (controllerConfig.moduleConfigs[index].moduleClass == ClassInput)
+		{
+			DEBUG_PRINT("CreateModules:  Creating Input Module\n");
+			InputModuleClass *inputMod = new InputModuleClass();
+			modules[index] = inputMod;
 		}
 		else
 		{

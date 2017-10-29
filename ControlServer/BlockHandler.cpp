@@ -26,7 +26,7 @@ void BlockHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum class
 
 void BlockHandler::getBlockID(int serialNumber, int moduleIndex, int port, int &blockID)
 {
-    QString sql = QString("SELECT device.id FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerModuleID WHERE controller.serialNumber = %1 AND controllerModule.moduleIndex = %2 AND device.moduleIndex = %3").arg(serialNumber).arg(moduleIndex).arg(port);
+    QString sql = QString("SELECT device.id FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerModuleID WHERE controller.serialNumber = %1 AND controllerModule.moduleIndex = %2 AND device.port = %3").arg(serialNumber).arg(moduleIndex).arg(port);
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
@@ -60,7 +60,7 @@ void BlockHandler::controllerRemoved(int serialNumber)
 
 void BlockHandler::getIPAddressAndModuleIndexForDevice(int deviceID, QString &ipAddress, int &moduleIndex, int &port, int &serialNumber)
 {
-    QString sql = QString("SELECT serialNumber, controllerModule.moduleIndex, device.moduleIndex as port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1").arg(deviceID);
+    QString sql = QString("SELECT serialNumber, controllerModule.moduleIndex, device.port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1").arg(deviceID);
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())

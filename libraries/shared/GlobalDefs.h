@@ -85,6 +85,8 @@ enum ClassEnum
         ClassSemaphore,
         ClassBlock,
         ClassMulti,
+        ClassInput,
+        ClassOutput,
         ClassSystem,
         ClassApp
 };

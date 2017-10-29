@@ -79,7 +79,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="InputModule.h" />
     <ClInclude Include="__vm\.MultiModuleController.vsarduino.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="InputModule.cpp" />
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>

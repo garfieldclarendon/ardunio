@@ -26,8 +26,6 @@ public:
 
 	// Module overrides
 	byte getIODirConfig(void) const override;
-	byte getDeviceCount(void) const override { return MAX_TURNOUTS; }
-	short getDeviceID(byte index) const override { return getTurnoutID(index); }
 	byte getCurrentState(void) const override { return m_currentState; }
 	void setup(void) override;
 	void setupWire(byte address) override;
