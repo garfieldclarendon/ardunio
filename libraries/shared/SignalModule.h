@@ -20,8 +20,8 @@ public:
 	bool process(byte &data) override;
 	void sendStatusMessage(void) override;
 
-	void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json, byte &data);
-	void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json);
+	void netModuleCallback(NetActionType action, byte address, const JsonObject &json, byte &data);
+	void netModuleConfigCallback(NetActionType action, byte address, const JsonObject &json);
 
 private:
 	void setSignal(byte port, PinStateEnum pin1State, PinStateEnum pin2State, PinStateEnum pin3State);

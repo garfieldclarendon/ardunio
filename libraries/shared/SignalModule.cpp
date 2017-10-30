@@ -76,7 +76,7 @@ bool SignalModule::process(byte &data)
 	return ret;
 }
 
-void SignalModule::netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject & json, byte &data)
+void SignalModule::netModuleCallback(NetActionType action, byte address, const JsonObject & json, byte &data)
 {
 	if (action == NetActionUpdate)
 	{
@@ -91,7 +91,7 @@ void SignalModule::netModuleCallback(NetActionType action, byte moduleIndex, con
 	}
 }
 
-void SignalModule::netModuleConfigCallback(NetActionType /* action */, byte /* moduleIndex */, const JsonObject & /* json */)
+void SignalModule::netModuleConfigCallback(NetActionType /* action */, byte /* address */, const JsonObject & /* json */)
 {
 }
 
@@ -105,7 +105,7 @@ void SignalModule::sendStatusMessage(void)
 	StaticJsonBuffer<500> jsonBuffer;
 	JsonObject &out = jsonBuffer.createObject();
 	out["messageUri"] = "/controller/module";
-	out["moduleIndex"] = getAddress();
+	out["address"] = getAddress();
 	out["class"] = (int)ClassSignal;
 	out["action"] = (int)NetActionGet;
 	Network.sendMessageToServer(out);

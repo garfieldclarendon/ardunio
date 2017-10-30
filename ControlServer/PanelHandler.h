@@ -12,15 +12,15 @@ public:
     PanelHandler(QObject *parent = 0);
 
 signals:
-    void pinStateChanged(int moduleIndex, int pinNumber, int pinMode);
+    void pinStateChanged(int address, int pinNumber, int pinMode);
 
 public slots:
     void deviceStatusChanged(int deviceID, int status);
     void routeChanged(int routeID, bool isActive);
-    void newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
+    void newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
 
 private:
-    int getRouteID(int serialNumber, int moduleIndex, int buttonIndex);
+    int getRouteID(int serialNumber, int address, int buttonIndex);
     void fillRouteStatusMap(QMap<int, int> statusMap, int routeID);
 };
 

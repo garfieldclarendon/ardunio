@@ -34,7 +34,7 @@
  *
  * @apiDescription Returns a list of defined panels
  * @apiSuccess {Object[]} panels       List of panels.
- * @apiSuccess {Number} panels.moduleIndex Index of the module.
+ * @apiSuccess {Number} panels.address Index of the module.
  * @apiSuccess {Number} panels.panelID
  * @apiSuccess {String} panels.panelName Descriptive name of the panel.
  * @apiSuccess {Number} panels.serialNumber Controller's serial number.
@@ -44,13 +44,13 @@
  *     HTTP/1.1 200 OK
  *   [
  *      {
- *          "moduleIndex": "0",
+ *          "address": "0",
  *          "panelID": "2",
  *          "panelName": "CA Panel1",
  *          "serialNumber": "637866"
  *      },
  *      {
- *          "moduleIndex": "0",
+ *          "address": "0",
  *          "panelID": "1",
  *          "panelName": "Gaskill Mine",
  *          "serialNumber": "1551385"
@@ -124,10 +124,11 @@ private:
     void handleControllerReset(QTcpSocket *socket, const QUrl &url);
     void handleControllerResetConfig(QTcpSocket *socket, const QUrl &url);
 
-    void handleSaveEntity(QTcpSocket *socket, const QUrl &, const QString &actionText, const QString &jsonText);
-    QString saveEntity(const QString &jsonText);
-    QString addEntity(const QString &jsonText);
-    void deleteEntity(const QString &jsonText);
+    void handleEntity(QTcpSocket *socket, const QUrl &, const QString &actionText, const QString &jsonText);
+    QString fetchEntity(const QString &name);
+    QString saveEntity(const QString &name, const QString &jsonText);
+    QString addEntity(const QString &name, const QString &jsonText);
+    void deleteEntity(const QString &name, const QString &jsonText);
 };
 
 #endif // APIHANDLER_H

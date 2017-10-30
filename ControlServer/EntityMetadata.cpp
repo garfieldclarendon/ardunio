@@ -18,6 +18,21 @@ EntityMetadata *EntityMetadata::instance()
     return m_instance;
 }
 
+QString EntityMetadata::getTableName(const QString &entityName) const
+{
+    return m_map.value(entityName)["tableName"].toString();
+}
+
+QString EntityMetadata::getKeyField(const QString &entityName) const
+{
+    return m_map.value(entityName)["keyField"].toString();
+}
+
+QString EntityMetadata::getTableField(const QString &entityName) const
+{
+    return m_map.value(entityName)["tableKeyField"].toString();
+}
+
 void EntityMetadata::load()
 {
     QFile file(":/metadata/EntityMetadata.txt");

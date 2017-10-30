@@ -110,7 +110,7 @@ void TurnoutModule::setTurnout(byte index, byte motorPinSetting)
 	m_turnouts[index].setTurnout(motorPinSetting);
 }
 
-void TurnoutModule::netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json, byte &data)
+void TurnoutModule::netModuleCallback(NetActionType action, byte address, const JsonObject &json, byte &data)
 {
 	if (action == NetActionUpdate)
 	{
@@ -124,7 +124,7 @@ void TurnoutModule::netModuleCallback(NetActionType action, byte moduleIndex, co
 	createCurrentStatusJson();
 }
 
-void TurnoutModule::netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json)
+void TurnoutModule::netModuleConfigCallback(NetActionType action, byte address, const JsonObject &json)
 {
 	if (action == NetActionUpdate)
 	{
@@ -156,7 +156,7 @@ String TurnoutModule::createCurrentStatusJson(void)
 	StaticJsonBuffer<256> jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
 	root["messageUri"] = "/controller/module";
-	root["moduleIndex"] = getAddress();
+	root["address"] = getAddress();
 	root["class"] = (int)ClassTurnout;
 	root["action"] = (int)NetActionUpdate;
 	JsonArray &turnouts = root.createNestedArray("turnouts");

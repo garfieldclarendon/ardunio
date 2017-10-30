@@ -12,7 +12,7 @@ public:
   bool process(byte &data);
   void setTurnout(byte motorPinSetting);
 
-  int getTurnoutID(void) const { return m_config->turnoutID;  }
+  int getdeviceID(void) const { return m_config->deviceID;  }
   byte getFeedbackA(void) const { return m_currentFeedbackA; }
   byte getFeedbackB(void) const { return m_currentFeedbackB; }
 

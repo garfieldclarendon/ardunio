@@ -73,12 +73,12 @@ bool BlockModule::process(byte &data)
 }
 
 
-void BlockModule::netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json, byte &data)
+void BlockModule::netModuleCallback(NetActionType action, byte address, const JsonObject &json, byte &data)
 {
 	createCurrentStatusJson();
 }
 
-void BlockModule::netModuleConfigCallback(NetActionType /* action */, byte /* moduleIndex */, const JsonObject & /* json */)
+void BlockModule::netModuleConfigCallback(NetActionType /* action */, byte /* address */, const JsonObject & /* json */)
 {
 }
 
@@ -95,7 +95,7 @@ String BlockModule::createCurrentStatusJson(void)
 	StaticJsonBuffer<256> jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
 	root["messageUri"] = "/controller/module";
-	root["moduleIndex"] = getAddress();
+	root["address"] = getAddress();
 	root["class"] = (int)ClassBlock;
 	root["action"] = (int)NetActionUpdate;
 	JsonArray &blocks = root.createNestedArray("blocks");

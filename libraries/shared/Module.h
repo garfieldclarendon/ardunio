@@ -32,12 +32,13 @@ public:
 
 	virtual byte getIODirConfig(void) const = 0;
 	virtual byte getCurrentState(void) const = 0;
-	virtual void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json, byte &data) = 0;
-	virtual void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json) = 0;
+	virtual void netModuleCallback(NetActionType action, byte address, const JsonObject &json, byte &data) = 0;
+	virtual void netModuleConfigCallback(NetActionType action, byte address, const JsonObject &json) = 0;
 	virtual void sendStatusMessage(void) = 0;
-	virtual void netModuleCallbackWire(NetActionType action, byte moduleIndex, const JsonObject &json);
+	virtual void netModuleCallbackWire(NetActionType action, byte address, const JsonObject &json);
 	virtual void serverOffline(void) { }
 	virtual void serverOnline(void) { }
+	virtual void controllerLockout(bool locked) { }
 
 	byte getAddress(void) const { return m_address; }
 

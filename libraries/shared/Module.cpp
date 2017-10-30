@@ -21,11 +21,11 @@ bool Module::processWire(void)
 	return ret;
 }
 
-void Module::netModuleCallbackWire(NetActionType action, byte moduleIndex, const JsonObject &json)
+void Module::netModuleCallbackWire(NetActionType action, byte address, const JsonObject &json)
 {
 	byte data = expanderRead(GPIO);
 	byte hold = data;
-	netModuleCallback(action, moduleIndex, json, data);
+	netModuleCallback(action, address, json, data);
 	if (data != hold)
 		expanderWrite(GPIO, data);
 }

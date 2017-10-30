@@ -21,7 +21,7 @@ public:
 	void setup(byte index, byte motorAPin, byte motorBPin, byte feedbackAPin, byte feedbackBPin);
 	void setTurnout(byte index, byte motorPinSetting);
 
-	int getTurnoutID(byte index) const { return m_turnouts[index].getTurnoutID(); }
+	int getdeviceID(byte index) const { return m_turnouts[index].getdeviceID(); }
 	String createCurrentStatusJson(void);
 
 	// Module overrides
@@ -32,8 +32,8 @@ public:
 	bool process(byte &data) override;
 	void sendStatusMessage(void);
 
-	void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json, byte &data);
-	void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json);
+	void netModuleCallback(NetActionType action, byte address, const JsonObject &json, byte &data);
+	void netModuleConfigCallback(NetActionType action, byte address, const JsonObject &json);
 
 
 private:

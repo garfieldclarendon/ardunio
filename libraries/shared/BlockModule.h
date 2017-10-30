@@ -22,8 +22,8 @@ public:
 	bool process(byte &data) override;
 	void sendStatusMessage(void);
 
-	void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json, byte &data);
-	void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json);
+	void netModuleCallback(NetActionType action, byte address, const JsonObject &json, byte &data);
+	void netModuleConfigCallback(NetActionType action, byte address, const JsonObject &json);
 
 private:
 	BlockHandler m_blocks[MAX_BLOCKS];

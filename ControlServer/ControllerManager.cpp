@@ -249,10 +249,10 @@ void ControllerManager::processTextMessage(QString message)
     else
     {
         NetActionType actionType = (NetActionType)root["action"].toInt();
-        int moduleIndex = root["moduleIndex"].toInt();
+        int address = root["address"].toInt();
         ClassEnum classCode = (ClassEnum)(int)root["class"].toInt();
 
-        emit newMessage(serialNumber, moduleIndex, classCode, actionType, uri, root);
+        emit newMessage(serialNumber, address, classCode, actionType, uri, root);
     }
 }
 

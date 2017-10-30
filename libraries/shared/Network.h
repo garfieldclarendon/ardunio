@@ -14,8 +14,8 @@ class NetworkClass
 public:
 	
 	typedef std::function<void(int &controllerID, String &controllerName, String &controllerType, String &currentStatus)> TControllerStatusCallback;
-	typedef std::function<void(NetActionType action, byte moduleIndex, const JsonObject &json)> TModuleCallback;
-	typedef std::function<void(NetActionType action, byte moduleIndex, JsonObject &json)> TModuleConfigCallback;
+	typedef std::function<void(NetActionType action, byte address, const JsonObject &json)> TModuleCallback;
+	typedef std::function<void(NetActionType action, byte address, JsonObject &json)> TModuleConfigCallback;
 	typedef std::function<String(NetActionType action, const JsonObject &json)> TControllerCallback;
 	typedef std::function<String(NetActionType action, const JsonObject &json)> TControllerConfigCallback;
 	typedef std::function<void(const Message &message)> TUDPMessageCallback;
@@ -34,8 +34,8 @@ public:
 	bool getIsConnected(void) const { return m_isConnected;  }
 
 	void sendMessageToServer(const JsonObject &json);
-//	void sendConfigMessageToServer(ClassEnum moduleClass, int moduleIndex, const String &json, String &retJson);
-//	void sendUdpMessageToServer(NetActionType action, ClassEnum moduleClass, int moduleIndex, const String &json);
+//	void sendConfigMessageToServer(ClassEnum moduleClass, int address, const String &json, String &retJson);
+//	void sendUdpMessageToServer(NetActionType action, ClassEnum moduleClass, int address, const String &json);
 	void sendUdpBroadcastMessage(const Message &message);
 
 	void setControllerStatusCallback(TControllerStatusCallback value) { m_controllerStatusCallback = value;  }

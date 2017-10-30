@@ -29,7 +29,7 @@ bool BlockHandler::process(byte &data)
 			if (m_current == LOW)
 			{
 				m_currentState = 1;
-				DEBUG_PRINT("Occupied TRUE BlockID: %d\n", m_config.blockID);
+				DEBUG_PRINT("Occupied TRUE deviceID: %d\n", m_config.deviceID);
 				DEBUG_PRINT("-------------------------------\n%d\n", raw);
 				DEBUG_PRINT("-------------------------------\n");
 			}
@@ -62,6 +62,6 @@ void BlockHandler::setConfigValue(const char *key, const char *value)
 	if (strcmp(key, "ID") == 0)
 	{
 		int id = atoi(value);
-		m_config.blockID = id;
+		m_config.deviceID = id;
 	}
 }

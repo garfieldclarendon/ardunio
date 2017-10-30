@@ -28,6 +28,12 @@
 
 const int MODULE_CONFIG_BASE_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
 
+const byte STATUS_LED_PIN = 12;
+const byte LOCKOUT_PIN = 13;
+bool lockout = false;
+byte lastLockoutRead = 0;
+long currentLockoutTimeout = 0;
+
 byte totalModules = 1;
 bool downloadModuleConfig = false;
 
@@ -101,24 +107,24 @@ void serverReconnected(void)
 	}
 }
 
-void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json)
+void netModuleConfigCallback(NetActionType action, byte address, const JsonObject &json)
 {
 	DEBUG_PRINT("netConfigCallback: NetAction %d\n", action);
 
 	if (action == NetActionUpdate)
-		saveConfig(moduleIndex, json);
+		saveConfig(address, json);
 	else if (action == NetActionDelete)
-		deleteConfig(moduleIndex);
+		deleteConfig(address);
 
-	modules[moduleIndex]->netModuleConfigCallback(action, moduleIndex, json);
+	modules[address]->netModuleConfigCallback(action, address, json);
 }
 
-void saveConfig(byte moduleIndex, const JsonObject &json)
+void saveConfig(byte address, const JsonObject &json)
 {
 	String txt;
 	json.printTo(txt);
 	String fileName("/Module_");
-	fileName += moduleIndex;
+	fileName += address;
 	fileName += ".json";
 
 	if (SPIFFS.exists(fileName))
@@ -138,10 +144,10 @@ void saveConfig(byte moduleIndex, const JsonObject &json)
 	}
 }
 
-void deleteConfig(byte moduleIndex)
+void deleteConfig(byte address)
 {
 	String fileName("/Module_");
-	fileName += moduleIndex;
+	fileName += address;
 	fileName += ".json";
 	SPIFFS.remove(fileName);
 }
@@ -172,34 +178,17 @@ String netControllerConfigCallback(NetActionType action, const JsonObject &json)
 	return ret;
 }
 
-void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json)
+void netModuleCallback(NetActionType action, byte address, const JsonObject &json)
 {
-	if (moduleIndex < totalModules && moduleIndex >= 0)
+	if (address < totalModules && address >= 0)
 	{
-		modules[moduleIndex]->netModuleCallbackWire(action, moduleIndex, json);
+		modules[address]->netModuleCallbackWire(action, address, json);
 	}
 }
 
 String netControllerCallback(NetActionType action, const JsonObject &json)
 {
 	controller.controllerCallback(action, json);
-	//if (action == NetActionUpdate)
-	//{
-	//	StaticJsonBuffer<250> jsonBuffer;
-	//	JsonObject &root = jsonBuffer.parseObject(json);
-
-	//	if (root.containsKey("extrPin0Mode"))
-	//		controller.setExtraPin(0, (PinStateEnum)(int)root["extrPin0Mode"]);
-	//	if (root.containsKey("extrPin1Mode"))
-	//		controller.setExtraPin(1, (PinStateEnum)(int)root["extrPin1Mode"]);
-	//	if (root.containsKey("extrPin2Mode"))
-	//		controller.setExtraPin(2, (PinStateEnum)(int)root["extrPin2Mode"]);
-	//	if (root.containsKey("extrPin3Mode"))
-	//		controller.setExtraPin(3, (PinStateEnum)(int)root["extrPin3Mode"]);
-	//	if (root.containsKey("extrPin4Mode"))
-	//		controller.setExtraPin(4, (PinStateEnum)(int)root["extrPin4Mode"]);
-	//}
-	// TODO: Consider returning the current state of all output pins
 	String ret;
 	return ret;
 }
@@ -213,15 +202,18 @@ void setupHardware(void)
 {
 	DEBUG_PRINT("setup hardware\n");
 	Wire.begin(4, 5); //creates a Wire object
-	//controller.addExtraPin(0, 2, controllerConfig.extraPin0Mode);
-	//controller.addExtraPin(1, 0, controllerConfig.extraPin1Mode);
-	//controller.addExtraPin(2, 12, controllerConfig.extraPin2Mode);
-	//controller.addExtraPin(3, 14, controllerConfig.extraPin3Mode);
-	//controller.addExtraPin(4, 16, controllerConfig.extraPin4Mode);
+
+	//Pin 12 is the network status indicator LED
+	// ON - Connected to the server
+	// OFF - Disconnected
+	pinMode(STATUS_LED_PIN, OUTPUT);
+	//Pin 13 is the lockout switch input
+	pinMode(LOCKOUT_PIN, INPUT);
 }
 
 void loop() 
 {
+	checkLockoutPin();
 	Network.process();
 	controller.process();
 
@@ -238,6 +230,7 @@ void loop()
 		modules[x]->processWire();
 		yield();
 	}
+	setStatusIndicator();
 }
 
 void loadConfiguration(void)
@@ -359,12 +352,12 @@ void downloadConfig(void)
 	Network.sendMessageToServer(out);
 }
 
-void downloadModuelConfig(byte moduleIndex, ClassEnum classCode)
+void downloadModuelConfig(byte address, ClassEnum classCode)
 {
 	StaticJsonBuffer<200> jsonBuffer;
 	JsonObject &out = jsonBuffer.createObject();
 	out["messageUri"] = "/controller/module/config";
-	out["moduleIndex"] = moduleIndex;
+	out["address"] = address;
 	out["class"] = (int)classCode;
 	out["action"] = (int)NetActionGet;
 
@@ -378,4 +371,35 @@ void saveControllerConfig(void)
 	EEPROM.write(0, 0xAD);
 	EEPROM.put(MODULE_CONFIG_BASE_ADDRESS, controllerConfig);
 	EEPROM.commit();
+}
+
+void checkLockoutPin(void)
+{
+	long t = millis();
+	byte current = digitalRead(LOCKOUT_PIN);
+	if (current == lastLockoutRead)
+	{
+		if (current != lockout && (t - currentLockoutTimeout) > 250)
+		{
+			currentLockoutTimeout = t;
+			lockout = current;
+			for (int x = 0; x < totalModules; x++)
+			{
+				modules[x]->controllerLockout(lockout);
+			}
+		}
+	}
+	else
+	{
+		currentLockoutTimeout = t;
+	}
+	lastLockoutRead = current;
+}
+
+void setStatusIndicator(void)
+{
+	if (Network.getIsConnected())
+		digitalWrite(STATUS_LED_PIN, HIGH);
+	else
+		digitalWrite(STATUS_LED_PIN, LOW);
 }

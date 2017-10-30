@@ -19,6 +19,7 @@
 #include "WebServer.h"
 #include "MessageBroadcaster.h"
 #include "ControllerManager.h"
+#include "EntityMetadata.h"
 
 APIHandler::APIHandler(QObject *parent)
     : QObject(parent)
@@ -90,9 +91,9 @@ void APIHandler::handleClient(QTcpSocket *socket, const QString &path, const QSt
     {
         handleControllerReset(socket, url);
     }
-    else if(url.path().contains("save_entity"))
+    else if(url.path().contains("entity/"))
     {
-        handleSaveEntity(socket, url, actionText, payload);
+        handleEntity(socket, url, actionText, payload);
     }
     else if(url.path().contains("signal_aspect_list"))
     {
@@ -243,7 +244,7 @@ void APIHandler::handleGetRouteEntryList(QTcpSocket *socket, const QUrl &url)
     qDebug(QString("handleGetRouteEntryList.  routeID = %1").arg(routeID).toLatin1());
     Database db;
 
-    QString sql = QString("SELECT ID as routeEntryID, routeID, turnoutID, turnoutState FROM RouteEntry WHERE routeID = %1").arg(routeID);
+    QString sql = QString("SELECT ID as routeEntryID, routeID, deviceID, turnoutState FROM RouteEntry WHERE routeID = %1").arg(routeID);
     QJsonArray jsonArray = db.fetchItems(sql);
 
     QJsonDocument doc;
@@ -259,10 +260,10 @@ void APIHandler::handleGetRouteEntryList(QTcpSocket *socket, const QUrl &url)
 
 void APIHandler::handleGetPanelList(QTcpSocket *socket, const QUrl &)
 {
-    qDebug(QString("handleGetPanelList.  SerialNumber = %1 ModuleIndex = %2").toLatin1());
+    qDebug(QString("handleGetPanelList.  SerialNumber = %1 address = %2").toLatin1());
     Database db;
 
-    QString sql = QString("SELECT controllerModule.id as panelID, moduleName as panelName, controllerModule.moduleIndex, serialNumber FROM controllerModule JOIN controller ON controller.id = controllerModule.controllerID WHERE moduleClass = 2 ORDER BY moduleName");
+    QString sql = QString("SELECT controllerModule.id as panelID, moduleName as panelName, controllerModule.address, serialNumber FROM controllerModule JOIN controller ON controller.id = controllerModule.controllerID WHERE moduleClass = 2 ORDER BY moduleName");
 
     QJsonArray jsonArray = db.fetchItems(sql);
 
@@ -283,13 +284,13 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
     int port = -1;
     int classCode = urlQuery.queryItemValue("classCode").toInt();
-    if(urlQuery.hasQueryItem("moduleIndex"))
-        port = urlQuery.queryItemValue("moduleIndex").toInt();
+    if(urlQuery.hasQueryItem("address"))
+        port = urlQuery.queryItemValue("address").toInt();
 
-    qDebug(QString("handleGetDeviceList.  SerialNumber = %1 ModuleIndex = %2").arg(serialNumber).arg(port).toLatin1());
+    qDebug(QString("handleGetDeviceList.  SerialNumber = %1 address = %2").arg(serialNumber).arg(port).toLatin1());
     Database db;
 
-    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, device.port, controllerModule.moduleIndex, controllerModule.id as controllerModuleID, moduleClass, serialNumber, controller.id as controllerID FROM device LEFT OUTER JOIN controllerModule ON device.controllerModuleID = controllerModule.id LEFT OUTER JOIN controller ON controller.id = controllerModule.controllerID");
+    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, device.port, controllerModule.address, controllerModule.id as controllerModuleID, moduleClass, serialNumber, controller.id as controllerID FROM device LEFT OUTER JOIN controllerModule ON device.controllerModuleID = controllerModule.id LEFT OUTER JOIN controller ON controller.id = controllerModule.controllerID");
 
     QString where(" WHERE ");
     bool useAnd = false;
@@ -386,10 +387,10 @@ void APIHandler::handleGetControllerModuleList(QTcpSocket *socket, const QUrl &u
 
     QUrlQuery urlQuery(url);
     int controllerID = urlQuery.queryItemValue("controllerID").toInt();
-    QString sql = QString("SELECT id as controllerModuleID, controllerID, moduleName, moduleClass, moduleIndex FROM controllerModule");
+    QString sql = QString("SELECT id as controllerModuleID, controllerID, moduleName, moduleClass, address FROM controllerModule");
     if(controllerID > 0)
         sql += QString(" WHERE controllerID = %1").arg(controllerID);
-    sql += QString(" ORDER BY moduleIndex");
+    sql += QString(" ORDER BY address");
 
     QJsonArray jsonArray = db.fetchItems(sql);
 
@@ -408,13 +409,13 @@ void APIHandler::handleGetControllerModuleList(QTcpSocket *socket, const QUrl &u
 void APIHandler::handleGetSignalAspectList(QTcpSocket *socket, const QUrl &url)
 {
     QUrlQuery urlQuery(url);
-    int signalID = urlQuery.queryItemValue("signalID").toInt();
+    int deviceID = urlQuery.queryItemValue("deviceID").toInt();
     qDebug(QString("handleGetSignalAspectList.").toLatin1());
     Database db;
 
-    QString sql = QString("SELECT id as signalAspectID, signalID, sortIndex, redMode, yellowMode, GreenMode FROM signalAspectCondition");
-    if(signalID > 0)
-        sql += QString(" WHERE signalID = %1").arg(signalID);
+    QString sql = QString("SELECT id as signalAspectID, deviceID, sortIndex, redMode, yellowMode, GreenMode FROM signalAspect");
+    if(deviceID > 0)
+        sql += QString(" WHERE deviceID = %1").arg(deviceID);
     sql += QString(" ORDER BY sortIndex");
 
     QJsonArray jsonArray = db.fetchItems(sql);
@@ -438,9 +439,9 @@ void APIHandler::handleGetSignalConditionList(QTcpSocket *socket, const QUrl &ur
     qDebug(QString("handleGetSignalConditionList.").toLatin1());
     Database db;
 
-    QString sql = QString("SELECT id as signalConditionID, signalAspectConditionID, deviceID, conditionOperand, deviceState FROM signalCondition");
+    QString sql = QString("SELECT id as signalConditionID, signalAspectID, deviceID, conditionOperand, deviceState FROM signalCondition");
     if(aspectID > 0)
-        sql += QString(" WHERE signalAspectConditionID = %1").arg(aspectID);
+        sql += QString(" WHERE signalAspectID = %1").arg(aspectID);
 
     QJsonArray jsonArray = db.fetchItems(sql);
 
@@ -466,11 +467,11 @@ void APIHandler::handleSendModuleConfig(QTcpSocket *socket, const QUrl &url)
 
     QUrlQuery urlQuery(url);
     int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
-    int moduleIndex = urlQuery.queryItemValue("moduleIndex").toInt();
-    qDebug(QString("handleGetPanelList.  SerialNumber = %1 ModuleIndex = %2").toLatin1());
+    int address = urlQuery.queryItemValue("address").toInt();
+    qDebug(QString("handleGetPanelList.  SerialNumber = %1 address = %2").toLatin1());
     Database db;
 
-    QString sql = QString("SELECT controllerModule.moduleClass, serialNumber FROM controllerModule JOIN controller ON controller.id = controllerModule.controllerID WHERE serialNumber = %1 AND moduleIndex = %2").arg(serialNumber).arg(moduleIndex);
+    QString sql = QString("SELECT controllerModule.moduleClass, serialNumber FROM controllerModule JOIN controller ON controller.id = controllerModule.controllerID WHERE serialNumber = %1 AND address = %2").arg(serialNumber).arg(address);
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
     {
@@ -480,7 +481,7 @@ void APIHandler::handleSendModuleConfig(QTcpSocket *socket, const QUrl &url)
             TurnoutHandler *turnoutHandler = qobject_cast<TurnoutHandler *>(DeviceManager::instance()->getHandler(ClassTurnout));
             if(turnoutHandler)
             {
-                turnoutHandler->sendConfig(serialNumber, moduleIndex);
+                turnoutHandler->sendConfig(serialNumber, address);
             }
         }
     }
@@ -528,16 +529,23 @@ void APIHandler::handleControllerResetConfig(QTcpSocket *socket, const QUrl &url
     MessageBroadcaster::instance()->sendResetConfigCommand(serialNumber);
 }
 
-void APIHandler::handleSaveEntity(QTcpSocket *socket, const QUrl &, const QString &actionText, const QString &jsonText)
+void APIHandler::handleEntity(QTcpSocket *socket, const QUrl &url, const QString &actionText, const QString &jsonText)
 {
+    QStringList parts = url.path().split('/', QString::SkipEmptyParts);
+    QString entityName = parts.value(parts.count() - 1);
+    qDebug(QString("HANDLEENTITY:  PATH: %1").arg(url.path()).toLatin1());
+    qDebug(QString("HANDLEENTITY:  ENTITY NAME: %1").arg(entityName).toLatin1());
+
     QByteArray data(jsonText.toLatin1());
 
     if(actionText == "PUT")
-        data = saveEntity(jsonText).toLatin1();
+        data = saveEntity(entityName, jsonText).toLatin1();
     else if(actionText == "POST")
-        data = addEntity(jsonText).toLatin1();
+        data = addEntity(entityName, jsonText).toLatin1();
     else if(actionText == "DELETE")
-        deleteEntity(jsonText);
+        deleteEntity(entityName, jsonText);
+    else
+        data = fetchEntity(entityName).toLatin1();
 
     QString header = WebServer::createHeader("200 OK", data.size());
 
@@ -548,7 +556,19 @@ void APIHandler::handleSaveEntity(QTcpSocket *socket, const QUrl &, const QStrin
 
 }
 
-QString APIHandler::saveEntity(const QString &jsonText)
+QString APIHandler::fetchEntity(const QString &name)
+{
+    Database db;
+
+    QString sql = QString("SELECT * FROM %1").arg(EntityMetadata::instance()->getTableName(name));
+    QJsonArray jsonArray = db.fetchItems(sql);
+
+    QJsonDocument doc;
+    doc.setArray(jsonArray);
+    return doc.toJson();
+}
+
+QString APIHandler::saveEntity(const QString &name, const QString &jsonText)
 {
     QJsonDocument doc = QJsonDocument::fromJson(jsonText.toLatin1());
     QJsonObject obj = doc.object();
@@ -556,9 +576,9 @@ QString APIHandler::saveEntity(const QString &jsonText)
     QSqlTableModel model(this, db.getDatabase());
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
 
-    QString keyField = obj["keyField"].toString();
-    QString tableKey = obj["tableKeyField"].toString();
-    QString tableName = obj["tableName"].toString();
+    QString keyField = EntityMetadata::instance()->getKeyField(name);
+    QString tableKey = EntityMetadata::instance()->getTableField(name);
+    QString tableName = EntityMetadata::instance()->getTableName(name);
     QStringList skip;
     skip << "keyField" << "tableKeyField" << "tableName" << keyField;
 
@@ -604,7 +624,7 @@ QString APIHandler::saveEntity(const QString &jsonText)
     return retDoc.toJson();
 }
 
-QString APIHandler::addEntity(const QString &jsonText)
+QString APIHandler::addEntity(const QString &name, const QString &jsonText)
 {
     QJsonDocument doc = QJsonDocument::fromJson(jsonText.toLatin1());
     QJsonObject obj = doc.object();
@@ -612,9 +632,9 @@ QString APIHandler::addEntity(const QString &jsonText)
     QSqlTableModel model(this, db.getDatabase());
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
 
-    QString keyField = obj["keyField"].toString();
-    QString tableKey = obj["tableKeyField"].toString();
-    QString tableName = obj["tableName"].toString();
+    QString keyField = EntityMetadata::instance()->getKeyField(name);
+    QString tableKey = EntityMetadata::instance()->getTableField(name);
+    QString tableName = EntityMetadata::instance()->getTableName(name);
     QStringList skip;
     skip << "keyField" << "tableKeyField" << "tableName" << keyField;
 
@@ -671,13 +691,13 @@ QString APIHandler::addEntity(const QString &jsonText)
     return retDoc.toJson();
 }
 
-void APIHandler::deleteEntity(const QString &jsonText)
+void APIHandler::deleteEntity(const QString &name, const QString &jsonText)
 {
     QJsonDocument doc = QJsonDocument::fromJson(jsonText.toLatin1());
     QJsonObject obj = doc.object();
-    QString keyField = obj["keyField"].toString();
-    QString tableKey = obj["tableKeyField"].toString();
-    QString tableName = obj["tableName"].toString();
+    QString keyField = EntityMetadata::instance()->getKeyField(name);
+    QString tableKey = EntityMetadata::instance()->getTableField(name);
+    QString tableName = EntityMetadata::instance()->getTableName(name);
     int id = obj[keyField].toString().toInt();
 
     qDebug(QString("handleSaveDevice.  id = %1").arg(id).toLatin1());

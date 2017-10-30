@@ -28,7 +28,7 @@ public:
     void getConnectedInfo(int serialNumber, int &version, ControllerStatus &status);
 
 signals:
-    void newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
+    void newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
     void pingSignal(const QByteArray &data);
 
     void controllerConnected(int index);

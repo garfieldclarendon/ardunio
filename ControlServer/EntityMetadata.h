@@ -9,13 +9,16 @@ class EntityMetadata : public QObject
 {
     Q_OBJECT
 public:
-    explicit EntityMetadata(QObject *parent = nullptr);
+    explicit EntityMetadata(QObject *parent = NULL);
 
     static EntityMetadata *instance(void);
 
 signals:
 
 public slots:
+    QString getTableName(const QString &entityName) const;
+    QString getKeyField(const QString &entityName) const;
+    QString getTableField(const QString &entityName) const;
 
 private:
     void load(void);
