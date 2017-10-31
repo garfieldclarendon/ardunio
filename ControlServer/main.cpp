@@ -4,12 +4,14 @@
 
 #include "AppService.h"
 #include "GlobalDefs.h"
+#include "EntityMetadata.h"
 
 void messageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 bool enableDebugMessages = false;
 
 int main(int argc, char *argv[])
 {
+    EntityMetadata::instance();
     qInstallMessageHandler(messageOutput);
     qRegisterMetaType<ClassEnum>("ClassEnum");
     qRegisterMetaType<NetActionType>("NetActionType");

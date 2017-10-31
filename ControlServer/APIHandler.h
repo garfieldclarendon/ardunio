@@ -34,7 +34,7 @@
  *
  * @apiDescription Returns a list of defined panels
  * @apiSuccess {Object[]} panels       List of panels.
- * @apiSuccess {Number} panels.moduleIndex Index of the module.
+ * @apiSuccess {Number} panels.address Index of the module.
  * @apiSuccess {Number} panels.panelID
  * @apiSuccess {String} panels.panelName Descriptive name of the panel.
  * @apiSuccess {Number} panels.serialNumber Controller's serial number.
@@ -44,13 +44,13 @@
  *     HTTP/1.1 200 OK
  *   [
  *      {
- *          "moduleIndex": "0",
+ *          "address": "0",
  *          "panelID": "2",
  *          "panelName": "CA Panel1",
  *          "serialNumber": "637866"
  *      },
  *      {
- *          "moduleIndex": "0",
+ *          "address": "0",
  *          "panelID": "1",
  *          "panelName": "Gaskill Mine",
  *          "serialNumber": "1551385"
@@ -111,13 +111,24 @@ private:
     void handleActivateTurnout(QTcpSocket *socket, const QUrl &url, const QString &actionText, const QString &payload);
     void handleActivateRoute(QTcpSocket *socket, const QUrl &url, const QString &actionText, const QString &payload);
     void handleGetPanelRouteList(QTcpSocket *socket, const QUrl &url);
+    void handleGetRouteList(QTcpSocket *socket, const QUrl &url);
+    void handleGetRouteEntryList(QTcpSocket *socket, const QUrl &url);
     void handleGetPanelList(QTcpSocket *socket, const QUrl &url);
     void handleGetDeviceList(QTcpSocket *socket, const QUrl &url);
     void handleGetControllerList(QTcpSocket *socket, const QUrl &url);
+    void handleGetControllerModuleList(QTcpSocket *socket, const QUrl &url);
+    void handleGetSignalAspectList(QTcpSocket *socket, const QUrl &url);
+    void handleGetSignalConditionList(QTcpSocket *socket, const QUrl &url);
     void handleSendModuleConfig(QTcpSocket *socket, const QUrl &url);
     void handleControllerFirmwareUpdate(QTcpSocket *socket, const QUrl &url);
     void handleControllerReset(QTcpSocket *socket, const QUrl &url);
     void handleControllerResetConfig(QTcpSocket *socket, const QUrl &url);
+
+    void handleEntity(QTcpSocket *socket, const QUrl &, const QString &actionText, const QString &jsonText);
+    QString fetchEntity(const QString &name);
+    QString saveEntity(const QString &name, const QString &jsonText);
+    QString addEntity(const QString &name, const QString &jsonText);
+    void deleteEntity(const QString &name, const QString &jsonText);
 };
 
 #endif // APIHANDLER_H

@@ -39,9 +39,9 @@ void WebServer::startServer(quint16 port)
 
 void WebServer::handleUdpMessage(NetActionType action, const QString &path, const QString &payload)
 {
-    UrlHandler *handler = NULL;
     QUrl url(path);
-    if(handler = getUrlHandler(url.path()))
+    UrlHandler *handler = getUrlHandler(url.path());
+    if(handler)
     {
         qDebug("FOUND HANDLER!");
 
@@ -81,7 +81,7 @@ bool WebServer::sendMessage(NetActionType actionType, const QString &uri, const 
     QNetworkAccessManager networkManager;
 
     qDebug(QString("WebServer::sendMessage to: %1").arg(uri).toLatin1());
-    QNetworkReply *reply;
+    QNetworkReply *reply = NULL;
     QNetworkRequest request;
     request.setUrl(QUrl(uri));
 
@@ -102,14 +102,18 @@ bool WebServer::sendMessage(NetActionType actionType, const QString &uri, const 
         reply = networkManager.deleteResource(request);
     }
 
-    while(reply->isFinished() == false)
-        QCoreApplication::processEvents();
+    bool ret = false;
+    if(reply)
+    {
+        while(reply->isFinished() == false)
+            QCoreApplication::processEvents();
 
-    bool ret = reply->error() == QNetworkReply::NoError;
-    if(ret == false)
-        qDebug(reply->errorString().toLatin1());
-    returnPayload = reply->readAll();
-    qDebug(QString("WebServer::sendMessage - reply data: %1").arg(returnPayload).toLatin1());
+        ret = reply->error() == QNetworkReply::NoError;
+        if(ret == false)
+            qDebug(reply->errorString().toLatin1());
+        returnPayload = reply->readAll();
+        qDebug(QString("WebServer::sendMessage - reply data: %1").arg(returnPayload).toLatin1());
+    }
 
     return ret;
 }

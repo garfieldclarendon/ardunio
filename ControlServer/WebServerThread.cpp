@@ -56,7 +56,7 @@ void WebServerThread::run(void)
                 return;
         }
         QString payload = socket.readAll();
-        handleSocket(&socket, tokens.value(1), tokens.value(0), payload);
+        handleSocket(&socket, tokens.value(1), tokens.value(0).toUpper(), payload);
     }
 
     if(payloadSize == 0)
@@ -200,12 +200,12 @@ void WebServerThread::handleSocket(QTcpSocket *socket, const QString &path, cons
 
     QPointer<QTcpSocket> pSocket(socket);
     QUrl url(path);
-    UrlHandler *handler = NULL;
+    UrlHandler *handler = server->getUrlHandler(url.path());
     if(url.path().startsWith("/api/"))
     {
         m_apiHandler.handleClient(socket, path, actionText, payload);
     }
-    else if(handler = server->getUrlHandler(url.path()))
+    else if(handler)
     {
         qDebug("FOUND HANDLER!");
         NetActionType actionType = NetActionGet;

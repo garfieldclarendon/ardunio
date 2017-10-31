@@ -21,22 +21,22 @@ signals:
     void sendNotificationMessage(const QString &uri, QJsonObject &obj);
 
 public slots:
-    void newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
+    void newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
     void activateTurnout(int deviceID, TurnoutState newState);
     void timerProc(void);
-    void sendConfig(int serialNumber, int moduleIndex);
+    void sendConfig(int serialNumber, int address);
     void controllerRemoved(int serialNumber);
     void controllerConnected(int index);
 
     void messageACKed(const ControllerMessage &message);
 
 private:
-    int getMotorPinSetting(int turnoutID);
-    void getTurnoutIDAndMotorSetting(int serialNumber, int moduleIndex, int port, int &turnoutID, int &motorPinSetting);
-    void getIPAddressAndModuleIndexForDevice(int deviceID, QString &ipAddress, int &moduleIndex, int &port, int &serialNumber);
-    void updateTurnoutState(const QJsonObject &json, int serialNumber, int moduleIndex);
-    void setCurrentState(int turnoutID, TurnoutState newState);
-    void createAndSendNotificationMessage(int turnoutID, TurnoutState newState);
+    int getMotorPinSetting(int deviceID);
+    void getdeviceIDAndMotorSetting(int serialNumber, int address, int port, int &deviceID, int &motorPinSetting);
+    void getIPAddressAndaddressForDevice(int deviceID, QString &ipAddress, int &address, int &port, int &serialNumber);
+    void updateTurnoutState(const QJsonObject &json, int serialNumber, int address);
+    void setCurrentState(int deviceID, TurnoutState newState);
+    void createAndSendNotificationMessage(int deviceID, TurnoutState newState);
 
     TurnoutState getTurnoutState(const QJsonObject &obj, int motorPinSetting) const;
 

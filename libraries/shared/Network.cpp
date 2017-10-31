@@ -160,7 +160,7 @@ void NetworkClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t lengt
 		m_this->m_isConnected = true;
 //		 Send message to server when Connected containing the Serial Number
 		String json;
-                StaticJsonBuffer<250> jsonBuffer;
+        StaticJsonBuffer<250> jsonBuffer;
 		JsonObject &root = jsonBuffer.createObject();
 		root["messageUri"] = "/controller/connect";
 		root["serialNumber"] = ESP.getChipId();
@@ -189,7 +189,7 @@ void NetworkClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t lengt
 		String uri = root["messageUri"];
 		NetActionType actionType = (NetActionType)(int)root["action"];
 		DEBUG_PRINT("[WStype_TEXT] length: %d, uri: %s Action: %d \n", txt.length(), uri.c_str(), actionType);
-		int moduleIndex = root["moduleIndex"];
+		int address = root["address"];
 		if (uri == "/controllerConfig")
 		{
 			if (m_this->m_controllerConfigCallback)
@@ -203,12 +203,12 @@ void NetworkClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t lengt
 		else if (uri == "/controller/module")
 		{
 			if (m_this->m_moduleCallback)
-				m_this->m_moduleCallback(actionType, moduleIndex, root);
+				m_this->m_moduleCallback(actionType, address, root);
 		}
 		else if (uri == "/controller/module/config")
 		{
 			if (m_this->m_moduleConfigCallback)
-				m_this->m_moduleConfigCallback(actionType, moduleIndex, root);
+				m_this->m_moduleConfigCallback(actionType, address, root);
 		}
 		break;
 	}

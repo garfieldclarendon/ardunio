@@ -32,21 +32,21 @@ void RouteHandler::activateRoute(int routeID)
     TurnoutHandler *turnoutHandler = qobject_cast<TurnoutHandler *>(DeviceManager::instance()->getHandler(ClassTurnout));
     if(turnoutHandler)
     {
-        QString sql = QString("SELECT id, turnoutID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID);
+        QString sql = QString("SELECT id, deviceID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID);
         Database db;
-        QList<int> turnoutIDs;
+        QList<int> deviceIDs;
         QList<TurnoutState> newStates;
 
         QSqlQuery query = db.executeQuery(sql);
         while(query.next())
         {
-            turnoutIDs << query.value("turnoutID").toInt();
+            deviceIDs << query.value("deviceID").toInt();
             newStates << (TurnoutState)query.value("turnoutState").toInt();
         }
 
-        for(int x =0; x < turnoutIDs.count(); x++)
+        for(int x =0; x < deviceIDs.count(); x++)
         {
-            turnoutHandler->activateTurnout(turnoutIDs.value(x), newStates.value(x));
+            turnoutHandler->activateTurnout(deviceIDs.value(x), newStates.value(x));
         }
     }
 }
@@ -54,7 +54,7 @@ void RouteHandler::activateRoute(int routeID)
 void RouteHandler::deviceStatusChanged(int deviceID, int status)
 {
     qDebug(QString("RouteHandler::DEVICE_STATUS_CHANGED: %1  STATUS: %2").arg(deviceID).arg(status).toLatin1());
-    QString sql = QString("SELECT DISTINCT routeID FROM routeEntry WHERE turnoutID = %1").arg(deviceID);
+    QString sql = QString("SELECT DISTINCT routeID FROM routeEntry WHERE deviceID = %1").arg(deviceID);
     Database db;
     QList<int> routes;
 
@@ -70,7 +70,7 @@ void RouteHandler::deviceStatusChanged(int deviceID, int status)
     bool isActive = true;
     for(int x = 0; x < routes.count(); x++)
     {
-        QString sql = QString("SELECT routeID, turnoutID, turnoutState FROM routeEntry WHERE routeID = %1 ORDER BY routeID").arg(routes.value(x));
+        QString sql = QString("SELECT routeID, deviceID, turnoutState FROM routeEntry WHERE routeID = %1 ORDER BY routeID").arg(routes.value(x));
         QSqlQuery query2 = db.executeQuery(sql);
         while(query2.next())
         {
@@ -84,9 +84,9 @@ void RouteHandler::deviceStatusChanged(int deviceID, int status)
                 }
                 currentRoute = query2.value("routeID").toInt();
             }
-            int turnoutID = query2.value("turnoutID").toInt();
+            int deviceID = query2.value("deviceID").toInt();
             int newState = query2.value("turnoutState").toInt();
-            if(DeviceManager::instance()->getDeviceStatus(turnoutID) != newState)
+            if(DeviceManager::instance()->getDeviceStatus(deviceID) != newState)
                 isActive = false;
         }
         if(currentRoute > 0)
@@ -100,16 +100,16 @@ void RouteHandler::deviceStatusChanged(int deviceID, int status)
 bool RouteHandler::isRouteActive(int routeID)
 {
     Database db;
-    QString sql = QString("SELECT turnoutID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID);
+    QString sql = QString("SELECT deviceID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID);
     QSqlQuery query2 = db.executeQuery(sql);
     bool isActive = true;
     bool foundRoute = false;
     while(query2.next())
     {
         foundRoute = true;
-        int turnoutID = query2.value("turnoutID").toInt();
+        int deviceID = query2.value("deviceID").toInt();
         int newState = query2.value("turnoutState").toInt();
-        if(DeviceManager::instance()->getDeviceStatus(turnoutID) != newState)
+        if(DeviceManager::instance()->getDeviceStatus(deviceID) != newState)
             isActive = false;
     }
     if(!foundRoute)

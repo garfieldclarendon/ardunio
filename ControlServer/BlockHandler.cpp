@@ -17,65 +17,65 @@ BlockHandler::BlockHandler(QObject *parent)
     connect(ControllerManager::instance(), SIGNAL(controllerRemoved(int)), this, SLOT(controllerRemoved(int)));
 }
 
-void BlockHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
+void BlockHandler::newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
 {
     Q_UNUSED(actionType);
     if(uri == "/controller/module" && classCode == ClassBlock)
-        updateBlockState(json, serialNumber, moduleIndex);
+        updateBlockState(json, serialNumber, address);
 }
 
-void BlockHandler::getBlockID(int serialNumber, int moduleIndex, int port, int &blockID)
+void BlockHandler::getdeviceID(int serialNumber, int address, int port, int &deviceID)
 {
-    QString sql = QString("SELECT device.id FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerModuleID WHERE controller.serialNumber = %1 AND controllerModule.moduleIndex = %2 AND device.moduleIndex = %3").arg(serialNumber).arg(moduleIndex).arg(port);
+    QString sql = QString("SELECT device.id FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerModuleID WHERE controller.serialNumber = %1 AND controllerModule.address = %2 AND device.port = %3").arg(serialNumber).arg(address).arg(port);
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
     {
-        blockID = query.value("id").toInt();
+        deviceID = query.value("id").toInt();
     }
 }
 
 void BlockHandler::controllerRemoved(int serialNumber)
 {
-    QString sql = QString("SELECT device.id as blockID FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE serialNumber = %1").arg(serialNumber);
+    QString sql = QString("SELECT device.id as deviceID FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE serialNumber = %1").arg(serialNumber);
 
-    QList<int> blockIDs;
+    QList<int> deviceIDs;
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
     {
-        blockIDs << query.value("blockID").toInt();
+        deviceIDs << query.value("deviceID").toInt();
     }
 
-    for(int x = 0; x < blockIDs.count(); x++)
+    for(int x = 0; x < deviceIDs.count(); x++)
     {
-        int blockID(blockIDs.value(x));
+        int deviceID(deviceIDs.value(x));
         m_mapMutex.lock();
-        m_blockStates[blockID] = BlockUnknown;
+        m_blockStates[deviceID] = BlockUnknown;
         m_mapMutex.unlock();
-        DeviceManager::instance()->setDeviceStatus(blockID, BlockUnknown);
-        createAndSendNotificationMessage(blockID, BlockUnknown);
+        DeviceManager::instance()->setDeviceStatus(deviceID, BlockUnknown);
+        createAndSendNotificationMessage(deviceID, BlockUnknown);
     }
 }
 
-void BlockHandler::getIPAddressAndModuleIndexForDevice(int deviceID, QString &ipAddress, int &moduleIndex, int &port, int &serialNumber)
+void BlockHandler::getIPAddressAndaddressForDevice(int deviceID, QString &ipAddress, int &address, int &port, int &serialNumber)
 {
-    QString sql = QString("SELECT serialNumber, controllerModule.moduleIndex, device.moduleIndex as port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1").arg(deviceID);
+    QString sql = QString("SELECT serialNumber, controllerModule.address, device.port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1").arg(deviceID);
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
     {
         serialNumber = query.value("serialNumber").toInt();
-        moduleIndex = query.value("moduleIndex").toInt();
+        address = query.value("address").toInt();
         port = query.value("port").toInt();
     }
 
     ipAddress = ControllerManager::instance()->getControllerIPAddress(serialNumber);
 }
 
-void BlockHandler::updateBlockState(const QJsonObject &json, int serialNumber, int moduleIndex)
+void BlockHandler::updateBlockState(const QJsonObject &json, int serialNumber, int address)
 {
-    qDebug(QString("updateBlockState %1 - %2").arg(serialNumber).arg(moduleIndex).toLatin1());
+    qDebug(QString("updateBlockState %1 - %2").arg(serialNumber).arg(address).toLatin1());
     if(json.contains("blocks"))
     {
         QJsonArray array = json["blocks"].toArray();
@@ -85,11 +85,11 @@ void BlockHandler::updateBlockState(const QJsonObject &json, int serialNumber, i
             QJsonObject obj = array.at(x).toObject();
             int port = obj["port"].toInt();
 
-            int blockID = 0;
+            int deviceID = 0;
 
             BlockState blockState;
 
-            getBlockID(serialNumber, moduleIndex, port, blockID);
+            getdeviceID(serialNumber, address, port, deviceID);
 
             int i = obj["blockPin"].toInt();
             if(i == 1)
@@ -97,35 +97,35 @@ void BlockHandler::updateBlockState(const QJsonObject &json, int serialNumber, i
             else
                 blockState = BlockClear;
 
-            if(blockID > 0 && blockState != BlockUnknown)
+            if(deviceID > 0 && blockState != BlockUnknown)
             {
                 qDebug(QString("UPDATING BLOCK: %1 NewState %2").arg(blockState).arg(blockState).toLatin1());
-                setCurrentState(blockID, blockState);
+                setCurrentState(deviceID, blockState);
             }
         }
     }
 }
 
-void BlockHandler::setCurrentState(int blockID, BlockState newState)
+void BlockHandler::setCurrentState(int deviceID, BlockState newState)
 {
     m_mapMutex.lock();
-    BlockState current = m_blockStates.value(blockID);
+    BlockState current = m_blockStates.value(deviceID);
     m_mapMutex.unlock();
     if(current != newState && newState != BlockUnknown)
     {
         m_mapMutex.lock();
-        m_blockStates[blockID] = newState;
+        m_blockStates[deviceID] = newState;
         m_mapMutex.unlock();
-        DeviceManager::instance()->setDeviceStatus(blockID, newState);
-        createAndSendNotificationMessage(blockID, newState);
+        DeviceManager::instance()->setDeviceStatus(deviceID, newState);
+        createAndSendNotificationMessage(deviceID, newState);
     }
 }
 
-void BlockHandler::createAndSendNotificationMessage(int blockID, BlockState newState)
+void BlockHandler::createAndSendNotificationMessage(int deviceID, BlockState newState)
 {
     QString uri("/api/notification/block");
     QJsonObject obj;
-    obj["blockID"] = QString("%1").arg(blockID);
+    obj["deviceID"] = QString("%1").arg(deviceID);
     obj["state"] = QString("%1").arg(newState);
 
     emit sendNotificationMessage(uri, obj);

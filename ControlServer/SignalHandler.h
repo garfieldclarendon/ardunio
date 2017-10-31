@@ -11,11 +11,11 @@ public:
 
 public slots:
     void deviceStatusChanged(int deviceID, int status);
-    void newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
+    void newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
 
 private:
-    void updateSignal(int signalId);
-    void sendSignalUpdateMessage(int serialNumber, int moduleIndex, int port, int redMode, int yellowMode, int greenMode);
+    void updateSignal(int deviceID);
+    void sendSignalUpdateMessage(int serialNumber, int address, int port, int redMode, int yellowMode, int greenMode);
 };
 
 #endif // SIGMALHANDLER_H

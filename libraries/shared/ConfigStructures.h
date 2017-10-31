@@ -31,7 +31,7 @@ typedef struct MultiModuleControllerConfigStruct MultiModuleControllerConfigStru
 
 struct TurnoutConfigStruct
 {
-	int turnoutID;
+	int deviceID;
 	unsigned char inputPinSetting;
 };
 typedef struct TurnoutConfigStruct TurnoutConfigStruct;
@@ -70,7 +70,7 @@ typedef PanelControllerConfigStruct PanelControllerConfigStruct;
 /////////////////////////////////////////////////////////////////////////////////////////
 struct BlockConfigStruct
 {
-        short blockID;
+        short deviceID;
 };
 typedef struct BlockConfigStruct BlockConfigStruct;
 

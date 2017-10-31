@@ -29,16 +29,16 @@ public:
     int getDBVersion(void);
     void setDBVersion(int newVersion);
 
-    QByteArray getTurnoutConfig(quint32 serialNumber, int moduleIndex);
+    QByteArray getTurnoutConfig(quint32 serialNumber, int address);
     QByteArray getPanelConfig(quint32 serialNumber);
     QByteArray getPanelRouteConfig(quint32 serialNumber);
-    QByteArray getSignalConfig(quint32 serialNumber, int moduleIndex);
-    QByteArray getBlockConfig(quint32 serialNumber, int moduleIndex);
+    QByteArray getSignalConfig(quint32 serialNumber, int address);
+    QByteArray getBlockConfig(quint32 serialNumber, int address);
     QByteArray getMultiControllerConfig(quint32 serialNumber);
-    QByteArray getControllerModuleConfig(quint32 serialNumber, quint32 moduleIndex);
+    QByteArray getControllerModuleConfig(quint32 serialNumber, quint32 address);
 
-    QString getTurnoutName(int turnoutID);
-    int getTurnoutID(const QString &name);
+    QString getTurnoutName(int deviceID);
+    int getdeviceID(const QString &name);
 
     void getControllerIDAndName(quint32 serialNumber, int &deviceID, QString &controllerName);
 
@@ -66,7 +66,7 @@ private:
     bool createPanelOutputEntryTable(void);
     bool createSignalTable(void);
     bool createSignalConditionTable(void);
-    bool createSignalAspectCondition(void);
+    bool createsignalAspect(void);
     bool createBlockTable(void);
     bool createDeviceTable(void);
     bool createDevicePropertyTable(void);

@@ -20,63 +20,63 @@ void SignalHandler::deviceStatusChanged(int deviceID, int status)
 {
     qDebug(QString("SignalHandler::deviceStatusChanged.  deviceID: %1  status: %2").arg(deviceID).arg(status).toLatin1());
 
-    QList<int> signalIDs;
+    QList<int> deviceIDs;
     {
-        QString sql = QString("SELECT DISTINCT signalID FROM signalCondition JOIN signalAspectCondition ON signalCondition.signalAspectConditionID = signalAspectCondition.id WHERE deviceID = %1").arg(deviceID);
+        QString sql = QString("SELECT DISTINCT signalAspect.deviceID FROM signalCondition JOIN signalAspect ON signalCondition.signalAspectID = signalAspect.id WHERE signalCondition.deviceID = %1").arg(deviceID);
         Database db;
         QSqlQuery query1 = db.executeQuery(sql);
 
         while(query1.next())
         {
-            signalIDs << query1.value("signalID").toInt();
+            deviceIDs << query1.value("deviceID").toInt();
         }
     }
-    for(int x = 0; x < signalIDs.count(); x++)
+    for(int x = 0; x < deviceIDs.count(); x++)
     {
-        updateSignal(signalIDs.value(x));
+        updateSignal(deviceIDs.value(x));
     }
 }
 
-void SignalHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject & /*json*/)
+void SignalHandler::newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject & /*json*/)
 {
     if(uri == "/controller/module" && classCode == ClassSignal)
     {
         if(actionType == NetActionGet)
         {
-            QList<int> signalIDs;
+            QList<int> deviceIDs;
             {
-                QString sql = QString("SELECT signal.id as signalID FROM signal JOIN controllerModule ON controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2 ").arg(serialNumber).arg(moduleIndex);
+                QString sql = QString("SELECT device.id as deviceID FROM device JOIN controllerModule ON controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE serialNumber = %1 AND controllerModule.address = %2 ").arg(serialNumber).arg(address);
                 Database db;
                 QSqlQuery query1 = db.executeQuery(sql);
 
                 while(query1.next())
                 {
-                    signalIDs << query1.value("signalID").toInt();
+                    deviceIDs << query1.value("deviceID").toInt();
                 }
             }
-            for(int x = 0; x < signalIDs.count(); x++)
+            for(int x = 0; x < deviceIDs.count(); x++)
             {
-                updateSignal(signalIDs.value(x));
+                updateSignal(deviceIDs.value(x));
             }
         }
     }
 }
 
-void SignalHandler::updateSignal(int signalId)
+void SignalHandler::updateSignal(int deviceID)
 {
-    QString sql = QString("SELECT  signalAspectConditionID, signal.moduleIndex AS port, controllerModule.moduleIndex, serialNumber, deviceID, conditionOperand, deviceState, redMode, yellowMode, greenMode FROM signal JOIN signalAspectCondition ON signal.id = signalAspectCondition.signalID JOIN signalCondition ON signalAspectCondition.id = signalCondition.signalAspectConditionID JOIN controllerModule ON signal.controllerModuleID = controllerModule.id  JOIN controller ON controllerModule.controllerID = controller.id WHERE signalAspectCondition.signalID = %1 AND controllerModule.moduleClass = 4 ORDER BY signalAspectConditionID, signalAspectCondition.sortIndex, signalCondition.sortIndex").arg(signalId);
+    QString sql = QString("SELECT DISTINCT signalAspectID, device.port, controllerModule.address, serialNumber, signalCondition.deviceID, conditionOperand, deviceState, redMode, yellowMode, greenMode FROM device JOIN signalAspect ON device.id = signalAspect.deviceID JOIN signalCondition ON signalAspect.id = signalCondition.signalAspectID JOIN controllerModule ON device.controllerModuleID = controllerModule.id  JOIN controller ON controllerModule.controllerID = controller.id WHERE signalAspect.deviceID = %1 AND controllerModule.moduleClass = 4 ORDER BY signalAspect.sortIndex, signalAspectID").arg(deviceID);
 
     Database db;
     QSqlQuery query1 = db.executeQuery(sql);
-    int redMode;
-    int yellowMode;
-    int greenMode;
-    int moduleIndex;
-    int serialNumber;
+    int redMode = 0;
+    int yellowMode = 0;
+    int greenMode = 0;
+    int address;
+    int serialNumber = 0;
     int deviceState;
     int condition;
     int currentState;
-    int deviceID;
+    int id;
     int port;
     int currentCondition = 0;
 
@@ -90,7 +90,7 @@ void SignalHandler::updateSignal(int signalId)
         // When currentCondition changes we know we've gone through all of the conditions for this signal aspect entry.  If "found" is TRUE,
         // then all of the conditions past their tests which means we should set the signal to this aspect....send out the
         // signal aspect defined in this entry.  If any of the conditions fails the test, then we skip this entry and go on to the next
-        if(currentCondition != query1.value("signalAspectConditionID").toInt())
+        if(currentCondition != query1.value("signalAspectID").toInt())
         {
             // The first time through, currentCondition will be 0 so we can skip sending the update
             if(currentCondition != 0)
@@ -111,16 +111,16 @@ void SignalHandler::updateSignal(int signalId)
         if(found)
         {
             serialNumber = query1.value("serialNumber").toInt();
-            moduleIndex = query1.value("moduleIndex").toInt();
+            address = query1.value("address").toInt();
             port = query1.value("port").toInt();
             condition = query1.value("conditionOperand").toInt();
             deviceState = query1.value("deviceState").toInt();
             redMode = query1.value("redMode").toInt();
             yellowMode = query1.value("yellowMode").toInt();
             greenMode = query1.value("greenMode").toInt();
-            deviceID = query1.value("deviceID").toInt();
+            id = query1.value("deviceID").toInt();
 
-            currentState = DeviceManager::instance()->getDeviceStatus(deviceID);
+            currentState = DeviceManager::instance()->getDeviceStatus(id);
 
             if(condition == ConditionEquals)
             {
@@ -133,9 +133,9 @@ void SignalHandler::updateSignal(int signalId)
                     found = false;
             }
         }
-        // before going to the next record, get the signalAspectConditionID and save it in the currentCondition variable.  This gets
+        // before going to the next record, get the signalAspectID and save it in the currentCondition variable.  This gets
         // tested above.  When this id changes, we know we've processed all of the conditions for this signal aspect.
-        currentCondition = query1.value("signalAspectConditionID").toInt();
+        currentCondition = query1.value("signalAspectID").toInt();
     }
 
     // By this point we either found an entry that passed all of the condition tests in which case, "found" will be true which means we should use this
@@ -149,14 +149,15 @@ void SignalHandler::updateSignal(int signalId)
         aspectGreen = greenMode;
     }
 
-    sendSignalUpdateMessage(serialNumber, moduleIndex, port, aspectRed, aspectYellow, aspectGreen);
+    if(serialNumber > 0)
+        sendSignalUpdateMessage(serialNumber, address, port, aspectRed, aspectYellow, aspectGreen);
 }
 
-void SignalHandler::sendSignalUpdateMessage(int serialNumber, int moduleIndex, int port, int redMode, int yellowMode, int greenMode)
+void SignalHandler::sendSignalUpdateMessage(int serialNumber, int address, int port, int redMode, int yellowMode, int greenMode)
 {
     QJsonObject obj;
 
-    obj["moduleIndex"] = moduleIndex;
+    obj["address"] = address;
     obj["messageUri"] = "/controller/module";
     obj["action"] = NetActionUpdate;
     obj["port"] = port;

@@ -97,9 +97,9 @@ void StatusDialog::onDeviceStatusChanged(int deviceID, int status)
     }
 }
 
-void StatusDialog::onPinStateChanged(int moduleIndex, int pinNumber, int pinMode)
+void StatusDialog::onPinStateChanged(int address, int pinNumber, int pinMode)
 {
-    QString moduleIndexTxt(QString("%1").arg(moduleIndex));
+    QString addressTxt(QString("%1").arg(address));
     QString pinNumberTxt(QString("%1").arg(pinNumber));
     QString pinModeTxt(QString("%1").arg(pinMode));
 
@@ -107,7 +107,7 @@ void StatusDialog::onPinStateChanged(int moduleIndex, int pinNumber, int pinMode
 
     for(int x = 0; x < ui->panelTable->rowCount(); x++)
     {
-        if(ui->panelTable->item(x, 0)->text() == moduleIndexTxt &&
+        if(ui->panelTable->item(x, 0)->text() == addressTxt &&
                 ui->panelTable->item(x, 1)->text() == pinNumberTxt)
         {
             item = ui->deviceTable->item(x, 0);
@@ -118,7 +118,7 @@ void StatusDialog::onPinStateChanged(int moduleIndex, int pinNumber, int pinMode
     if(item == NULL)
     {
         ui->panelTable->insertRow(ui->panelTable->rowCount());
-        item = new QTableWidgetItem(moduleIndexTxt);
+        item = new QTableWidgetItem(addressTxt);
         ui->panelTable->setItem(ui->panelTable->rowCount() - 1, 0, item);
         item = new QTableWidgetItem(pinNumberTxt);
         ui->panelTable->setItem(ui->panelTable->rowCount() - 1, 1, item);

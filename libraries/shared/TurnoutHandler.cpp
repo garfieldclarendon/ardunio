@@ -76,7 +76,7 @@ bool TurnoutHandler::process(byte &data)
 
 void TurnoutHandler::setTurnout(byte motorPinSetting)
 {
-	DEBUG_PRINT("SETTURNOUT: %d CURRENT STATE: %d NEW STATE: %d\n", m_config->turnoutID, m_currentMotorSetting, motorPinSetting);
+	DEBUG_PRINT("SETTURNOUT: %d CURRENT STATE: %d NEW STATE: %d\n", m_config->deviceID, m_currentMotorSetting, motorPinSetting);
 	m_currentMotorSetting = motorPinSetting;
 }
 

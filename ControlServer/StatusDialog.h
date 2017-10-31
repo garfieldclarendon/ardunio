@@ -21,7 +21,7 @@ protected slots:
     void onControllerPing(int index, quint64 length);
 
     void onDeviceStatusChanged(int deviceID, int status);
-    void onPinStateChanged(int moduleIndex, int pinNumber, int pinMode);
+    void onPinStateChanged(int address, int pinNumber, int pinMode);
     void onNCEDataChanged(quint8 data, int blockIndex, int byteIndex);
 
 private:

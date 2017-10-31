@@ -19,13 +19,13 @@ TurnoutHandler::TurnoutHandler(QObject *parent)
     connect(ControllerManager::instance(), SIGNAL(messageACKed(ControllerMessage)), this, SLOT(messageACKed(ControllerMessage)));
 }
 
-void TurnoutHandler::newMessage(int serialNumber, int moduleIndex, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
+void TurnoutHandler::newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
 {
     Q_UNUSED(actionType);
     if(uri == "/controller/module" && classCode == ClassTurnout)
-        updateTurnoutState(json, serialNumber, moduleIndex);
+        updateTurnoutState(json, serialNumber, address);
     else if(uri == "/controller/module/config" && classCode == ClassTurnout)
-        sendConfig(serialNumber, moduleIndex);
+        sendConfig(serialNumber, address);
 }
 
 void TurnoutHandler::activateTurnout(int deviceID, TurnoutState newState)
@@ -41,16 +41,16 @@ void TurnoutHandler::activateTurnout(int deviceID, TurnoutState newState)
         QJsonObject obj;
 
         QString ipAddress;
-        int moduleIndex;
+        int address;
         int port;
         int serialNumber;
         int motorPinSetting = getMotorPinSetting(deviceID);
 
-        getIPAddressAndModuleIndexForDevice(deviceID, ipAddress, moduleIndex, port, serialNumber);
+        getIPAddressAndaddressForDevice(deviceID, ipAddress, address, port, serialNumber);
         obj["class"] = ClassTurnout;
         obj["deviceID"] = deviceID;
         obj["newState"] = newState;
-        obj["moduleIndex"] = moduleIndex;
+        obj["address"] = address;
         obj["messageUri"] = "/controller/module";
         obj["action"] = NetActionUpdate;
         obj["port"] = port;
@@ -81,10 +81,10 @@ void TurnoutHandler::timerProc()
     QTimer::singleShot(3000, this, SLOT(timerProc()));
 }
 
-int TurnoutHandler::getMotorPinSetting(int turnoutID)
+int TurnoutHandler::getMotorPinSetting(int deviceID)
 {
     int motorPinSetting = 0;
-    QString sql = QString("SELECT deviceProperty.key, deviceProperty.value FROM deviceProperty WHERE deviceID = %1").arg(turnoutID);
+    QString sql = QString("SELECT deviceProperty.key, deviceProperty.value FROM deviceProperty WHERE deviceID = %1").arg(deviceID);
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
@@ -95,25 +95,25 @@ int TurnoutHandler::getMotorPinSetting(int turnoutID)
     return motorPinSetting;
 }
 
-void TurnoutHandler::getTurnoutIDAndMotorSetting(int serialNumber, int moduleIndex, int port, int &turnoutID, int &motorPinSetting)
+void TurnoutHandler::getdeviceIDAndMotorSetting(int serialNumber, int address, int port, int &deviceID, int &motorPinSetting)
 {
     motorPinSetting = 0;
-    QString sql = QString("SELECT device.id, deviceProperty.key, deviceProperty.value FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerModuleID LEFT OUTER JOIN deviceProperty ON device.id = deviceProperty.deviceID WHERE controller.serialNumber = %1 AND controllerModule.moduleIndex = %2 AND device.moduleIndex = %3").arg(serialNumber).arg(moduleIndex).arg(port);
+    QString sql = QString("SELECT device.id, deviceProperty.key, deviceProperty.value FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerModuleID LEFT OUTER JOIN deviceProperty ON device.id = deviceProperty.deviceID WHERE controller.serialNumber = %1 AND controllerModule.address = %2 AND device.port = %3").arg(serialNumber).arg(address).arg(port);
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
     {
-        turnoutID = query.value("id").toInt();
+        deviceID = query.value("id").toInt();
         if(query.value("key").toString().toUpper() == "INPUTPIN")
             motorPinSetting = query.value("value").toInt();
     }
 }
 
-void TurnoutHandler::sendConfig(int serialNumber, int moduleIndex)
+void TurnoutHandler::sendConfig(int serialNumber, int address)
 {
     qDebug("SENDCONFIG");
     QString queryString;
-    queryString = QString("SELECT device.id, device.moduleIndex as port, deviceProperty.value as motorPinSetting FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID LEFT OUTER JOIN deviceProperty on device.id = deviceProperty.deviceID WHERE serialNumber = %1 AND controllerModule.moduleIndex = %2 ORDER BY controllerModule.moduleIndex").arg(serialNumber).arg(moduleIndex);
+    queryString = QString("SELECT device.id, device.port, deviceProperty.value as motorPinSetting FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID LEFT OUTER JOIN deviceProperty on device.id = deviceProperty.deviceID WHERE serialNumber = %1 AND controllerModule.address = %2 ORDER BY controllerModule.address").arg(serialNumber).arg(address);
     Database db;
     QJsonArray array = db.fetchItems(queryString);
 
@@ -121,7 +121,7 @@ void TurnoutHandler::sendConfig(int serialNumber, int moduleIndex)
     QJsonObject obj;
     obj["messageUri"] = url;
     obj["action"] = NetActionUpdate;
-    obj["moduleIndex"] = moduleIndex;
+    obj["address"] = address;
     obj["motorPinSettings"] = array;
 
     ControllerMessage message(serialNumber, obj);
@@ -130,24 +130,24 @@ void TurnoutHandler::sendConfig(int serialNumber, int moduleIndex)
 
 void TurnoutHandler::controllerRemoved(int serialNumber)
 {
-    QString sql = QString("SELECT device.id as turnoutID FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE serialNumber = %1").arg(serialNumber);
+    QString sql = QString("SELECT device.id as deviceID FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE serialNumber = %1").arg(serialNumber);
 
-    QList<int> turnoutIDs;
+    QList<int> deviceIDs;
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
     {
-        turnoutIDs << query.value("turnoutID").toInt();
+        deviceIDs << query.value("deviceID").toInt();
     }
 
-    for(int x = 0; x < turnoutIDs.count(); x++)
+    for(int x = 0; x < deviceIDs.count(); x++)
     {
-        int turnoutID(turnoutIDs.value(x));
+        int deviceID(deviceIDs.value(x));
         m_mapMutex.lock();
-        m_turnoutStates[turnoutID] = TrnUnknown;
+        m_turnoutStates[deviceID] = TrnUnknown;
         m_mapMutex.unlock();
-        DeviceManager::instance()->setDeviceStatus(turnoutID, TrnUnknown);
-        createAndSendNotificationMessage(turnoutID, TrnUnknown);
+        DeviceManager::instance()->setDeviceStatus(deviceID, TrnUnknown);
+        createAndSendNotificationMessage(deviceID, TrnUnknown);
     }
 }
 
@@ -176,24 +176,24 @@ void TurnoutHandler::messageACKed(const ControllerMessage &message)
     }
 }
 
-void TurnoutHandler::getIPAddressAndModuleIndexForDevice(int deviceID, QString &ipAddress, int &moduleIndex, int &port, int &serialNumber)
+void TurnoutHandler::getIPAddressAndaddressForDevice(int deviceID, QString &ipAddress, int &address, int &port, int &serialNumber)
 {
-    QString sql = QString("SELECT serialNumber, controllerModule.moduleIndex, device.moduleIndex as port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1").arg(deviceID);
+    QString sql = QString("SELECT serialNumber, controllerModule.address, device.port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1").arg(deviceID);
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
     {
         serialNumber = query.value("serialNumber").toInt();
-        moduleIndex = query.value("moduleIndex").toInt();
+        address = query.value("address").toInt();
         port = query.value("port").toInt();
     }
 
     ipAddress = ControllerManager::instance()->getControllerIPAddress(serialNumber);
 }
 
-void TurnoutHandler::updateTurnoutState(const QJsonObject &json, int serialNumber, int moduleIndex)
+void TurnoutHandler::updateTurnoutState(const QJsonObject &json, int serialNumber, int address)
 {
-    qDebug(QString("updateTurnoutState %1 - %2").arg(serialNumber).arg(moduleIndex).toLatin1());
+    qDebug(QString("updateTurnoutState %1 - %2").arg(serialNumber).arg(address).toLatin1());
     if(json.contains("turnouts"))
     {
         QJsonArray array = json["turnouts"].toArray();
@@ -203,28 +203,28 @@ void TurnoutHandler::updateTurnoutState(const QJsonObject &json, int serialNumbe
             QJsonObject obj = array.at(x).toObject();
             int port = obj["port"].toInt();
 
-            int turnoutID;
+            int deviceID;
             int motorPinSetting;
 
             TurnoutState turnoutState;
 
-            getTurnoutIDAndMotorSetting(serialNumber, moduleIndex, port, turnoutID, motorPinSetting);
+            getdeviceIDAndMotorSetting(serialNumber, address, port, deviceID, motorPinSetting);
 
             turnoutState = getTurnoutState(obj, motorPinSetting);
 
-            if(turnoutID > 0 && turnoutState != TrnUnknown)
+            if(deviceID > 0 && turnoutState != TrnUnknown)
             {
-                qDebug(QString("UPDATING TURNOUT: %1 NewState %2 pinSetting %3").arg(turnoutID).arg(turnoutState).arg(motorPinSetting).toLatin1());
-                setCurrentState(turnoutID, turnoutState);
+                qDebug(QString("UPDATING TURNOUT: %1 NewState %2 pinSetting %3").arg(deviceID).arg(turnoutState).arg(motorPinSetting).toLatin1());
+                setCurrentState(deviceID, turnoutState);
             }
         }
     }
 }
 
-void TurnoutHandler::setCurrentState(int turnoutID, TurnoutState newState)
+void TurnoutHandler::setCurrentState(int deviceID, TurnoutState newState)
 {
     m_mapMutex.lock();
-    TurnoutState current = m_turnoutStates.value(turnoutID);
+    TurnoutState current = m_turnoutStates.value(deviceID);
     m_mapMutex.unlock();
     if(current != newState && newState != TrnUnknown)
     {
@@ -233,28 +233,28 @@ void TurnoutHandler::setCurrentState(int turnoutID, TurnoutState newState)
             if((current == TrnToNormal && newState == TrnNormal) || (current == TrnToDiverging && newState == TrnDiverging))
             {
                 m_mapMutex.lock();
-                m_turnoutStates[turnoutID] = newState;
+                m_turnoutStates[deviceID] = newState;
                 m_mapMutex.unlock();
-                DeviceManager::instance()->setDeviceStatus(turnoutID, newState);
-                createAndSendNotificationMessage(turnoutID, newState);
+                DeviceManager::instance()->setDeviceStatus(deviceID, newState);
+                createAndSendNotificationMessage(deviceID, newState);
             }
         }
         else
         {
             m_mapMutex.lock();
-            m_turnoutStates[turnoutID] = newState;
+            m_turnoutStates[deviceID] = newState;
             m_mapMutex.unlock();
-            DeviceManager::instance()->setDeviceStatus(turnoutID, newState);
-            createAndSendNotificationMessage(turnoutID, newState);
+            DeviceManager::instance()->setDeviceStatus(deviceID, newState);
+            createAndSendNotificationMessage(deviceID, newState);
         }
     }
 }
 
-void TurnoutHandler::createAndSendNotificationMessage(int turnoutID, TurnoutState newState)
+void TurnoutHandler::createAndSendNotificationMessage(int deviceID, TurnoutState newState)
 {
     QString uri("/api/notification/turnout");
     QJsonObject obj;
-    obj["turnoutID"] = QString("%1").arg(turnoutID);
+    obj["deviceID"] = QString("%1").arg(deviceID);
     obj["state"] = QString("%1").arg(newState);
 
     emit sendNotificationMessage(uri, obj);

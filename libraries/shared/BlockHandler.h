@@ -10,13 +10,13 @@ public:
 
 	BlockHandler(void);
 	void setup(byte blockPin);
-	void setConfig(BlockConfigStruct value) { m_config = value; if (m_config.blockID > 0) m_currentState = 0;  }
+	void setConfig(BlockConfigStruct value) { m_config = value; if (m_config.deviceID > 0) m_currentState = 0;  }
 	BlockConfigStruct getConfig(void) const { return m_config; }
 	bool process(byte &data);
 	bool handleMessage(const Message &message);
 	byte getCurrentState(void) const { return m_currentState; }
 
-	int getBlockID(void) const { return m_config.blockID; }
+	int getdeviceID(void) const { return m_config.deviceID; }
 	void setConfigValue(const char *key, const char *value);
 
 private:

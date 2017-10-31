@@ -14,16 +14,14 @@ public:
 
 	// Module overrides
 	byte getIODirConfig(void) const override;
-	byte getDeviceCount(void) const override { return MAX_SIGNALS; }
-	short getDeviceID(byte index) const override { return 0; }
 	byte getCurrentState(void) const override { return m_currentState; }
 	void setup(void) override;
 	void setupWire(byte address) override;
 	bool process(byte &data) override;
 	void sendStatusMessage(void) override;
 
-	void netModuleCallback(NetActionType action, byte moduleIndex, const JsonObject &json, byte &data);
-	void netModuleConfigCallback(NetActionType action, byte moduleIndex, const JsonObject &json);
+	void netModuleCallback(NetActionType action, byte address, const JsonObject &json, byte &data);
+	void netModuleConfigCallback(NetActionType action, byte address, const JsonObject &json);
 
 private:
 	void setSignal(byte port, PinStateEnum pin1State, PinStateEnum pin2State, PinStateEnum pin3State);
