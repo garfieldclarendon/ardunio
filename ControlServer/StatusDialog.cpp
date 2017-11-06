@@ -195,7 +195,7 @@ void StatusDialog::setupDeviceList()
     ui->deviceTable->horizontalHeader()->setStyleSheet("color: blue");
     ui->deviceTable->verticalHeader()->setStyleSheet("color: blue");
 
-    connect(DeviceManager::instance(), &DeviceManager::deviceStatusChanged, this, &StatusDialog::onDeviceStatusChanged);
+    connect(DeviceManager::instance(), &DeviceManager::deviceStatusChanged, this, &StatusDialog::onDeviceStatusChanged, Qt::QueuedConnection);
 
     for(int x = 0; x < DeviceManager::instance()->getDeviceCount(); x++)
     {

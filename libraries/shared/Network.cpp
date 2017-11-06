@@ -156,6 +156,7 @@ void NetworkClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t lengt
 	case WStype_CONNECTED:
 	{
 		DEBUG_PRINT("[WSc] Connected to server: %s\n", payload);
+		DEBUG_PRINT("CONNECTED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!**************************************************************************************\n", payload);
 
 		m_this->m_isConnected = true;
 //		 Send message to server when Connected containing the Serial Number

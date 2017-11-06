@@ -20,22 +20,23 @@
 #include "configStructures.h"
 #include "ConfigDownload.h"
 #include "TurnoutModule.h"
-#include "BlockModule.h"
-#include "SignalModule.h"
 #include "InputModule.h"
+#include "OutputModule.h"
 
 #define BASE_ADDRESS 0x20  // MCP23008 is on I2C port 0x20
 
 const int MODULE_CONFIG_BASE_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
 
-const byte STATUS_LED_PIN = 12;
+// STATUS_LED_PIN is used to show the status of the connection to the LCServer
+// LED on indicates the controller is connected to the server
+// LED off indicates the controller is offline
+const byte STATUS_LED_PIN = 2;// use the built in blue LED on the ESP8266 connected to pin2
 const byte LOCKOUT_PIN = 13;
 bool lockout = false;
 byte lastLockoutRead = 0;
 long currentLockoutTimeout = 0;
 
-byte totalModules = 1;
-bool downloadModuleConfig = false;
+byte totalModules = 0;
 
 Module *modules[MAX_MODULES];
 Controller controller(LocalServerPort);
@@ -63,7 +64,9 @@ Serial.setDebugOutput(true);
 	bool result = SPIFFS.begin();
 	DEBUG_PRINT("SPIFFS opened: %d\n", result);
 
-	controller.setup(ClassMulti);
+	loadConfiguration();
+
+	controller.setup((ClassEnum)controllerConfig.controllerClass);
 
 	Network.setModuleConfigCallback(netModuleConfigCallback);
 	Network.setControllerCallback(netControllerCallback);
@@ -72,13 +75,25 @@ Serial.setDebugOutput(true);
 	Network.setUdpMessageCallback(udpMessageCallback);
 	Network.setServerConnectedCallback(serverReconnected);
 
-	loadConfiguration();
-	setupHardware();
-
-	for (byte x = 0; x < totalModules; x++)
+	if (totalModules > 0)
 	{
-		DEBUG_PRINT("CALLING SETUPWIRE FOR ADDRESS: %d\n", x);
-		modules[x]->setupWire(x);
+		setupHardware();
+		createModules();
+		loadModuleConfiguration();
+
+		for (byte x = 0; x < totalModules; x++)
+		{
+			if (controllerConfig.controllerClass == ClassMulti)
+			{
+				DEBUG_PRINT("CALLING SETUPWIRE FOR ADDRESS: %d\n", x);
+				modules[x]->setupWire(controllerConfig.moduleConfigs[x].address);
+			}
+			else
+			{
+				DEBUG_PRINT("CALLING SETUP FOR ADDRESS: %d\n", x);
+				modules[x]->setup();
+			}
+		}
 	}
 
 	DEBUG_PRINT("setup complete\n");
@@ -87,24 +102,12 @@ Serial.setDebugOutput(true);
 void serverReconnected(void)
 {
 	DEBUG_PRINT("serverReconnected\n");
-	if (totalModules == 0)
-	{
-		downloadConfig();
-	}
-	else if (downloadModuleConfig)
-	{
-		downloadModuleConfig = false;
-		for (byte x = 0; x < totalModules; x++)
-		{
-			downloadModuelConfig(x, (ClassEnum)controllerConfig.moduleConfigs[x].moduleClass);
-		}
-	}
 
 	for (byte x = 0; x < totalModules; x++)
 	{
 		modules[x]->serverOnline();
 		modules[x]->sendStatusMessage();
-	}
+	}; 
 }
 
 void netModuleConfigCallback(NetActionType action, byte address, const JsonObject &json)
@@ -156,18 +159,17 @@ String netControllerConfigCallback(NetActionType action, const JsonObject &json)
 {
 	DEBUG_PRINT("netControllerConfigCallback: NetAction %d\n", action);
 
-	controllerConfig.extraPin0Mode = (PinModeEnum)(int)json["extrPin0Mode"];
-	controllerConfig.extraPin1Mode = (PinModeEnum)(int)json["extrPin1Mode"];
-	controllerConfig.extraPin2Mode = (PinModeEnum)(int)json["extrPin2Mode"];
-	controllerConfig.extraPin3Mode = (PinModeEnum)(int)json["extrPin3Mode"];
-	controllerConfig.extraPin4Mode = (PinModeEnum)(int)json["extrPin4Mode"];
+	controllerConfig.controllerClass = (ClassEnum)(int)json["controllerClass"];
 
 	JsonArray &mods = json["modules"];
+	controllerConfig.controllerClass = json["controllerClass"];
 	controllerConfig.mdouleCount = mods.size();
 	for (byte x = 0; x < mods.size(); x++)
 	{
 		int index = mods[x]["index"];
-		controllerConfig.moduleConfigs[index].moduleClass = (int)mods[x]["class"];
+		controllerConfig.moduleConfigs[x].moduleClass = mods[x]["class"];
+		controllerConfig.moduleConfigs[x].address = mods[x]["address"];
+		DEBUG_PRINT("Module Config  Class: %d  Address: %d\n", controllerConfig.moduleConfigs[index].moduleClass, controllerConfig.moduleConfigs[index].address);
 	}
 
 	saveControllerConfig();
@@ -182,7 +184,10 @@ void netModuleCallback(NetActionType action, byte address, const JsonObject &jso
 {
 	if (address < totalModules && address >= 0)
 	{
-		modules[address]->netModuleCallbackWire(action, address, json);
+		if (controllerConfig.controllerClass == ClassMulti)
+			modules[address]->netModuleCallbackWire(action, address, json);
+		else
+			modules[address]->netModuleCallbackNoWire(action, address, json);
 	}
 }
 
@@ -201,14 +206,18 @@ void udpMessageCallback(const Message &message)
 void setupHardware(void)
 {
 	DEBUG_PRINT("setup hardware\n");
-	Wire.begin(4, 5); //creates a Wire object
+	if (controllerConfig.controllerClass == ClassMulti)
+	{
+		Wire.begin(4, 5); //creates a Wire object
 
-	//Pin 12 is the network status indicator LED
-	// ON - Connected to the server
-	// OFF - Disconnected
-	pinMode(STATUS_LED_PIN, OUTPUT);
-	//Pin 13 is the lockout switch input
-	pinMode(LOCKOUT_PIN, INPUT);
+		//Pin 12 is the network status indicator LED
+		// ON - Connected to the server
+		// OFF - Disconnected
+		pinMode(STATUS_LED_PIN, OUTPUT);
+		digitalWrite(STATUS_LED_PIN, HIGH);
+		//Pin 13 is the lockout switch input
+		pinMode(LOCKOUT_PIN, INPUT);
+	}
 }
 
 void loop() 
@@ -217,25 +226,32 @@ void loop()
 	Network.process();
 	controller.process();
 
-	if (Network.getIsConnected())
+	if (Network.getIsConnected() == false)
 	{
 		for (byte x = 0; x < totalModules; x++)
 		{
 			modules[x]->serverOffline();
 		}
 	}
-	bool sendStatus = false;
 	for (byte x = 0; x < totalModules; x++)
 	{
-		modules[x]->processWire();
+		if (controllerConfig.controllerClass == ClassMulti)
+			modules[x]->processWire();
+		else
+			modules[x]->processNoWire();
 		yield();
 	}
-	setStatusIndicator();
+
+	if (controllerConfig.controllerClass == ClassMulti)
+		setStatusIndicator();
+
+	if (totalModules == 0)
+		delay(100);
 }
 
 void loadConfiguration(void)
 {
-	if (EEPROM.read(0) == 0xAD)
+	if (EEPROM.read(0) == 0xBB)
 	{
 		// Get the number of modules connected to this controller.
 		DEBUG_PRINT("Getting the controller configuration: \n");
@@ -245,9 +261,6 @@ void loadConfiguration(void)
 		totalModules = controllerConfig.mdouleCount;
 
 		DEBUG_PRINT("DONE GETTING CONFIGURATION\n");
-
-		createModules();
-		loadModuleConfiguration();
 	}
 	else
 	{
@@ -257,8 +270,7 @@ void loadConfiguration(void)
 
 		totalModules = 0;
 		memset(&controllerConfig, 0, sizeof(MultiModuleControllerConfigStruct));
-		EEPROM.put(MODULE_CONFIG_BASE_ADDRESS, controllerConfig);
-		EEPROM.commit();
+		saveControllerConfig();
 		DEBUG_PRINT("DONE SAVING EEPROM.  Initializing to 0\n");
 	}
 }
@@ -305,34 +317,38 @@ void createModules(void)
 		if (modules[index] != NULL)
 			delete modules[index];
 
-		if (controllerConfig.moduleConfigs[index].moduleClass == ClassTurnout)
+		switch (controllerConfig.moduleConfigs[index].moduleClass)
 		{
-			DEBUG_PRINT("CreateModules:  Creating Turnout Module\n");
-			TurnoutModule *turnout = new TurnoutModule();
-			modules[index] = turnout;
-		}
-		else if (controllerConfig.moduleConfigs[index].moduleClass == ClassBlock)
-		{
-		  DEBUG_PRINT("CreateModules:  Creating Block Module\n");
-		  BlockModule *block = new BlockModule();
-		  modules[index] = block;
-		}
-		else if (controllerConfig.moduleConfigs[index].moduleClass == ClassSignal)
-		{
-		  DEBUG_PRINT("CreateModules:  Creating Signal Module\n");
-		  SignalModule *signalMod = new SignalModule();
-		  modules[index] = signalMod;
-		}
-		else if (controllerConfig.moduleConfigs[index].moduleClass == ClassInput)
-		{
-			DEBUG_PRINT("CreateModules:  Creating Input Module\n");
-			InputModuleClass *inputMod = new InputModuleClass();
-			modules[index] = inputMod;
-		}
-		else
-		{
-			allModulesCreated = false;
-			totalModules = 0;
+			case ClassTurnout:
+			{
+				DEBUG_PRINT("CreateModules:  Creating Turnout Module\n");
+				TurnoutModule *turnout = new TurnoutModule();
+				modules[index] = turnout;
+				break;
+			}
+			case ClassBlock:
+			case ClassInput:
+			{
+				DEBUG_PRINT("CreateModules:  Creating Output Module\n");
+				InputModule *inputMod = new InputModule();
+				modules[index] = inputMod;
+				break;
+			}
+			case ClassSignal:
+			case ClassOutput:
+			{
+				DEBUG_PRINT("CreateModules:  Creating Output Module\n");
+				OutputModule *outputMod = new OutputModule();
+				modules[index] = outputMod;
+				break;
+			}
+			default:
+			{
+				DEBUG_PRINT("CreateModules:  INVALID MODULE CLASS: %d\n", controllerConfig.moduleConfigs[index].moduleClass);
+				allModulesCreated = false;
+				totalModules = 0;
+				break;
+			}
 		}
 	}
 }
@@ -368,7 +384,7 @@ void saveControllerConfig(void)
 {
 	DEBUG_PRINT("Saving module configuration to EEPROM!!!!!!!\nTotal Modules: %d\n", controllerConfig.mdouleCount);
 	
-	EEPROM.write(0, 0xAD);
+	EEPROM.write(0, 0xBB);
 	EEPROM.put(MODULE_CONFIG_BASE_ADDRESS, controllerConfig);
 	EEPROM.commit();
 }
@@ -399,7 +415,7 @@ void checkLockoutPin(void)
 void setStatusIndicator(void)
 {
 	if (Network.getIsConnected())
-		digitalWrite(STATUS_LED_PIN, HIGH);
+		digitalWrite(STATUS_LED_PIN, LOW); // Turn LED on
 	else
-		digitalWrite(STATUS_LED_PIN, LOW);
+		digitalWrite(STATUS_LED_PIN, HIGH); // Turn LED off
 }

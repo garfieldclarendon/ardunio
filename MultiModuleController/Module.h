@@ -28,6 +28,7 @@ public:
 	virtual void setup(void) { }
 	virtual void setupWire(byte address) = 0;
 	virtual bool processWire(void);
+	virtual void processNoWire(void) { }
 	virtual bool process(byte &data) = 0;
 
 	virtual byte getIODirConfig(void) const = 0;
@@ -36,6 +37,7 @@ public:
 	virtual void netModuleConfigCallback(NetActionType action, byte address, const JsonObject &json) = 0;
 	virtual void sendStatusMessage(void) = 0;
 	virtual void netModuleCallbackWire(NetActionType action, byte address, const JsonObject &json);
+	virtual void netModuleCallbackNoWire(NetActionType action, byte address, const JsonObject &json) { }
 	virtual void serverOffline(void) { }
 	virtual void serverOnline(void) { }
 	virtual void controllerLockout(bool locked) { }

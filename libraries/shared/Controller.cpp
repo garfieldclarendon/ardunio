@@ -28,6 +28,7 @@ Controller::~Controller()
 void Controller::setup(ClassEnum controllerClass)
 {
 	m_class = controllerClass;
+	WiFi.mode(WIFI_STA);
 	WiFi.setAutoConnect(false);
 	WiFi.disconnect();
 
@@ -57,7 +58,7 @@ void Controller::process(void)
 			findServer();
 		}
 	}
-	flashPins();
+//	flashPins();
 }
 
 void Controller::processMessage(const Message &message)

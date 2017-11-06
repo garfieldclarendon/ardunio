@@ -64,10 +64,8 @@ private:
     bool createRouteEntryTable(void);
     bool createPanelInputEntryTable(void);
     bool createPanelOutputEntryTable(void);
-    bool createSignalTable(void);
     bool createSignalConditionTable(void);
     bool createsignalAspect(void);
-    bool createBlockTable(void);
     bool createDeviceTable(void);
     bool createDevicePropertyTable(void);
     bool createPanelRouteTable(void);

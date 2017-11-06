@@ -69,11 +69,9 @@ bool Database::createDatabase(void)
                                         if(createRouteEntryTable())
                                             if(createPanelInputEntryTable())
                                                 if(createPanelOutputEntryTable())
-                                                    if(createSignalTable())
-                                                        if(createsignalAspect())
-                                                            if(createSignalConditionTable())
-                                                                if(createBlockTable())
-                                                                    ret = createPanelRouteTable();
+                                                    if(createsignalAspect())
+                                                        if(createSignalConditionTable())
+                                                            ret = createPanelRouteTable();
     }
     else
     {
@@ -268,7 +266,7 @@ QByteArray Database::getPanelConfig(quint32 serialNumber)
         db = QSqlDatabase::database();
     db.open();
     QSqlQuery query(db);
-    query.exec(QString("SELECT moduleClass, address FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 ORDER BY address").arg(serialNumber));
+    query.exec(QString("SELECT deviceClass, address FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 ORDER BY address").arg(serialNumber));
     while (query.next())
     {
         QJsonObject o;
@@ -324,15 +322,18 @@ QByteArray Database::getMultiControllerConfig(quint32 serialNumber)
         db = QSqlDatabase::database();
     db.open();
     QSqlQuery query(db);
-    query.exec(QString("SELECT moduleClass, address FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 ORDER BY address").arg(serialNumber));
+    query.exec(QString("SELECT moduleClass, address, controllerClass FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.disable <> 1 ORDER BY address").arg(serialNumber));
+    QString controllerClass;
     while (query.next())
     {
+        controllerClass = query.value(2).toString();
         QJsonObject o;
         o["class"] = query.value(0).toString();
-        o["index"] = query.value(1).toString();
+        o["address"] = query.value(1).toString();
         array.append(o);
     }
     obj["messageUri"] = "/controllerConfig";
+    obj["controllerClass"] = controllerClass;
     obj["modules"] = array;
     jsonDoc.setObject(obj);
 
@@ -344,7 +345,7 @@ QByteArray Database::getControllerModuleConfig(quint32 serialNumber, quint32 add
     QString classCode;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT moduleClass FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND address = %2").arg(serialNumber).arg(address));
+    query.exec(QString("SELECT deviceClass FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND address = %2").arg(serialNumber).arg(address));
     while (query.next())
     {
         classCode = query.value(0).toString();
@@ -539,6 +540,8 @@ bool Database::createControllerModuleTable()
               "(id INTEGER primary key, "
               "controllerID INTEGER, "
               "address INTEGER, "
+              "moduleClass INTEGER, "
+              "disable INTEGER, "
               "moduleName VARCHAR(20))");
     if(ret == false)
     {
@@ -734,23 +737,6 @@ bool Database::createPanelOutputEntryTable()
     return ret;
 }
 
-bool Database::createSignalTable()
-{
-    bool ret = false;
-    QSqlQuery query(db);
-    ret = query.exec("CREATE TABLE IF NOT EXISTS signal "
-              "(id INTEGER primary key, "
-              "controllerModuleID INTEGER, "
-              "signalName VARCHAR(20), "
-              "signalDescription VARCHAR(50))");
-    if(ret == false)
-    {
-        qDebug(query.lastError().text().toLatin1());
-        emit logError(1, query.lastError().number(), query.lastError().text());
-    }
-    return ret;
-}
-
 bool Database::createSignalConditionTable()
 {
     bool ret = false;
@@ -758,7 +744,6 @@ bool Database::createSignalConditionTable()
     ret = query.exec("CREATE TABLE IF NOT EXISTS signalCondition "
               "(id INTEGER primary key, "
               "signalAspectID INTEGER, "
-              "sortIndex INTEGER, "
               "deviceID INTEGER, "
               "conditionOperand INTEGER, "
               "deviceState INTEGER "
@@ -791,23 +776,6 @@ bool Database::createsignalAspect()
     return ret;
 }
 
-bool Database::createBlockTable()
-{
-    bool ret = false;
-    QSqlQuery query(db);
-    ret = query.exec("CREATE TABLE IF NOT EXISTS block "
-                     "(id INTEGER primary key, "
-                     "controllerID INTEGER, "
-                     "blockName VARCHAR(20), "
-                     "blockDescription VARCHAR(50))");
-    if(ret == false)
-    {
-        qDebug(query.lastError().text().toLatin1());
-        emit logError(1, query.lastError().number(), query.lastError().text());
-    }
-    return ret;
-}
-
 bool Database::createPanelRouteTable()
 {
     bool ret = false;
@@ -831,68 +799,14 @@ bool Database::createDeviceTable()
     ret = query.exec("CREATE TABLE IF NOT EXISTS device "
                      "(id INTEGER primary key, "
                      "controllerModuleID INTEGER, "
-                     "address INTEGER, "
+                     "port INTEGER, "
+                     "deviceClass INTEGER, "
                      "deviceName VARCHAR(20), "
                      "deviceDescription VARCHAR(50))");
     if(ret == false)
     {
         qDebug(query.lastError().text().toLatin1());
         emit logError(1, query.lastError().number(), query.lastError().text());
-    }
-    else
-    {
-        if(getDBVersion() > 0 && CurrentDatabaseVersion <= getDBVersion())
-            return true;
-
-        int moduleID = -1;
-        {
-            ret = db.exec("ALTER TABLE signal RENAME TO signal_old").lastError().isValid() == false;
-            ret = createSignalTable();
-            ret = db.exec(QString("INSERT INTO controllerModule (id, controllerID, address, moduleName) SELECT id, controllerID, panelIndex, panelName FROM panelModule")).lastError().isValid() == false;
-            QSqlQuery moduleQuery(db);
-            ret = moduleQuery.exec("SELECT MAX(id) FROM controllerModule");
-            while(moduleQuery.next())
-                moduleID = moduleQuery.value(0).toInt() + 1;
-        }
-
-        if(moduleID > 0)
-        {
-            QSqlQuery itemQuery(db);
-            ret = itemQuery.exec("SELECT id, controllerID, itemName, itemDescription FROM layoutItem ORDER BY controllerID");
-            if(ret)
-            {
-                int idHold = 0;
-                while(itemQuery.next())
-                {
-                    int itemID = itemQuery.value("id").toInt();
-                    int controllerID = itemQuery.value("controllerID").toInt();
-                    QString moduleName = itemQuery.value("itemName").toString();
-                    QString description = itemQuery.value("itemDescription").toString();
-
-                    if(controllerID != idHold)
-                    {
-                        idHold = controllerID;
-                        ret = db.exec(QString("INSERT INTO controllerModule (id, controllerID, moduleName, address) VALUES(%1, %2, '%3', 0)").arg(moduleID++).arg(controllerID).arg(moduleName)).lastError().isValid() == false;
-                    }
-                    ret = db.exec(QString("INSERT INTO device (id, controllerModuleID, deviceName, deviceDescription) VALUES(%1, %2, '%3', '%4')").arg(itemID).arg(moduleID).arg(moduleName).arg(description)).lastError().isValid() == false;
-                }
-            }
-            {
-                QSqlQuery signalQuery(db);
-                ret = signalQuery.exec("SELECT id, controllerID FROM signal_old ORDER BY controllerID");
-                while(signalQuery.next())
-                {
-                    int deviceID = signalQuery.value("id").toInt();
-                    int controllerID = signalQuery.value("controllerID").toInt();
-                    ret = db.exec(QString("INSERT INTO controllerModule (id, controllerID, moduleName, address) VALUES(%1, %2, 'Signal', 0)").arg(moduleID).arg(controllerID)).lastError().isValid() == false;
-                    ret = db.exec(QString("INSERT INTO signal (id, controllerModuleID, signalName) VALUES(%1, %2, 'Signal')").arg(deviceID).arg(moduleID++)).lastError().isValid() == false;
-                }
-            }
-            // clean up old tables
-            ret = db.exec("DROP TABLE panelModule").lastError().isValid() == false;
-            ret = db.exec("DELETE FROM layoutItem").lastError().isValid() == false;
-            ret = db.exec(QString("DROP TABLE signal_old")).lastError().isValid() == false;
-        }
     }
     return ret;
 

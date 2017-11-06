@@ -26,7 +26,8 @@ enum ControllerStatus
     ControllerUnknown,
     ControllerOffline,
     ControllerOnline,
-    ControllerRestarting
+    ControllerRestarting,
+    ControllerConected
 };
 
 enum ConditionEnum

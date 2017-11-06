@@ -14,7 +14,7 @@
 PanelHandler::PanelHandler(QObject *parent)
     : DeviceHandler(ClassPanel, parent)
 {
-    connect(DeviceManager::instance(), SIGNAL(deviceStatusChanged(int,int)), this, SLOT(deviceStatusChanged(int,int)));
+    connect(DeviceManager::instance(), SIGNAL(deviceStatusChanged(int,int)), this, SLOT(deviceStatusChanged(int,int)), Qt::QueuedConnection);
 //    connect(RouteHandler::instance(), SIGNAL(routeStatusChanged(int,bool)), this, SLOT(routeChanged(int, bool)));
 }
 
@@ -22,7 +22,7 @@ void PanelHandler::deviceStatusChanged(int deviceID, int status)
 {
     qDebug(QString("PanelHandler::deviceStatusChanged.  deviceID: %1  status: %2").arg(deviceID).arg(status).toLatin1());
 
-    QString sql = QString("SELECT pinIndex, onValue, flashingValue, address, serialNumber FROM panelOutputEntry JOIN controllerModule ON panelOutputEntry.panelModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE itemID = %1 ORDER BY controller.serialNumber, controllerModule.address").arg(deviceID);
+    QString sql = QString("SELECT pinIndex, onValue, flashingValue, address, serialNumber FROM panelOutputEntry JOIN controllerModule ON panelOutputEntry.panelModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE itemID = %1 AND controllerModule.disable = 0 ORDER BY controller.serialNumber, controllerModule.address").arg(deviceID);
     Database db;
     QSqlQuery query1 = db.executeQuery(sql);
 
@@ -194,9 +194,14 @@ void PanelHandler::newMessage(int serialNumber, int address, ClassEnum classCode
     {
         if(actionType == NetActionUpdate)
         {
-            int buttonIndex = json["buttonIndex"].toInt();
+            int pin;
+            // For existing panle controllers.  This can be removed after those controllers are retired
+            if(json.contains("buttonIndex"))
+                pin = json["buttonIndex"].toInt();
+            else
+                pin = json["pin"].toInt();
 
-            int routeID = getRouteID(serialNumber, address, buttonIndex);
+            int routeID = getRouteID(serialNumber, address, pin);
             qDebug(QString("PanelHandler::newMessage:  Activate Route: %1").arg(routeID).toLatin1());
 
             if(routeID > 0)
@@ -242,11 +247,12 @@ void PanelHandler::newMessage(int serialNumber, int address, ClassEnum classCode
     }
 }
 
-int PanelHandler::getRouteID(int serialNumber, int address, int buttonIndex)
+int PanelHandler::getRouteID(int serialNumber, int address, int pin)
 {
+    qDebug(QString("GETROUTEID: Serial Number %1 Address: %2  Pin: %3").arg(serialNumber).arg(address).arg(pin).toLatin1());
     int routeID = 0;
 
-    QString sql = QString("SELECT inputID as routeID FROM panelInputEntry JOIN controllerModule ON panelInputEntry.panelModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE controller.serialNumber = %1 AND controllerModule.address = %2 AND pinIndex = %3").arg(serialNumber).arg(address).arg(buttonIndex);
+    QString sql = QString("SELECT inputID as routeID FROM panelInputEntry JOIN controllerModule ON panelInputEntry.panelModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE controller.serialNumber = %1 AND controllerModule.address = %2 AND pinIndex = %3").arg(serialNumber).arg(address).arg(pin);
     Database db;
     QSqlQuery query1 = db.executeQuery(sql);
     while(query1.next())

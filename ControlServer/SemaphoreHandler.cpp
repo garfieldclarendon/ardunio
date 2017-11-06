@@ -13,7 +13,7 @@
 SemaphoreHandler::SemaphoreHandler(QObject *parent)
     : DeviceHandler(ClassSemaphore, parent)
 {
-    connect(DeviceManager::instance(), SIGNAL(deviceStatusChanged(int,int)), this, SLOT(deviceStatusChanged(int,int)));
+    connect(DeviceManager::instance(), SIGNAL(deviceStatusChanged(int,int)), this, SLOT(deviceStatusChanged(int,int)), Qt::QueuedConnection);
 }
 
 void SemaphoreHandler::deviceStatusChanged(int deviceID, int status)
@@ -45,7 +45,7 @@ void SemaphoreHandler::newMessage(int serialNumber, int address, ClassEnum class
         {
             QList<int> deviceIDs;
             {
-                QString sql = QString("SELECT device.id as deviceID FROM device JOIN controllerModule ON controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE serialNumber = %1 AND controllerModule.address = %2 ").arg(serialNumber).arg(address);
+                QString sql = QString("SELECT device.id as deviceID FROM device JOIN controllerModule ON controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE serialNumber = %1 AND controllerModule.address = %2 AND controllerModule.disable = 0").arg(serialNumber).arg(address);
                 Database db;
                 QSqlQuery query1 = db.executeQuery(sql);
 
@@ -64,7 +64,7 @@ void SemaphoreHandler::newMessage(int serialNumber, int address, ClassEnum class
 
 void SemaphoreHandler::updateSignal(int deviceID)
 {
-    QString sql = QString("SELECT signalAspectID, device.port, controllerModule.address, serialNumber, signalCondition.deviceID, conditionOperand, deviceState, redMode, yellowMode, greenMode FROM device JOIN signalAspect ON device.id = signalAspect.deviceID JOIN signalCondition ON signalAspect.id = signalCondition.signalAspectID JOIN controllerModule ON device.controllerModuleID = controllerModule.id  JOIN controller ON controllerModule.controllerID = controller.id WHERE signalAspect.deviceID = %1 AND controllerModule.moduleClass = 5 ORDER BY signalAspect.sortIndex, signalAspectID").arg(deviceID);
+    QString sql = QString("SELECT signalAspectID, device.port, controllerModule.address, serialNumber, signalCondition.deviceID, conditionOperand, deviceState, redMode, yellowMode, greenMode FROM device JOIN signalAspect ON device.id = signalAspect.deviceID JOIN signalCondition ON signalAspect.id = signalCondition.signalAspectID JOIN controllerModule ON device.controllerModuleID = controllerModule.id  JOIN controller ON controllerModule.controllerID = controller.id WHERE signalAspect.deviceID = %1 AND device.deviceClass = 5 AND controllerModule.disable = 0 ORDER BY signalAspect.sortIndex, signalAspectID").arg(deviceID);
 
     Database db;
     QSqlQuery query1 = db.executeQuery(sql);

@@ -20,13 +20,13 @@ BlockHandler::BlockHandler(QObject *parent)
 void BlockHandler::newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
 {
     Q_UNUSED(actionType);
-    if(uri == "/controller/module" && classCode == ClassBlock)
+    if(uri == "/controller/module" && (classCode == ClassBlock || classCode == ClassInput))
         updateBlockState(json, serialNumber, address);
 }
 
 void BlockHandler::getdeviceID(int serialNumber, int address, int port, int &deviceID)
 {
-    QString sql = QString("SELECT device.id FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerModuleID WHERE controller.serialNumber = %1 AND controllerModule.address = %2 AND device.port = %3").arg(serialNumber).arg(address).arg(port);
+    QString sql = QString("SELECT device.id FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerModuleID WHERE controller.serialNumber = %1 AND controllerModule.address = %2 AND device.port = %3 AND controllerModule.disable = 0").arg(serialNumber).arg(address).arg(port);
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
@@ -58,21 +58,6 @@ void BlockHandler::controllerRemoved(int serialNumber)
     }
 }
 
-void BlockHandler::getIPAddressAndaddressForDevice(int deviceID, QString &ipAddress, int &address, int &port, int &serialNumber)
-{
-    QString sql = QString("SELECT serialNumber, controllerModule.address, device.port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1").arg(deviceID);
-    Database db;
-    QSqlQuery query = db.executeQuery(sql);
-    while(query.next())
-    {
-        serialNumber = query.value("serialNumber").toInt();
-        address = query.value("address").toInt();
-        port = query.value("port").toInt();
-    }
-
-    ipAddress = ControllerManager::instance()->getControllerIPAddress(serialNumber);
-}
-
 void BlockHandler::updateBlockState(const QJsonObject &json, int serialNumber, int address)
 {
     qDebug(QString("updateBlockState %1 - %2").arg(serialNumber).arg(address).toLatin1());
@@ -83,16 +68,15 @@ void BlockHandler::updateBlockState(const QJsonObject &json, int serialNumber, i
         for(int x = 0; x < array.size(); x++)
         {
             QJsonObject obj = array.at(x).toObject();
-            int port = obj["port"].toInt();
+            int pin = obj["pin"].toInt();
 
             int deviceID = 0;
 
             BlockState blockState;
 
-            getdeviceID(serialNumber, address, port, deviceID);
+            getdeviceID(serialNumber, address, pin, deviceID);
 
-            int i = obj["blockPin"].toInt();
-            if(i == 1)
+            if(pin == 1)
                 blockState = BlockOccupied;
             else
                 blockState = BlockClear;

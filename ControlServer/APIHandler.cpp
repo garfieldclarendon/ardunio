@@ -33,26 +33,10 @@ void APIHandler::handleClient(QTcpSocket *socket, const QString &path, const QSt
 
     if(url.path().contains("activate_turnout"))
     {
-        QString result = QString("HTTP/1.0 200 OK\r\n"
-                                              "\r\n");
-
-        qDebug("SEND OK");
-        socket->write(result.toLatin1());
-        socket->flush();
-        socket->close();
-
         handleActivateTurnout(socket, url, actionText, payload);
     }
     else if(url.path().contains("activate_route"))
     {
-        QString result = QString("HTTP/1.0 200 OK\r\n"
-                                              "\r\n");
-
-        qDebug("SEND OK");
-        socket->write(result.toLatin1());
-        socket->flush();
-        socket->close();
-
         handleActivateRoute(socket, url, actionText, payload);
     }
     else if(url.path().contains("panel_routes"))
@@ -137,6 +121,14 @@ void APIHandler::handleActivateTurnout(QTcpSocket *socket, const QUrl &url, cons
     int deviceID = urlQuery.queryItemValue("deviceID").toInt();
     TurnoutState newState = (TurnoutState)urlQuery.queryItemValue("turnoutState").toInt();
 
+    if(newState == TrnUnknown)
+    {
+        TurnoutState currentState = (TurnoutState)DeviceManager::instance()->getDeviceStatus(deviceID);
+        if(currentState == TrnNormal || currentState == TrnToDiverging)
+            newState = TrnDiverging;
+        else
+            newState = TrnNormal;
+    }
     if((newState == TrnNormal || newState == TrnDiverging))
     {
         TurnoutHandler *turnoutHandler = qobject_cast<TurnoutHandler *>(DeviceManager::instance()->getHandler(ClassTurnout));
@@ -263,7 +255,7 @@ void APIHandler::handleGetPanelList(QTcpSocket *socket, const QUrl &)
     qDebug(QString("handleGetPanelList.  SerialNumber = %1 address = %2").toLatin1());
     Database db;
 
-    QString sql = QString("SELECT controllerModule.id as panelID, moduleName as panelName, controllerModule.address, serialNumber FROM controllerModule JOIN controller ON controller.id = controllerModule.controllerID WHERE moduleClass = 2 ORDER BY moduleName");
+    QString sql = QString("SELECT controllerModule.id as panelID, moduleName as panelName, controllerModule.address, serialNumber FROM controllerModule JOIN controller ON controller.id = controllerModule.controllerID WHERE deviceClass = 2 ORDER BY moduleName");
 
     QJsonArray jsonArray = db.fetchItems(sql);
 
@@ -290,7 +282,7 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     qDebug(QString("handleGetDeviceList.  SerialNumber = %1 address = %2").arg(serialNumber).arg(port).toLatin1());
     Database db;
 
-    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, device.port, controllerModule.address, controllerModule.id as controllerModuleID, moduleClass, serialNumber, controller.id as controllerID FROM device LEFT OUTER JOIN controllerModule ON device.controllerModuleID = controllerModule.id LEFT OUTER JOIN controller ON controller.id = controllerModule.controllerID");
+    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, device.port, controllerModule.address, controllerModule.id as controllerModuleID, deviceClass, serialNumber, controller.id as controllerID FROM device LEFT OUTER JOIN controllerModule ON device.controllerModuleID = controllerModule.id LEFT OUTER JOIN controller ON controller.id = controllerModule.controllerID");
 
     QString where(" WHERE ");
     bool useAnd = false;
@@ -311,9 +303,9 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     if(classCode > 0)
     {
         if(useAnd)
-            where += QString("AND moduleClass = %1 ").arg(classCode);
+            where += QString("AND deviceClass = %1 ").arg(classCode);
         else
-            where += QString("moduleClass = %1 ").arg(classCode);
+            where += QString("deviceClass = %1 ").arg(classCode);
 
         useAnd = true;
     }
@@ -363,6 +355,7 @@ void APIHandler::handleGetControllerList(QTcpSocket *socket, const QUrl & /*url*
         ControllerManager::instance()->getConnectedInfo(serialNumber.toInt(), version, status);
         obj["status"] = status;
         obj["version"] = version;
+        obj["pingLength"] = -1;
 
         jsonArray[x] = obj;
     }
@@ -387,7 +380,7 @@ void APIHandler::handleGetControllerModuleList(QTcpSocket *socket, const QUrl &u
 
     QUrlQuery urlQuery(url);
     int controllerID = urlQuery.queryItemValue("controllerID").toInt();
-    QString sql = QString("SELECT id as controllerModuleID, controllerID, moduleName, moduleClass, address FROM controllerModule");
+    QString sql = QString("SELECT id as controllerModuleID, controllerID, moduleName, moduleClass, address, disable FROM controllerModule");
     if(controllerID > 0)
         sql += QString(" WHERE controllerID = %1").arg(controllerID);
     sql += QString(" ORDER BY address");
@@ -471,12 +464,12 @@ void APIHandler::handleSendModuleConfig(QTcpSocket *socket, const QUrl &url)
     qDebug(QString("handleGetPanelList.  SerialNumber = %1 address = %2").toLatin1());
     Database db;
 
-    QString sql = QString("SELECT controllerModule.moduleClass, serialNumber FROM controllerModule JOIN controller ON controller.id = controllerModule.controllerID WHERE serialNumber = %1 AND address = %2").arg(serialNumber).arg(address);
+    QString sql = QString("SELECT controllerModule.deviceClass, serialNumber FROM controllerModule JOIN controller ON controller.id = controllerModule.controllerID WHERE serialNumber = %1 AND address = %2").arg(serialNumber).arg(address);
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())
     {
-        int moduleClass = query.value("moduleClass").toInt();
-        if(moduleClass == ClassTurnout)
+        int deviceClass = query.value("deviceClass").toInt();
+        if(deviceClass == ClassTurnout)
         {
             TurnoutHandler *turnoutHandler = qobject_cast<TurnoutHandler *>(DeviceManager::instance()->getHandler(ClassTurnout));
             if(turnoutHandler)

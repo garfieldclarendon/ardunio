@@ -178,7 +178,7 @@ void TurnoutHandler::messageACKed(const ControllerMessage &message)
 
 void TurnoutHandler::getIPAddressAndaddressForDevice(int deviceID, QString &ipAddress, int &address, int &port, int &serialNumber)
 {
-    QString sql = QString("SELECT serialNumber, controllerModule.address, device.port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1").arg(deviceID);
+    QString sql = QString("SELECT serialNumber, controllerModule.address, device.port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID JOIN device ON controllerModule.id = device.controllerMOduleID WHERE device.id = %1 AND controllerModule.disable = 0").arg(deviceID);
     Database db;
     QSqlQuery query = db.executeQuery(sql);
     while(query.next())

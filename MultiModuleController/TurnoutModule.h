@@ -30,13 +30,17 @@ public:
 	void setup(void) override;
 	void setupWire(byte address) override;
 	bool process(byte &data) override;
+	void processNoWire(void) override;
 	void sendStatusMessage(void);
 
+	void netModuleCallbackNoWire(NetActionType action, byte address, const JsonObject &json);
 	void netModuleCallback(NetActionType action, byte address, const JsonObject &json, byte &data);
 	void netModuleConfigCallback(NetActionType action, byte address, const JsonObject &json);
 
 
 private:
+	void readPins(byte &data);
+	void setPins(void);
 	TurnoutHandler m_turnouts[MAX_TURNOUTS];
 
 	byte m_currentState;
@@ -51,5 +55,14 @@ private:
 	const byte feedbackAPin2 = 6;
 	const byte feedbackBPin2 = 7;
 
+	// Turnout Controller pin assignments
+	const byte motor1_pinA = 13;
+	const byte motor1_pinB = 12;
+	const byte motor2_pinA = 2;
+	const byte motor2_pinB = 0;
+	const byte normal2_pin = 4;
+	const byte diverge2_pin = 5;
+	const byte normal1_pin = 16;
+	const byte diverge1_pin = 14;
 };
 

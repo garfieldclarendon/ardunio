@@ -25,7 +25,6 @@ public slots:
 
 private:
     void getdeviceID(int serialNumber, int address, int port, int &deviceID);
-    void getIPAddressAndaddressForDevice(int deviceID, QString &ipAddress, int &address, int &port, int &serialNumber);
     void setCurrentState(int deviceID, BlockState newState);
     void createAndSendNotificationMessage(int deviceID, BlockState newState);
     void updateBlockState(const QJsonObject &json, int serialNumber, int address);

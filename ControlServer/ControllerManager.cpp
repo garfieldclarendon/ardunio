@@ -12,32 +12,6 @@
 #include "Database.h"
 #include "NotificationServer.h"
 
-/*
-class ControllerEntry
-{
- public:
-    explicit ControllerEntry(int serialNumber)
-        : m_serialNumber(serialNumber)
-    {
-
-    }
-    int getSerialNumber(void) const { return m_serialNumber; }
-    void setSerialNumber(int value) { m_serialNumber = value; }
-    QString getIPAddress(void) const
-    {
-        QString address;
-        if(m_socket)
-            address = m_socket->peerAddress().toString();
-        return address;
-    }
-    QWebSocket *getSocket(void) const { return m_socket; }
-    void setSocket(QWebSocket *value) { m_socket = value; }
-
-private:
-    int m_serialNumber;
-    QPointer<QWebSocket> m_socket;
-};
-*/
 ControllerManager * ControllerManager::m_instance = NULL;
 
 ControllerManager::ControllerManager(QObject *parent)
@@ -134,6 +108,7 @@ void ControllerManager::controllerResetting(long serialNumber)
         QWebSocket *socket = m_socketList.value(x);
         if(socket->property("serialNumber").toInt() == serialNumber)
         {
+            createAndSendNotificationMessage(serialNumber, ControllerRestarting);
             socket->close();
         }
     }
@@ -199,6 +174,7 @@ void ControllerManager::connectionClosed(void)
 
 void ControllerManager::processTextMessage(QString message)
 {
+    qDebug(QString("PROCESS TEXT MESSAGE: %1").arg(message).toLatin1());
     if(message.startsWith("ACK_"))
     {
         QStringList parts = message.split('_');
@@ -232,10 +208,11 @@ void ControllerManager::processTextMessage(QString message)
         if(!found)
         {
             emit controllerAdded(serialNumber);
+            createAndSendNotificationMessage(serialNumber, ControllerConected);
             createAndSendNotificationMessage(serialNumber, ControllerOnline);
         }
         emit controllerConnected(m_socketList.indexOf(socket));
-   }
+    }
     else if(uri == "/controller/multiConfig")
     {
         QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
@@ -304,8 +281,10 @@ void ControllerManager::pongReply(quint64 length, const QByteArray &)
     if(socket)
     {
         socket->setProperty("socketTimeout", QDateTime::currentDateTime().toTime_t());
-        QString txt = QString("Pong reply from %1  Total time: %2").arg(socket->peerAddress().toString()).arg(length);
-        qDebug(txt.toLatin1());
+        //        QString txt = QString("Pong reply from %1  Total time: %2").arg(socket->peerAddress().toString()).arg(length);
+        //        qDebug(txt.toLatin1());
+        int serialNumber = socket->property("serialNumber").toInt();
+        createAndSendNotificationMessage(serialNumber, ControllerOnline, length);
         emit controllerPing(m_socketList.indexOf(socket), length);
     }
 }
@@ -323,12 +302,13 @@ void ControllerManager::pingSlot()
     emit pingSignal(data);
 }
 
-void ControllerManager::createAndSendNotificationMessage(int serialNumber, ControllerStatus status)
+void ControllerManager::createAndSendNotificationMessage(int serialNumber, ControllerStatus status, quint64 pingLength)
 {
     QString uri("/api/notification/controller");
     QJsonObject obj;
     obj["serialNumber"] = QString("%1").arg(serialNumber);
     obj["status"] = QString("%1").arg(status);
+    obj["pingLength"] = QString("%1").arg(pingLength);
 
     emit sendNotificationMessage(uri, obj);
 }

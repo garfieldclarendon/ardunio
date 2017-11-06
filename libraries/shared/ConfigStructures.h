@@ -10,6 +10,7 @@
 struct MultiModuleConfigStruct
 {
 	unsigned char moduleClass;
+	byte address;
 };
 typedef struct MultiModuleConfigStruct MultiModuleConfigStruct;
 
@@ -17,11 +18,7 @@ struct MultiModuleControllerConfigStruct
 {
 	unsigned char mdouleCount;
 	MultiModuleConfigStruct moduleConfigs[MAX_MODULES];
-	PinModeEnum extraPin0Mode;
-	PinModeEnum extraPin1Mode;
-	PinModeEnum extraPin2Mode;
-	PinModeEnum extraPin3Mode;
-	PinModeEnum extraPin4Mode;
+	unsigned char controllerClass;
 };
 typedef struct MultiModuleControllerConfigStruct MultiModuleControllerConfigStruct;
 

@@ -57,7 +57,7 @@ private:
     void sendPanelControllerConfig(int serialNumber, QWebSocket *socket);
     void pongReply(quint64 length, const QByteArray &);
     void pingSlot(void);
-    void createAndSendNotificationMessage(int serialNumber, ControllerStatus status);
+    void createAndSendNotificationMessage(int serialNumber, ControllerStatus status, quint64 pingLength = -1);
 
     static ControllerManager *m_instance;
 

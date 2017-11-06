@@ -4016,7 +4016,7 @@ In this library the device names are the same as the pin names of the symbols, t
 </class>
 </classes>
 <parts>
-<part name="TURNOUT1" library="con-amp-quick" deviceset="M05" device="" value="PIN1"/>
+<part name="TURNOUT1" library="con-amp-quick" deviceset="M05" device="" value="PIN0"/>
 <part name="GND6" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="R15" library="SparkFun-Resistors" deviceset="RESISTOR" device="PTH-1/4W" value="3.3K"/>
 <part name="R16" library="SparkFun-Resistors" deviceset="RESISTOR" device="PTH-1/4W" value="3.3K"/>
@@ -4031,7 +4031,7 @@ In this library the device names are the same as the pin names of the symbols, t
 <part name="GND5" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="GND9" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="GND11" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
-<part name="TURNOUT2" library="con-amp-quick" deviceset="M05" device="" value="PIN1"/>
+<part name="TURNOUT2" library="con-amp-quick" deviceset="M05" device="" value="PIN0"/>
 <part name="IC1" library="st-microelectronics" deviceset="L293D" device=""/>
 <part name="GND12" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="GND13" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
@@ -4059,8 +4059,8 @@ In this library the device names are the same as the pin names of the symbols, t
 1. Ground (Red)
 2. Motor A (White)
 3. Motor B (Green)
-4. Normal Route (Blue)
-5. Diverging Route (Black)</text>
+4. Input A (Blue)
+5. Input B (Black)</text>
 </plain>
 <instances>
 <instance part="TURNOUT1" gate="G$1" x="109.22" y="147.32" rot="R270"/>

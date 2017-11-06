@@ -46,6 +46,17 @@ void TurnoutModule::setup(void)
 	m_turnouts[0].setTurnout(m_config.turnout1.inputPinSetting);
 	DEBUG_PRINT("TurnoutModule::setup  Turnout2\n");
 	m_turnouts[1].setTurnout(m_config.turnout2.inputPinSetting);
+
+	DEBUG_PRINT("TurnoutModule::setup  SETTING PINMODE\n");
+	pinMode(motor1_pinA, OUTPUT);
+	pinMode(motor2_pinA, OUTPUT);
+	pinMode(motor1_pinB, OUTPUT);
+	pinMode(motor2_pinB, OUTPUT);
+
+	pinMode(normal1_pin, INPUT);
+	pinMode(diverge1_pin, INPUT);
+	pinMode(normal2_pin, INPUT);
+	pinMode(diverge2_pin, INPUT);
 }
 
 void TurnoutModule::setupWire(byte address)
@@ -82,6 +93,16 @@ void TurnoutModule::setup(byte index, byte motorAPin, byte motorBPin, byte feedb
 	m_turnouts[index].setup(motorAPin, motorBPin, feedbackAPin, feedbackBPin);
 }
 
+void TurnoutModule::processNoWire(void)
+{
+	byte data(getCurrentState());
+//	DEBUG_PRINT("processNoWire:  CURRENT_STATE %d != %d\n", m_currentState, data);
+	readPins(data);
+
+	process(data);
+	setPins();
+}
+
 bool TurnoutModule::process(byte &data)
 {
 	bool sendStatus = false;
@@ -108,6 +129,14 @@ bool TurnoutModule::process(byte &data)
 void TurnoutModule::setTurnout(byte index, byte motorPinSetting)
 {
 	m_turnouts[index].setTurnout(motorPinSetting);
+}
+
+void TurnoutModule::netModuleCallbackNoWire(NetActionType action, byte address, const JsonObject &json)
+{
+	byte data(getCurrentState());
+	readPins(data);
+	netModuleCallback(action, address, json, data);
+	setPins();
 }
 
 void TurnoutModule::netModuleCallback(NetActionType action, byte address, const JsonObject &json, byte &data)
@@ -173,4 +202,35 @@ String TurnoutModule::createCurrentStatusJson(void)
 	Network.sendMessageToServer(root);
 
 	return json;
+}
+//const byte motorAPin1 = 0;
+//const byte motorBPin1 = 1;
+//const byte motorAPin2 = 4;
+//const byte motorBPin2 = 5;
+//const byte feedbackAPin1 = 2;
+//const byte feedbackBPin1 = 3;
+//const byte feedbackAPin2 = 6;
+//const byte feedbackBPin2 = 7;
+
+void TurnoutModule::setPins(void)
+{
+	byte data = getCurrentState();
+	//	DEBUG_PRINT("DATA %d\n", data);
+
+	digitalWrite(motor1_pinA, bitRead(data, motorAPin1));
+//	DEBUG_PRINT("Morotr1_A %d\n", bitRead(data, motorAPin1));
+	digitalWrite(motor1_pinB, bitRead(data, motorBPin1));
+//	DEBUG_PRINT("Morotr1_B %d\n", bitRead(data, motorBPin1));
+	digitalWrite(motor2_pinA, bitRead(data, motorAPin2));
+	//	DEBUG_PRINT("Morotr2_A %d\n", bitRead(data, motor2_logicalPinA));
+	digitalWrite(motor2_pinB, bitRead(data, motorBPin2));
+	//	DEBUG_PRINT("Morotr2_B %d\n", bitRead(data, motor2_logicalPinB));
+}
+
+void TurnoutModule::readPins(byte &data)
+{
+	bitWrite(data, feedbackBPin1, digitalRead(diverge1_pin));
+	bitWrite(data, feedbackAPin1, digitalRead(normal1_pin));
+	bitWrite(data, feedbackBPin2, digitalRead(diverge2_pin));
+	bitWrite(data, feedbackAPin2, digitalRead(normal2_pin));
 }

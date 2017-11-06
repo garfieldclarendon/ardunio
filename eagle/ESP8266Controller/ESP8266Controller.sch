@@ -4080,24 +4080,24 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <part name="+3V5" library="supply1" deviceset="+3V3" device=""/>
 <part name="+3V7" library="supply1" deviceset="+3V3" device=""/>
 <part name="SUPPLY1" library="SparkFun-Aesthetics" deviceset="VCC" device=""/>
-<part name="I2C" library="con-amp-quick" deviceset="M05" device="" value="PIN1"/>
+<part name="I2C" library="con-amp-quick" deviceset="M05" device=""/>
 <part name="SUPPLY2" library="SparkFun-Aesthetics" deviceset="VCC" device=""/>
-<part name="I2C1" library="con-amp-quick" deviceset="M05" device="" value="PIN1"/>
-<part name="I2C2" library="con-amp-quick" deviceset="M05" device="" value="PIN1"/>
-<part name="I2C3" library="con-amp-quick" deviceset="M05" device="" value="PIN1"/>
-<part name="I2C4" library="con-amp-quick" deviceset="M05" device="" value="PIN1"/>
-<part name="I2C5" library="con-amp-quick" deviceset="M05" device="" value="PIN1"/>
-<part name="I2C6" library="con-amp-quick" deviceset="M05" device="" value="PIN1"/>
-<part name="I2C7" library="con-amp-quick" deviceset="M05" device="" value="PIN1"/>
+<part name="I2C1" library="con-amp-quick" deviceset="M05" device=""/>
+<part name="I2C2" library="con-amp-quick" deviceset="M05" device=""/>
+<part name="I2C3" library="con-amp-quick" deviceset="M05" device=""/>
+<part name="I2C4" library="con-amp-quick" deviceset="M05" device=""/>
+<part name="I2C5" library="con-amp-quick" deviceset="M05" device=""/>
+<part name="I2C6" library="con-amp-quick" deviceset="M05" device=""/>
+<part name="I2C7" library="con-amp-quick" deviceset="M05" device=""/>
 <part name="GND2" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="+3V2" library="supply1" deviceset="+3V3" device=""/>
 <part name="R1" library="SparkFun-Resistors" deviceset="RESISTOR" device="PTH-1/4W" value="220"/>
-<part name="POWER_LED1" library="SparkFun-LED" deviceset="LED" device="5MM" value="3.3"/>
-<part name="EXTRA" library="con-amp-quick" deviceset="M04" device="" value="PIN0"/>
+<part name="EXTRA" library="con-amp-quick" deviceset="M04" device=""/>
 </parts>
 <sheets>
 <sheet>
 <plain>
+<text x="73.66" y="53.34" size="1.778" layer="97">I2C BUS</text>
 </plain>
 <instances>
 <instance part="J1" gate="G$1" x="12.7" y="111.76"/>
@@ -4132,10 +4132,9 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <instance part="I2C5" gate="G$1" x="137.16" y="116.84" rot="R270"/>
 <instance part="I2C6" gate="G$1" x="137.16" y="129.54" rot="R270"/>
 <instance part="I2C7" gate="G$1" x="137.16" y="139.7" rot="R270"/>
-<instance part="GND2" gate="1" x="20.32" y="76.2"/>
-<instance part="+3V2" gate="G$1" x="22.86" y="68.58" rot="R180"/>
+<instance part="GND2" gate="1" x="17.78" y="78.74" rot="R270"/>
+<instance part="+3V2" gate="G$1" x="17.78" y="73.66" rot="R90"/>
 <instance part="R1" gate="G$1" x="2.54" y="53.34" rot="R90"/>
-<instance part="POWER_LED1" gate="G$1" x="2.54" y="73.66" rot="R180"/>
 <instance part="EXTRA" gate="G$1" x="22.86" y="91.44" rot="R270"/>
 </instances>
 <busses>
@@ -4212,12 +4211,7 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 </segment>
 <segment>
 <pinref part="GND2" gate="1" pin="GND"/>
-<wire x1="20.32" y1="86.36" x2="20.32" y2="81.28" width="0.1524" layer="91"/>
-<pinref part="POWER_LED1" gate="G$1" pin="C"/>
-<wire x1="20.32" y1="81.28" x2="20.32" y2="78.74" width="0.1524" layer="91"/>
-<wire x1="2.54" y1="78.74" x2="2.54" y2="81.28" width="0.1524" layer="91"/>
-<wire x1="2.54" y1="81.28" x2="20.32" y2="81.28" width="0.1524" layer="91"/>
-<junction x="20.32" y="81.28"/>
+<wire x1="20.32" y1="86.36" x2="20.32" y2="78.74" width="0.1524" layer="91"/>
 <pinref part="EXTRA" gate="G$1" pin="1"/>
 </segment>
 </net>
@@ -4313,7 +4307,8 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 </segment>
 <segment>
 <pinref part="+3V2" gate="G$1" pin="+3V3"/>
-<wire x1="22.86" y1="71.12" x2="22.86" y2="86.36" width="0.1524" layer="91"/>
+<wire x1="20.32" y1="73.66" x2="22.86" y2="73.66" width="0.1524" layer="91"/>
+<wire x1="22.86" y1="73.66" x2="22.86" y2="86.36" width="0.1524" layer="91"/>
 <pinref part="EXTRA" gate="G$1" pin="2"/>
 </segment>
 </net>
@@ -4358,7 +4353,7 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <junction x="137.16" y="121.92"/>
 </segment>
 </net>
-<net name="N$6" class="0">
+<net name="SDA" class="0">
 <segment>
 <pinref part="R21" gate="G$1" pin="2"/>
 <wire x1="77.47" y1="48.26" x2="77.47" y2="45.72" width="0.1524" layer="91"/>
@@ -4389,9 +4384,10 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <pinref part="I2C7" gate="G$1" pin="5"/>
 <wire x1="142.24" y1="121.92" x2="142.24" y2="132.08" width="0.1524" layer="91"/>
 <junction x="142.24" y="121.92"/>
+<label x="45.72" y="48.26" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="N$8" class="0">
+<net name="SCL" class="0">
 <segment>
 <pinref part="R20" gate="G$1" pin="2"/>
 <wire x1="68.58" y1="50.8" x2="68.58" y2="45.72" width="0.1524" layer="91"/>
@@ -4422,14 +4418,17 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <pinref part="I2C7" gate="G$1" pin="4"/>
 <wire x1="139.7" y1="121.92" x2="139.7" y2="132.08" width="0.1524" layer="91"/>
 <junction x="139.7" y="121.92"/>
+<label x="45.72" y="50.8" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$2" class="0">
 <segment>
-<wire x1="2.54" y1="48.26" x2="2.54" y2="43.18" width="0.1524" layer="91"/>
-<pinref part="U$1" gate="G$1" pin="GPIO12"/>
-<wire x1="2.54" y1="43.18" x2="12.7" y2="43.18" width="0.1524" layer="91"/>
 <pinref part="R1" gate="G$1" pin="1"/>
+<pinref part="U$1" gate="G$1" pin="GPIO2"/>
+<wire x1="45.72" y1="43.18" x2="50.8" y2="43.18" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="43.18" x2="50.8" y2="27.94" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="27.94" x2="2.54" y2="27.94" width="0.1524" layer="91"/>
+<wire x1="2.54" y1="27.94" x2="2.54" y2="48.26" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$3" class="0">
@@ -4444,13 +4443,10 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 </net>
 <net name="N$1" class="0">
 <segment>
-<pinref part="POWER_LED1" gate="G$1" pin="A"/>
 <pinref part="R1" gate="G$1" pin="2"/>
 <wire x1="2.54" y1="58.42" x2="2.54" y2="66.04" width="0.1524" layer="91"/>
-<wire x1="2.54" y1="66.04" x2="2.54" y2="71.12" width="0.1524" layer="91"/>
 <wire x1="2.54" y1="66.04" x2="27.94" y2="66.04" width="0.1524" layer="91"/>
 <wire x1="27.94" y1="66.04" x2="27.94" y2="86.36" width="0.1524" layer="91"/>
-<junction x="2.54" y="66.04"/>
 <pinref part="EXTRA" gate="G$1" pin="4"/>
 </segment>
 </net>

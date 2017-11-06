@@ -16,7 +16,7 @@ RouteHandler *RouteHandler::m_this = NULL;
 RouteHandler::RouteHandler(QObject *parent)
     : QObject(parent)
 {
-    connect(DeviceManager::instance(), SIGNAL(deviceStatusChanged(int,int)), this, SLOT(deviceStatusChanged(int,int)));
+    connect(DeviceManager::instance(), SIGNAL(deviceStatusChanged(int,int)), this, SLOT(deviceStatusChanged(int,int)), Qt::QueuedConnection);
     connect(this, &RouteHandler::sendNotificationMessage, NotificationServer::instance(), &NotificationServer::sendNotificationMessage);
 }
 

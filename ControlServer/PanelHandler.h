@@ -20,7 +20,7 @@ public slots:
     void newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
 
 private:
-    int getRouteID(int serialNumber, int address, int buttonIndex);
+    int getRouteID(int serialNumber, int address, int pin);
     void fillRouteStatusMap(QMap<int, int> statusMap, int routeID);
 };
 
