@@ -8,6 +8,62 @@
 #include "GlobalDefs.h"
 #include "controllermessage.h"
 
+
+/////////////////////////////////////////////////////////////////////
+// The following comment blocks are parsed by the apidoc application to produce the API documentation.
+// Device specific messages/notifcations are documented in their respective files
+/**
+ * @api {get} /controller/connect/:serialNumber,version Controller Connect Message
+ * @apiName ControllerConnect
+ * @apiGroup Controller
+ *
+ * @apiParam {Number} serialNumber The controller's serial number (chip ID).
+ * @apiParam {Number} version The controller's firmware version number.
+ * @apiDescription Sent from a controller once a web socket connection is made.
+ */
+
+/**
+ * @api {get} /controller/multiConfig/:serialNumber Get configuration information for a specific MultiModule controller.
+ * @apiName MultiModuleConfig
+ * @apiGroup Controller
+ *
+ * @apiParam {Number} serialNumber The controller's serial number (chip ID).
+ * @apiDescription Returns the coniguration information for a specific MultiModule controller.  This includes the controller classification and a list of modules, the module's classification and the module's address.
+ * @apiSuccessExample {json} Success-Response:
+ *      {
+ *          "messageUri": "/controllerConfig",
+ *          "controllerClass": "7"
+ *          "modules" : [
+ *                        {
+ *                           "address": "0",
+ *                           "class": "1"
+ *                        },
+ *                        {
+ *                            "address": "1",
+ *                            "class": "1"
+ *                        },
+ *                      ]
+ *      }
+ */
+/**
+ * @api {get} /api/notification/controller Controller status notification.
+ * @apiName ControllerStatusChange
+ * @apiGroup Notifications
+ *
+ * @apiParam {Number} serialNumber The controller's serial number (chip ID).
+ * @apiParam {Number=0,1,2,3,4} status The current state of the controller  1=Unknown, 2=Offline, 3=Online, 4=Restarting, 5=Connected.
+ * @apiParam {Number} pingLength The total time (in milliseconds) for the last ping to make its round trip from the server to the controller.
+ * @apiDescription Notification message sent when a controller's status changes.
+ * @apiSuccessExample {json} Success-Response:
+ *      {
+ *          "messageUri": "/api/notification/controller",
+ *          "serialNumber": "123456"
+ *          "status": "3"
+ *          "pingLength": "62"
+ *      }
+ */
+/////////////////////////////////////////////////////////////////////
+
 class ControllerEntry;
 class QWebSocket;
 class QJsonObject;

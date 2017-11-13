@@ -7,6 +7,39 @@
 #include "GlobalDefs.h"
 #include "DeviceHandler.h"
 
+/////////////////////////////////////////////////////////////////////
+// The following comment blocks are parsed by the apidoc application to produce the API documentation.
+// Device specific messages/notifcations are documented in their respective files
+/**
+ * @api {put} /controller/module:serialNumber,address,classCode,action Message from the Block Module of state change in the monitored block.
+ * @apiName BlockStateChanged
+ * @apiGroup Block
+ *
+ * @apiParam {Number} serialNumber The controller's serial number (chip ID).
+ * @apiParam {Number,0-8} address The sending module's address.
+ * @apiParam {Number} classCode The sending module's classification.
+ * @apiParam {Number} action The action requested.  0=Get,1=Add,2=Update,3=Delete
+ * @apiDescription Sent by a controller's BlockModule indicating the state of the block it's monitoring has changed.
+ * @apiSuccessExample {json} Success-Response:
+ *      {
+ *          "action": "2"
+ *          "messageUri": "/controller/module",
+ *          "class": "8"
+ *          "address": "0"
+ *          "blocks": [
+ *                      {
+ *                          "pin": 1
+ *                          "pinState": 0
+ *                      },
+ *                      {
+ *                          "pin": 4
+ *                          "pinState": 1
+ *                      },
+ *                    ]
+ *      }
+ */
+/////////////////////////////////////////////////////////////////////
+
 class BlockHandler : public DeviceHandler
 {
     Q_OBJECT
