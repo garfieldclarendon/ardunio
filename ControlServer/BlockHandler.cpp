@@ -68,7 +68,8 @@ void BlockHandler::updateBlockState(const QJsonObject &json, int serialNumber, i
         for(int x = 0; x < array.size(); x++)
         {
             QJsonObject obj = array.at(x).toObject();
-            int pin = obj["pin"].toInt();
+            int pin = obj["pinIndex"].toInt();
+            int pinState = obj["pinState"].toInt();
 
             int deviceID = 0;
 
@@ -76,7 +77,7 @@ void BlockHandler::updateBlockState(const QJsonObject &json, int serialNumber, i
 
             getdeviceID(serialNumber, address, pin, deviceID);
 
-            if(pin == 1)
+            if(pinState == 0)
                 blockState = BlockOccupied;
             else
                 blockState = BlockClear;

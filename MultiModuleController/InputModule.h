@@ -27,7 +27,7 @@ class InputModule : public Module
 	void controllerLockout(bool locked) override { m_lockout = locked; }
 
 private:
-	void handleInput(byte pin);
+	void handleInput(byte pin, byte pinState);
 
 	void expanderWrite(const byte reg, const byte data);
 	void expanderWriteBoth(const byte reg, const byte data);

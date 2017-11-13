@@ -190,23 +190,23 @@ void PanelHandler::routeChanged(int routeID, bool isActive)
 
 void PanelHandler::newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
 {
-    if(uri == "/controller/module" && classCode == ClassPanel)
+    if(uri == "/controller/module" && (classCode == ClassPanel || classCode == ClassInput))
     {
         if(actionType == NetActionUpdate)
         {
             int pin;
-            // For existing panle controllers.  This can be removed after those controllers are retired
-            if(json.contains("buttonIndex"))
-                pin = json["buttonIndex"].toInt();
-            else
-                pin = json["pin"].toInt();
+            pin = json["pinIndex"].toInt();
+            int pinState = json["pinState"].toInt();
 
-            int routeID = getRouteID(serialNumber, address, pin);
-            qDebug(QString("PanelHandler::newMessage:  Activate Route: %1").arg(routeID).toLatin1());
-
-            if(routeID > 0)
+            if(pinState == PinOn)
             {
-                RouteHandler::instance()->activateRoute(routeID);
+                int routeID = getRouteID(serialNumber, address, pin);
+                qDebug(QString("PanelHandler::newMessage:  Activate Route: %1").arg(routeID).toLatin1());
+
+                if(routeID > 0)
+                {
+                    RouteHandler::instance()->activateRoute(routeID);
+                }
             }
         }
         else if(actionType == NetActionGet && classCode == ClassPanel)

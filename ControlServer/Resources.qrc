@@ -1,5 +1,4 @@
 <RCC>
-    <qresource prefix="/metadata"/>
     <qresource prefix="/">
         <file>metadata/EntityMetadata.txt</file>
     </qresource>

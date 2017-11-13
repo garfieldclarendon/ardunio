@@ -33,7 +33,7 @@
 
 #define BASE_ADDRESS 0x20  // MCP23017 is on I2C port 0x20
 
-#define blinkingTimeout 200
+#define blinkingTimeout 500
 #define slowBlinkingTimeout 1000
 
 OutputModule::OutputModule(void)
@@ -50,44 +50,37 @@ byte OutputModule::getModuleAddress(void) const
 
 void OutputModule::setup(void)
 {
-	m_outputRegisterA = GPIOA;
-	m_outputRegisterB = GPIOB;
-
 	m_currentBlinkTimeout = 0;
 	m_outputA = 0;
 	m_outputB = 0;
 	m_flashAll = true;
 	m_moduleAddress = BASE_ADDRESS;
 
-	DEBUG_PRINT("setup module: %d\n", m_moduleAddress);
+	DEBUG_PRINT("setup OutputModule: %d\n", m_moduleAddress);
 
 	memset(m_blinkingPins, 255, 16);
 }
 
 void OutputModule::setupWire(byte address)
 {
-	m_outputRegisterA = GPIOA;
-	m_outputRegisterB = GPIOB;
-
 	m_currentBlinkTimeout = 0;
-	m_outputA = 0;
-	m_outputB = 0;
+	m_outputA = 0Xff;
+	m_outputB = 0Xff;
 	m_flashAll = true;
 	m_moduleAddress = BASE_ADDRESS + address;
 
-	DEBUG_PRINT("setup module: %d\n", address);
+	DEBUG_PRINT("setup OutputModule: %d\n", address);
 
 	memset(m_blinkingPins, 255, 16);
 
-	// set port A to input
+	// set port A to output
 	expanderWrite(IODIRA, 0);
-	// set port B to input
+	// set port B to output
 	expanderWrite(IODIRB, 0);
 	delay(100);
-	// Turn on all lights
-	byte data = 0;
-	expanderWrite(GPIOA, data);
-	expanderWrite(GPIOB, data);
+	// Turn on all the outputs
+	expanderWrite(GPIOA, m_outputA);
+	expanderWrite(GPIOB, m_outputB);
 	DEBUG_PRINT("OutputModule::setupWire:  address %d DONE!!!!\n", address);
 }
 
@@ -121,12 +114,12 @@ bool OutputModule::process(byte &)
 {
 	byte previousOutputA = m_outputA;
 	byte previousOutputB = m_outputB;
-	
+
 	blinkPins();
 	if (m_outputA != previousOutputA)
-		expanderWrite(m_outputRegisterA, m_outputA);
+		expanderWrite(GPIOA, m_outputA);
 	if (m_outputB != previousOutputB)
-		expanderWrite(m_outputRegisterB, m_outputB);
+		expanderWrite(GPIOB, m_outputB);
 	return false;
 }
 
@@ -233,12 +226,12 @@ void OutputModule::netModuleCallbackWire(NetActionType action, byte address, con
 
 		for (byte x = 0; x < pins.size(); x++)
 		{
-			int pinIndex = pins[x]["pin"];
+			int pinIndex = pins[x]["pinIndex"];
 			PinStateEnum pinState = (PinStateEnum)(byte)pins[x]["pinState"];
 
 			updateOutputs(pinIndex, pinState);
 		}
-		expanderWrite(m_outputRegisterA, m_outputA);
-		expanderWrite(m_outputRegisterB, m_outputB);
+		expanderWrite(GPIOA, m_outputA);
+		expanderWrite(GPIOB, m_outputB);
 	}
 }
