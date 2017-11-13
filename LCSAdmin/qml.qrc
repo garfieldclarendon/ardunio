@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>Page1.qml</file>
+        <file>Page1Form.ui.qml</file>
+        <file>qtquickcontrols2.conf</file>
+        <file>ManageDevices.qml</file>
+        <file>ServerStatus.qml</file>
+        <file>CRUDButtons.qml</file>
+        <file>GenericDeviceDetails.qml</file>
+        <file>Images/add.png</file>
+        <file>Images/delete.png</file>
+        <file>Images/navigate_left.png</file>
+        <file>Images/save.png</file>
+        <file>NavigationBar.qml</file>
+        <file>SignalDetails.qml</file>
+        <file>Images/arrow_down.png</file>
+        <file>Images/arrow_up.png</file>
+        <file>SignalConditionDetails.qml</file>
+        <file>ManageControllers.qml</file>
+        <file>ControllerDetails.qml</file>
+        <file>ManageDevices2.qml</file>
+        <file>ManageRoutes.qml</file>
+        <file>RouteDetails.qml</file>
+        <file>NewController.qml</file>
+    </qresource>
+</RCC>
