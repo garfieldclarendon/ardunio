@@ -64,11 +64,11 @@ void InputModule::setupWire(byte address)
 	m_inputB = 0;
 	m_moduleAddress = BASE_ADDRESS + address;
 
-	DEBUG_PRINT("InputModule: Setup module: %d\n", address);
+	DEBUG_PRINT("InputModule: Setup InputModule: %d\n", address);
 
-	// set port A to output
+	// set port A to input
 	expanderWrite(IODIRA, 0xFF);
-	// set port B to output
+	// set port B to input
 	expanderWrite(IODIRB, 0xFF);
 	DEBUG_PRINT("InputModule::setupWire:  address %d DONE!!!!\n", address);
 }
@@ -108,47 +108,58 @@ bool InputModule::process(byte &)
 		if (input != m_inputA)
 		{
 			DEBUG_PRINT("InputModule::processA  Module Address: %d\Pin values: %02x\n", getModuleAddress(), input);
-			m_inputA = input;
 
 			for (byte index = 0; index < 16; index++)
 			{
-				if (bitRead(m_inputA, index) == LOW)
+				if (bitRead(m_inputA, index) != bitRead(input, index))
 				{
-					handleInput(index);
+					if (bitRead(input, index) == HIGH)
+						handleInput(index, PinOn);
+					else
+						handleInput(index, PinOff);
 				}
 			}
+			m_inputA = input;
 		}
 		// Read and process Port B
 		input = expanderRead(m_inputRegisterB);
 		if (input != m_inputB)
 		{
 			DEBUG_PRINT("InputModule::processB  Module Address: %d\Pin values: %02x\n", getModuleAddress(), input);
-			m_inputB = input;
 
 			for (byte index = 0; index < 16; index++)
 			{
-				if (bitRead(m_inputB, index) == LOW)
+				if (bitRead(m_inputB, index) != bitRead(input, index))
 				{
-					handleInput(index + 8);
+					if (bitRead(input, index) == HIGH)
+						handleInput(index + 8, PinOn);
+					else
+						handleInput(index + 8, PinOff);
 				}
 			}
+			m_inputB = input;
 		}
+	}
+	else
+	{
+		DEBUG_PRINT("InputModule::process Module Address: %d\ LOCKED OUT!!!!\n", getModuleAddress());
 	}
 
 	return false;
 }
 
-void InputModule::handleInput(byte pin)
+void InputModule::handleInput(byte pin, byte pinState)
 {
 	DEBUG_PRINT("InputModule::handleInput  Module Address: %d\nPin index: %d\n", getModuleAddress(), pin);
 	String json;
 	StaticJsonBuffer<200> jsonBuffer;
 	JsonObject &root = jsonBuffer.createObject();
 	root["messageUri"] = "/controller/module";
-	root["moduleIndex"] = getModuleAddress();
+	root["address"] = getModuleAddress();
 	root["class"] = (int)ClassInput;
 	root["action"] = (int)NetActionUpdate;
-	root["pin"] = pin;
+	root["pinIndex"] = pin;
+	root["pinState"] = pinState;
 
 	Network.sendMessageToServer(root);
 }

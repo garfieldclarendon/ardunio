@@ -4,9 +4,10 @@
 #include "GlobalDefs.h"
 
 NetworkClass *NetworkClass::m_this = NULL;
+#define disconnectedTimeout 60000
 
 NetworkClass::NetworkClass(void)
-	: m_serverPort(-1), m_serverAddress(0, 0, 0, 0), m_isConnected(false)
+	: m_serverPort(-1), m_serverAddress(0, 0, 0, 0), m_isConnected(false), m_disconnectTimeout(0)
 {
 	m_this = this;
 }
@@ -151,7 +152,26 @@ void NetworkClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t lengt
 	{
 	case WStype_DISCONNECTED:
 		DEBUG_PRINT("[WSc] Disconnected!\n");
-		m_this->m_isConnected = false;
+		if (m_this->m_isConnected)
+		{
+			m_this->m_isConnected = false;
+			m_this->m_disconnectTimeout = millis();
+		}
+		else
+		{
+			unsigned long t = millis();
+			// If disconnected for more than 60 seconds, reboot just in case something is wrong
+			if (t - m_this->m_disconnectTimeout > disconnectedTimeout)
+			{
+				Message message;
+				message.setMessageID(SYS_RESTARTING);
+				message.setSerialNumber(ESP.getChipId());
+
+				Network.sendUdpBroadcastMessage(message);
+				delay(250);
+				ESP.restart();
+			}
+		}
 		break;
 	case WStype_CONNECTED:
 	{
@@ -159,6 +179,7 @@ void NetworkClass::webSocketEvent(WStype_t type, uint8_t * payload, size_t lengt
 		DEBUG_PRINT("CONNECTED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!**************************************************************************************\n", payload);
 
 		m_this->m_isConnected = true;
+		m_this->m_disconnectTimeout = 0;
 //		 Send message to server when Connected containing the Serial Number
 		String json;
         StaticJsonBuffer<250> jsonBuffer;

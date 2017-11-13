@@ -1,0 +1,32 @@
+    [
+        {
+            "name": "device",
+            "keyField": "deviceID",
+            "tableKeyField": "id",
+            "tableName": "device"
+        },
+        {
+            "name": "controller",
+            "keyField": "controllerID",
+            "tableKeyField": "id",
+            "tableName": "controller"
+        },
+        {
+            "name": "controllerModule",
+            "keyField": "controllerModuleID",
+            "tableKeyField": "id",
+            "tableName": "controllerModule"
+        },
+        {
+            "name": "signalAspect",
+            "keyField": "signalAspectID",
+            "tableKeyField": "id",
+            "tableName": "signalAspect"
+        },
+        {
+            "name": "signalCondition",
+            "keyField": "signalConditionID",
+            "tableKeyField": "id",
+            "tableName": "signalCondition"
+        }
+    ]

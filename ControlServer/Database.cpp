@@ -322,7 +322,7 @@ QByteArray Database::getMultiControllerConfig(quint32 serialNumber)
         db = QSqlDatabase::database();
     db.open();
     QSqlQuery query(db);
-    query.exec(QString("SELECT moduleClass, address, controllerClass FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.disable <> 1 ORDER BY address").arg(serialNumber));
+    query.exec(QString("SELECT DISTINCT moduleClass, address, controllerClass FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.disable <> 1 ORDER BY address").arg(serialNumber));
     QString controllerClass;
     while (query.next())
     {

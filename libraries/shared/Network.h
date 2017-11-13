@@ -64,6 +64,7 @@ private:
 	String m_controllerName;
 	int m_controllerID;
 	bool m_isConnected;
+	unsigned long m_disconnectTimeout;
 
 	//Callbacks
 	TControllerStatusCallback m_controllerStatusCallback;

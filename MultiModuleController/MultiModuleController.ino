@@ -37,6 +37,7 @@ byte lastLockoutRead = 0;
 long currentLockoutTimeout = 0;
 
 byte totalModules = 0;
+bool downloadConfigFlag = false;
 
 Module *modules[MAX_MODULES];
 Controller controller(LocalServerPort);
@@ -103,11 +104,18 @@ void serverReconnected(void)
 {
 	DEBUG_PRINT("serverReconnected\n");
 
-	for (byte x = 0; x < totalModules; x++)
+	if (downloadConfigFlag)
 	{
-		modules[x]->serverOnline();
-		modules[x]->sendStatusMessage();
-	}; 
+		downloadConfig();
+	}
+	else
+	{
+		for (byte x = 0; x < totalModules; x++)
+		{
+			modules[x]->serverOnline();
+			modules[x]->sendStatusMessage();
+		}
+	}
 }
 
 void netModuleConfigCallback(NetActionType action, byte address, const JsonObject &json)
@@ -272,6 +280,7 @@ void loadConfiguration(void)
 		memset(&controllerConfig, 0, sizeof(MultiModuleControllerConfigStruct));
 		saveControllerConfig();
 		DEBUG_PRINT("DONE SAVING EEPROM.  Initializing to 0\n");
+		downloadConfigFlag = true;
 	}
 }
 
@@ -329,7 +338,7 @@ void createModules(void)
 			case ClassBlock:
 			case ClassInput:
 			{
-				DEBUG_PRINT("CreateModules:  Creating Output Module\n");
+				DEBUG_PRINT("CreateModules:  Creating Input Module\n");
 				InputModule *inputMod = new InputModule();
 				modules[index] = inputMod;
 				break;
@@ -399,9 +408,12 @@ void checkLockoutPin(void)
 		{
 			currentLockoutTimeout = t;
 			lockout = current;
-			for (int x = 0; x < totalModules; x++)
+			if (lockout == LOW)
 			{
-				modules[x]->controllerLockout(lockout);
+				for (int x = 0; x < totalModules; x++)
+				{
+					modules[x]->controllerLockout(lockout);
+				}
 			}
 		}
 	}

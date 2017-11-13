@@ -43,8 +43,6 @@ private:
 	byte m_outputA;
 	byte m_outputB;
 	bool m_flashAll;
-	byte m_outputRegisterA;
-	byte m_outputRegisterB;
 
 	unsigned long m_currentBlinkTimeout;
 };

@@ -39,7 +39,7 @@ void SignalHandler::deviceStatusChanged(int deviceID, int status)
 
 void SignalHandler::newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject & /*json*/)
 {
-    if(uri == "/controller/module" && classCode == ClassSignal)
+    if(uri == "/controller/module" && (classCode == ClassSignal || classCode == ClassOutput))
     {
         if(actionType == NetActionGet)
         {
@@ -163,15 +163,15 @@ void SignalHandler::sendSignalUpdateMessage(int serialNumber, int address, int p
     obj["messageUri"] = "/controller/module";
     obj["action"] = NetActionUpdate;
 
-    pin1["pin"] = port;
+    pin1["pinIndex"] = port;
     pin1["pinState"] = redMode;
 
-    pin2["pin"] = port + 1;
+    pin2["pinIndex"] = port + 1;
     pin2["pinState"] = greenMode;
 
     if(port + 2 < 16)
     {
-        pin3["pin"] = port + 2;
+        pin3["pinIndex"] = port + 2;
         pin3["pinState"] = yellowMode;
         pins << pin1 << pin2 << pin3;
     }
