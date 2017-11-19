@@ -1,10 +1,10 @@
 #include "Controller.h"
 #include "GlobalDefs.h"
-#include "Network.h"
+#include "NetworkManager.h"
+#include "Local.h"
 
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
-#include <WiFiClient.h>
 #include <ESP8266mDNS.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
@@ -15,7 +15,6 @@
 Controller::Controller(int localServerPort)
 	: m_class(ClassUnknown), m_currentBlinkTimeout(0), m_findServerTimeout(0), m_serverFound(false)
 {
-	memset(&m_extraPins, 0, 8);
 	memset(&m_blinkingPins, 255, 8);
 }
 
@@ -28,11 +27,6 @@ Controller::~Controller()
 void Controller::setup(ClassEnum controllerClass)
 {
 	m_class = controllerClass;
-	WiFi.mode(WIFI_STA);
-	WiFi.setAutoConnect(false);
-	WiFi.disconnect();
-
-	m_wifiManager.setupWifi(ssidPrefix, password);
 
 	DEBUG_PRINT("------------------------\n");
 	DEBUG_PRINT(" Serial #: %d\r\n", ESP.getChipId());
@@ -41,15 +35,7 @@ void Controller::setup(ClassEnum controllerClass)
 
 void Controller::process(void)
 {
-	m_wifiManager.process();
-	if (m_wifiManager.getIsReconnected())
-	{
-		Network.init(8080);
-		findServer();
-		if (m_wifiReconnectCallback)
-			m_wifiReconnectCallback();
-	}
-	else if (m_serverFound == false)
+	if (m_serverFound == false)
 	{
 		unsigned long t = millis();
 		if (t - m_findServerTimeout > 10000)
@@ -58,24 +44,24 @@ void Controller::process(void)
 			findServer();
 		}
 	}
-//	flashPins();
+	flashPins();
 }
 
-void Controller::processMessage(const Message &message)
+void Controller::processMessage(const UDPMessage &message)
 {
 	DEBUG_PRINT("NEW MESSAGE! MessageID %d\n", message.getMessageID());
-	if (message.getMessageID() == SYS_REBOOT_CONTROLLER && (message.getSerialNumber() == 0 || message.getSerialNumber() == ESP.getChipId()))
+	if (message.getMessageID() == SYS_REBOOT_CONTROLLER && (message.getID() == 0 || message.getID() == ESP.getChipId()))
 	{
-		DEBUG_PRINT("RESTART MESSAGE! Controller restarting.\n");
+		DEBUG_PRINT("REBOOT MESSAGE! Controller restarting.\n");
 		restart();
 	}
-	else if (message.getMessageID() == SYS_DOWNLOAD_FIRMWARE && (message.getSerialNumber() == 0 || message.getSerialNumber() == ESP.getChipId()))
+	else if (message.getMessageID() == SYS_DOWNLOAD_FIRMWARE && (message.getID() == 0 || message.getID() == ESP.getChipId()))
 	{
 		downloadFirmwareUpdate();
 	}
-	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getSerialNumber() == ESP.getChipId())
+	else if (message.getMessageID() == SYS_RESET_CONFIG && message.getID() == ESP.getChipId())
 	{
-		DEBUG_PRINT("RESET CONFIG MESSAGE!\n");
+		DEBUG_PRINT("RESET CONTROLLER CONFIG MESSAGE!\n");
 		resetConfiguration();
 		restart();
 	}
@@ -83,21 +69,20 @@ void Controller::processMessage(const Message &message)
 	{
 		m_serverFound = true;
 		IPAddress address(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
-		Network.setServerAddress(address);
 		DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s\n", address.toString().c_str());
+		if (address != NetManager.getServerAddress())
+		{
+			NetManager.setServerAddress(address);
+			if (m_serverFoundCallback)
+				m_serverFoundCallback;
+		}
 	}
-}
-
-void Controller::controllerCallback(NetActionType actionType, const JsonObject &root)
-{
-	String uri = root["messageUri"];
-	DEBUG_PRINT("controllerCallback: %s\n", uri.c_str());
 }
 
 void Controller::downloadFirmwareUpdate(void)
 {
-	IPAddress address(Network.getServerAddress());
-	int port(Network.getServerPort());
+	IPAddress address(NetManager.getServerAddress());
+	int port(NetManager.getServerPort());
 
 	if (WiFi.status() == WL_CONNECTED && port > 0)
 	{
@@ -172,69 +157,31 @@ void Controller::resetConfiguration(void)
 
 void Controller::restart(void)
 {
-	Message message;
+	UDPMessage message;
 	message.setMessageID(SYS_RESTARTING);
-	message.setSerialNumber(ESP.getChipId());
+	message.setID(ESP.getChipId());
 
-	Network.sendUdpBroadcastMessage(message);
+	NetManager.sendUdpBroadcastMessage(message);
 	delay(250);
 	ESP.restart();
 }
 
 void Controller::findServer(void)
 {
+	m_serverFound = false;
 	DEBUG_PRINT("findServer!\n");
 
 	IPAddress ip;
 	ip = WiFi.localIP();
-	Message message;
+	UDPMessage message;
 	message.setMessageID(SYS_FIND_SERVER);
-	message.setSerialNumber(ESP.getChipId());
+	message.setID(ESP.getChipId());
 	message.setField(0, ip[0]);
 	message.setField(1, ip[1]);
 	message.setField(2, ip[2]);
 	message.setField(3, ip[3]);
 
-	Network.sendUdpBroadcastMessage(message);
-}
-
-void Controller::addExtraPin(byte virtualPin, byte physicalPin, PinModeEnum mode)
-{
-	m_extraPins[virtualPin] = physicalPin;
-
-	if (mode == PinInput)
-		pinMode(physicalPin, INPUT);
-	else if (mode == PinInputPullup)
-		pinMode(physicalPin, INPUT_PULLUP);
-	else if (mode == PinOutput)
-		pinMode(physicalPin, OUTPUT);
-	else if (mode == PinOutputOpenDrain)
-		pinMode(physicalPin, OUTPUT_OPEN_DRAIN);
-}
-
-void Controller::setExtraPin(byte virtualPin, PinStateEnum pinState)
-{
-	if (pinState == PinFlashing)
-	{
-		addFlashingPin(m_extraPins[virtualPin]);
-	}
-	else
-	{
-		removeFlashingPin(m_extraPins[virtualPin]);
-		digitalWrite(m_extraPins[virtualPin], pinState == PinOn ? HIGH : LOW);
-	}
-}
-
-PinStateEnum Controller::getExtraPin(byte virtualPin)
-{
-	PinStateEnum ret;
-	
-	if (digitalRead(m_extraPins[virtualPin]) == HIGH)
-		ret = PinOn;
-	else
-		ret = PinOff;
-
-	return ret;
+	NetManager.sendUdpBroadcastMessage(message);
 }
 
 void Controller::addFlashingPin(byte pin)

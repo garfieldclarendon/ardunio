@@ -2,7 +2,6 @@
 
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-#include <WebSocketsClient.h>
 #include <ArduinoJson.h>
 
 #include "Message.h"

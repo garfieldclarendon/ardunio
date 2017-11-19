@@ -13,6 +13,7 @@ const int ControllerVersion = 13;
 #define MAX_BLOCKS 2
 #define MAX_SIGNALS 3
 #define MAX_MODULES 8
+#define MAX_DEVICES 8
 #define MAX_PANEL_MODULES 8
 #define MAX_PANEL_OUTPUTS 8
 #define MAX_PANEL_INPUTS 8

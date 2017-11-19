@@ -45,7 +45,7 @@ void NetworkClass::process(void)
 
 void NetworkClass::processUDP(void)
 {
-//	DEBUG_PRINT("processUDP!\n");
+	DEBUG_PRINT("processUDP!  From: %s\n", m_udp.remoteIP().toString().c_str());
 	static bool signatureFound = false;
 	int packetSize;
 	if (signatureFound)
