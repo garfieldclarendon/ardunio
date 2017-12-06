@@ -102,7 +102,7 @@ void CAppService::start(void)
         QString path = QString("%1/Data").arg(QDir::current().absolutePath());
         QDir dir;
         dir.mkdir(path);
-        db.init(path +"/RRDatabase.db");
+        db.init(path +"/lcs.db");
 
         connect(MessageBroadcaster::instance(), SIGNAL(controllerResetting(long)), ControllerManager::instance(), SLOT(controllerResetting(long)));
 

@@ -16,7 +16,7 @@ TEMPLATE = app
 INCLUDEPATH += "../libraries/shared"
 
 #Include files
-include(ControlServer.pri)
+include(LCSServer.pri)
 include($$PWD/QtSolutionsService/src/qtservice.pri)
 
 #Windows resource file
