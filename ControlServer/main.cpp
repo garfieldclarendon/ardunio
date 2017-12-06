@@ -1,6 +1,7 @@
 #include <QCoreApplication>
 #include <stdio.h>
 #include <stdlib.h>
+#include <QJsonObject>
 
 #include "AppService.h"
 #include "GlobalDefs.h"
@@ -13,8 +14,12 @@ int main(int argc, char *argv[])
 {
     EntityMetadata::instance();
     qInstallMessageHandler(messageOutput);
-    qRegisterMetaType<ClassEnum>("ClassEnum");
+    qRegisterMetaType<ControllerStatusEnum>("ControllerStatusEnum");
+    qRegisterMetaType<ControllerClassEnum>("ControllerClassEnum");
+    qRegisterMetaType<DeviceClassEnum>("DeviceClassEnum");
+    qRegisterMetaType<ModuleClassEnum>("ModuleClassEnum");
     qRegisterMetaType<NetActionType>("NetActionType");
+    qRegisterMetaType<QJsonObject>();
 
     QString name(QObject::tr("ControlServer"));
     QString description(QObject::tr("GCMRR Layout Control Server"));
@@ -70,7 +75,7 @@ void messageOutput(QtMsgType type, const QMessageLogContext &context, const QStr
         switch (type)
         {
         case QtDebugMsg:
-            fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+            fprintf(stderr, "Debug: %s\n", localMsg.constData());
             break;
         case QtWarningMsg:
             fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);

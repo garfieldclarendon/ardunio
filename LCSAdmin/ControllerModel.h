@@ -22,7 +22,7 @@ signals:
     void newController(int newSerialNumber);
 
 public slots:
-    void controllerChanged(int serialNumber, ControllerStatus status, quint64 pingLength = 0);
+    void controllerChanged(int serialNumber, ControllerStatusEnum status, quint64 pingLength = 0);
     int getControllerRow(int controllerID);
     int getControllerClass(int controllerID);
 
@@ -41,7 +41,7 @@ protected:
 
 private:
     void createEmptyObject(QJsonObject &obj) override;
-    ClassEnum m_class;
+    ControllerClassEnum m_class;
 
     // EntityModel interface
 public slots:

@@ -64,6 +64,13 @@ void API::activateRoute(int routeID)
     sendToServer(url, QString(), NetActionGet);
 }
 
+void API::lockRoute(int routeID, bool lock)
+{
+    QUrl url(buildUrl(QString("lock_route?routeID=%1&lock=%2").arg(routeID).arg(lock)));
+
+    sendToServer(url, QString(), NetActionGet);
+}
+
 QString API::getControllerList()
 {
     QString json;
@@ -74,7 +81,7 @@ QString API::getControllerList()
     return json;
 }
 
-QString API::getControllerModuleList(int controllerID)
+QString API::getControllerModuleListByControllerID(int controllerID)
 {
     QString json;
     QString s("controller_module_list");
@@ -87,11 +94,24 @@ QString API::getControllerModuleList(int controllerID)
     return json;
 }
 
-QString API::getDeviceList(ClassEnum deviceType)
+QString API::getControllerModuleListByModuleID(int controllerModuleID)
+{
+    QString json;
+    QString s("controller_module_list");
+    if(controllerModuleID > 0)
+        s.append(QString("?controllerModuleID=%1").arg(controllerModuleID));
+
+    QUrl url(buildUrl(s));
+    json = sendToServer(url, QString(), NetActionGet);
+
+    return json;
+}
+
+QString API::getDeviceList(DeviceClassEnum deviceType)
 {
     QString json;
     QString s("device_list");
-    if(deviceType != ClassUnknown)
+    if(deviceType != DeviceUnknown)
         s.append(QString("?classCode=%1").arg(deviceType));
     QUrl url(buildUrl(s));
 
@@ -149,6 +169,19 @@ QString API::getRouteEntryList(int routeID)
 
     return json;}
 
+QString API::getDevicePropertyList(int deviceID)
+{
+    QString json;
+    QString s("device_property_list");
+    if(deviceID > 0)
+        s.append(QString("?deviceID=%1").arg(deviceID));
+    QUrl url(buildUrl(s));
+
+    json = sendToServer(url, QString(), NetActionGet);
+
+    return json;
+}
+
 Entity API::deleteEntity(const Entity &entity)
 {
     QJsonObject obj = entity.getObject();
@@ -205,6 +238,11 @@ void API::sendControllerConfig(int serialNumber)
     MessageBroadcaster::instance()->sendResetConfigCommand(serialNumber);
 }
 
+void API::sendDeviceConfig(int deviceID)
+{
+    MessageBroadcaster::instance()->sendResetDeviceConfigCommand(deviceID);
+}
+
 void API::textMessageReceived(const QString &message)
 {
     QJsonDocument doc(QJsonDocument::fromJson(message.toLatin1()));
@@ -216,26 +254,24 @@ void API::textMessageReceived(const QString &message)
         QString s = obj["serialNumber"].toString();
         int serialNumber = s.toInt();
         s = obj["status"].toString();
-        ControllerStatus status = (ControllerStatus)s.toInt();
+        ControllerStatusEnum status = (ControllerStatusEnum)s.toInt();
         s = obj["pingLength"].toString();
         quint64 pingLength = s.toInt();
         emit controllerChanged(serialNumber, status, pingLength);
     }
-    else if(urlText == "/api/notification/turnout")
+    else if(urlText == "/api/notification/device")
     {
-        QString s = obj["deviceID"].toString();
-        int deviceID = s.toInt();
-        s = obj["state"].toString();
-        int status = s.toInt();
+        int deviceID = obj["deviceID"].toVariant().toInt();
+        int status = obj["deviceState"].toVariant().toInt();
         emit deviceChanged(deviceID, status);
     }
     else if(urlText == "/api/notification/route")
     {
-        QString s = obj["routeID"].toString();
-        int routeID = obj["routeID"].toInt();//s.toInt();
-        int i = obj["isActive"].toVariant().toBool();
-        bool isActive = i;
-        emit routeChanged(routeID, isActive);
+        int routeID = obj["routeID"].toVariant().toInt();
+        bool isActive = obj["isActive"].toVariant().toBool();
+        bool isLocked = obj["isLocked"].toVariant().toBool();
+        bool canLock = obj["canLock"].toVariant().toBool();
+        emit routeChanged(routeID, isActive, isLocked, canLock);
     }
 }
 
@@ -292,7 +328,7 @@ void API::findServerSlot()
     if(m_server.length() == 0)
     {
         UDPMessage message;
-        message.setMessageID(SYS_FIND_SERVER);
+        message.setMessageID(SYS_CONTROLLER_ONLINE);
         MessageBroadcaster::instance()->sendUDPMessage(message);
     }
     else
@@ -320,7 +356,7 @@ void API::setupUDPSocket()
     MessageBroadcaster::setRunAsClient(true);
     connect(MessageBroadcaster::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(newUDPMessage(UDPMessage)));
     UDPMessage message;
-    message.setMessageID(SYS_FIND_SERVER);
+    message.setMessageID(SYS_CONTROLLER_ONLINE);
     MessageBroadcaster::instance()->sendUDPMessage(message);
     connect(&m_findServerTimer, SIGNAL(timeout()), this, SLOT(findServerSlot()));
     m_findServerTimer.start(5000);

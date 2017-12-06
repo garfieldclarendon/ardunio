@@ -4,7 +4,7 @@
 #include "NetworkManager.h"
 
 Device::Device()
-	: m_id(-1), m_address(0), m_port(0), m_nextDevice(NULL)
+	: m_id(-1), m_port(0)
 {
 }
 

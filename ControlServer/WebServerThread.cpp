@@ -64,7 +64,7 @@ void WebServerThread::run(void)
         QString url;
         url = tokens.value(1);
         QUrl u(url);
-        if (tokens.value(0) == "GET" && u.path() == "/firmware")
+        if (tokens.value(0) == "GET" && u.path() == "/controller/firmware")
         {
             handleDownloadFirmware(&socket, u);
             socket.close();
@@ -201,7 +201,7 @@ void WebServerThread::handleSocket(QTcpSocket *socket, const QString &path, cons
     QPointer<QTcpSocket> pSocket(socket);
     QUrl url(path);
     UrlHandler *handler = server->getUrlHandler(url.path());
-    if(url.path().startsWith("/api/"))
+    if(url.path().startsWith("/api/", Qt::CaseInsensitive))
     {
         m_apiHandler.handleClient(socket, path, actionText, payload);
     }

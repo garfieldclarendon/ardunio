@@ -6,6 +6,12 @@
             "tableName": "device"
         },
         {
+            "name": "deviceProperty",
+            "keyField": "id",
+            "tableKeyField": "id",
+            "tableName": "deviceProperty"
+        },
+        {
             "name": "controller",
             "keyField": "controllerID",
             "tableKeyField": "id",

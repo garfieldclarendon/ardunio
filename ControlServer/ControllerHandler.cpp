@@ -46,13 +46,63 @@ void ControllerHandler::handleConfigUrl(NetActionType actionType, const QUrl &ur
     {
         QUrlQuery urlQuery(url);
         int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
-        int classCode = urlQuery.queryItemValue("classCode").toInt();
 
         qDebug(QString("handleConfigUrl: controller %1").arg(serialNumber).toLatin1());
         Database db;
-        if(classCode == ClassMulti)
-            returnPayload = db.getMultiControllerConfig(serialNumber);
+        returnPayload = db.getMultiControllerConfig(serialNumber);
+        qDebug(returnPayload.toLatin1());
+        qDebug(QString("PAYLOAD SIZE: %1").arg(returnPayload.toLatin1().length()).toLatin1());
+    }
+}
+
+void ControllerHandler::handleModuleConfigUrl(NetActionType actionType, const QUrl &url, const QString &payload, QString &returnPayload)
+{
+    Q_UNUSED(payload);
+
+    if(actionType == NetActionGet)
+    {
+        QUrlQuery urlQuery(url);
+        int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
+        int address = urlQuery.queryItemValue("address").toInt();
+        qDebug(QString("handleModuleConfigUrl: controller %1 address %2").arg(serialNumber).arg(address).toLatin1());
+        Database db;
+        returnPayload = db.getControllerModuleConfig(serialNumber, address);
+        qDebug(returnPayload.toLatin1());
+        qDebug(QString("PAYLOAD SIZE: %1").arg(returnPayload.toLatin1().length()).toLatin1());
+    }
+}
+
+void ControllerHandler::handleDeviceConfigUrl(NetActionType actionType, const QUrl &url, const QString &payload, QString &returnPayload)
+{
+    Q_UNUSED(payload);
+
+    if(actionType == NetActionGet)
+    {
+        QUrlQuery urlQuery(url);
+        int deviceID = urlQuery.queryItemValue("deviceID").toInt();
+
+        qDebug(QString("ControllerHandler::handleDeviceConfigUrl: deviceID %1").arg(deviceID).toLatin1());
+        Database db;
+        returnPayload = db.getDeviceConfig(deviceID);
         qDebug(returnPayload.toLatin1());
     }
 }
 
+void ControllerHandler::handleGetNotificationListUrl(NetActionType actionType, const QUrl &url, const QString &payload, QString &returnPayload)
+{
+    Q_UNUSED(payload);
+
+    if(actionType == NetActionGet)
+    {
+        QUrlQuery urlQuery(url);
+        int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
+
+        qDebug(QString("ControllerHandler::handleGetNotificationListUrl: deviceID %1").arg(serialNumber).toLatin1());
+        Database db;
+        QJsonArray array = db.getNotificationList(serialNumber);
+        QJsonDocument doc;
+        doc.setArray(array);
+        returnPayload = doc.toJson();
+        qDebug(returnPayload.toLatin1());
+    }
+}

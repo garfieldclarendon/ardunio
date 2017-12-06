@@ -1,94 +1,140 @@
-#define DEBUG_ESP_WIFI
-
+// Required ESP/Arduino includes
 #include <dummy.h>
-#include <Hash.h>
 #include <Wire.h>
 #include <EEPROM.h>
 #include <FS.h>
 #include <ArduinoJson.h>
-#include <ESP8266mDNS.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
 #include <WiFiUdp.h>
 #include <WiFiClient.h>
 
+// Main controller files
 #include "Controller.h"
 #include "GlobalDefs.h"
-#include "Structures.h"
-#include "Device.h"
 #include "NetworkManager.h"
 
-#define BASE_ADDRESS 0x20  // MCP23008 is on I2C port 0x20
+// Modules
+#include "TurnoutModule.h"
+#include "InputModule.h"
+#include "OutputModule.h"
 
-const int MODULE_CONFIG_BASE_ADDRESS = CONTROLLER_ID_ADDRESS + sizeof(int);
+// Devices
+#include "TurnoutDevice.h"
+#include "PanelOutputDevice.h"
+#include "PanelInputDevice.h"
+#include "SignalDevice.h"
+#include "SemaphoreDevice.h"
+#include "BlockDevice.h"
+
+struct DeviceConfigStruct
+{
+	byte deviceClass;
+	byte port;
+	int deviceID;
+};
+typedef struct DeviceConfigStruct DeviceConfigStruct;
+
+struct ModuleConfigStruct
+{
+	byte moduleClass;
+	byte address;
+	byte deviceCount;
+	DeviceConfigStruct devices[MAX_DEVICES];
+};
+typedef struct ModuleConfigStruct ModuleConfigStruct;
+
+struct ControllerConfigStruct
+{
+	ModuleConfigStruct modules[MAX_MODULES];
+};
+typedef struct ControllerConfigStruct ControllerConfigStruct;
 
 // STATUS_LED_PIN is used to show the status of the connection to the WiFi network
 // LED on indicates the controller is connected
 // LED off indicates the controller is offline
 const byte STATUS_LED_PIN = 2;// use the built in blue LED on the ESP8266 connected to pin2
 const byte LOCKOUT_PIN = 13;
+const byte CONFIG_VERSION = 1;
 bool lockout = false;
 byte lastLockoutRead = 0;
 long currentLockoutTimeout = 0;
 
-byte totalDevices = 0;
-Device *firstDevice = NULL;
 bool downloadConfigFlag = false;
 
+ControllerClassEnum controllerClass = ControllerUnknown;
+int controllerID = 0;
+byte moduleCount = 0;
+
 Controller controller(LocalServerPort);
-ControllerConfigStruct controllerConfig;
+String jsonTextToSave;
+int nextModuleToNotify = -1;
+Module *modules[MAX_MODULES];
 
 void setup() 
 {
 #ifdef PROJECT_DEBUG
 	Serial.begin(115200);
+	Serial.println("-------------------------------------------------");
+	Serial.printf("LCS Controller Version: %d.%d.%d\n\n", MajorVersion, MinorVersion, ControllerVersion);
+	Serial.print("DEBUG BUILD STARTING.  Available RAM: ");
+	Serial.println(ESP.getFreeHeap());
+	Serial.println("-------------------------------------------------");
 #else
 	Serial.begin(74880);
 	Serial.println();
 	Serial.println();
-	Serial.println("Starting up in production mode");
-	Serial.printf("LCS Controller Version: %d\n\n\n", ControllerVersion);
+	Serial.println("-------------------------------------------------");
+	Serial.printf("LCS Controller Version: %d.%d.%d\n\n", MajorVersion, MinorVersion, ControllerVersion);
+	Serial.print("Available RAM: ");
+	Serial.println(ESP.getFreeHeap());
+	Serial.printf("Serial Number: %d\n\n", ESP.getChipId());
+	Serial.println("-------------------------------------------------");
 	Serial.flush();
 	Serial.end();
 #endif
 	DEBUG_PRINT("setup\n");
-	memset(&controllerConfig, 0, sizeof(ControllerConfigStruct));
-
-	EEPROM.begin(512);
+	EEPROM.begin(128);
+	DEBUG_PRINT("SPIFFS SIZE %d REAL SIZE %d  ID %d\n", ESP.getFlashChipSize(), ESP.getFlashChipRealSize(), ESP.getFlashChipId());
 	bool result = SPIFFS.begin();
 	DEBUG_PRINT("SPIFFS opened: %d\n", result);
+	
+	memset(modules, 0, sizeof(Module*)*MAX_MODULES);
+	ControllerConfigStruct controllerConfig;
+	memset(&controllerConfig, 0, sizeof(ControllerConfigStruct));
 
-	loadConfiguration();
+	loadControllerConfiguration(&controllerConfig);
+
+	setupHardware();
+
+	if (downloadConfigFlag == false)
+		createModules(&controllerConfig);
 
 	controller.setServerFoundCallback(serverFound);
-	controller.setup((ClassEnum)controllerConfig.controllerClass);
+	controller.setSendStatusCallback(sendStatusMessage);
+	controller.setup((ControllerClassEnum)controllerClass);
+	controller.setControllerID(controllerID);
 
 	NetManager.setUdpMessageCallback(udpMessageCallback);
 	NetManager.setWIFIConnectCallback(networkConnected);
+	NetManager.setNotificationListChangedCallback(notificationListChanged);
+	NetManager.init(8080, controllerID);
 
-	Device *device = firstDevice;
-	if (device)
+	for (byte x = 0; x <moduleCount; x++)
 	{
-		setupHardware();
-		createDevices();
-		loadDeviceConfiguration();
+		Module *module = modules[x];
 
-		byte x = 0;
-		while (device)
+		if (module)
 		{
-			if (controllerConfig.controllerClass == ClassMulti)
+			if (controllerClass == ControllerMulti)
 			{
-				DEBUG_PRINT("CALLING SETUPWIRE FOR ADDRESS: %d\n", controllerConfig.deviceConfigs[x].address);
-				device->setupWire(controllerConfig.deviceConfigs[x].address, controllerConfig.deviceConfigs[x].port);
+				module->finishSetupWire();
 			}
 			else
 			{
-				DEBUG_PRINT("CALLING SETUP\n");
-				device->setup(controllerConfig.deviceConfigs[x].port);
+				module->finishSetupNoWire();
 			}
-			device = device->getNextDevice();
-			x++;
 		}
 	}
 
@@ -96,50 +142,79 @@ void setup()
 }
 void serverFound(void)
 {
-	DEBUG_PRINT("networkConnected\n");
+	DEBUG_PRINT("serverFound\n");
 
 	if (downloadConfigFlag)
 	{
 		downloadConfig();
 	}
+	for (byte x = 0; x < moduleCount; x++)
+	{
+		Module *module = modules[x];
+		if (module)
+		{
+			for (byte index = 0; index < MAX_DEVICES; index++)
+			{
+				Device *device = module->getDevice(index);
+				if (device)
+				{
+					device->serverFound();
+				}
+			}
+		}
+	}
+	DEBUG_PRINT("serverFound COMPLETE\n");
 }
 
 void networkConnected(bool connected)
 {
-	Device *device = firstDevice;
-	while (device)
+	DEBUG_PRINT("networkConnected: %s\n", connected ? "CONNECTED" : "DISCONNECTED");
+	if (connected)
+		controller.networkOnline();
+	else
+		controller.networkOffline();
+
+	for (byte x = 0; x < moduleCount; x++)
 	{
-		if (connected)
-			device->networkOnline();
-		else
-			device->networkOffline();
-		device->sendStatusMessage();
-		device = device->getNextDevice();
+		Module *module = modules[x];
+		if (module)
+		{
+			for (byte index = 0; index < MAX_DEVICES; index++)
+			{
+				Device *device = module->getDevice(index);
+				if (device)
+				{
+					if (connected)
+						device->networkOnline();
+					else
+						device->networkOffline();
+					device->sendStatusMessage();
+				}
+			}
+		}
 	}
 }
 
 void udpMessageCallback(const UDPMessage &message)
 {
 	controller.processMessage(message);
-	Device *device = firstDevice;
-	while (device)
+	for (byte x = 0; x < moduleCount; x++)
 	{
-		if (device->getID() == message.getID())
+		Module *module = modules[x];
+		if (module)
 		{
-			device->processUDPMessage(message);
-			device = NULL;
-		}
-		else
-		{
-			device = device->getNextDevice();
+			if (controllerClass == ControllerMulti)
+				module->processUDPMessageWire(message);
+			else
+				module->processUDPMessageNoWire(message);
 		}
 	}
 }
 
 void setupHardware(void)
 {
-	DEBUG_PRINT("Setup Hardware\n");
-	if (controllerConfig.controllerClass == ClassMulti)
+	DEBUG_PRINT("Setup Hardware: %d\n", controllerClass);
+	if (controllerClass == ControllerMulti)
 	{
 		Wire.begin(4, 5); //creates a Wire object
 
@@ -156,143 +231,216 @@ void setupHardware(void)
 void loop() 
 {
 	checkLockoutPin();
-	if (NetManager.process())
-		controller.findServer();
+	NetManager.process();
 	controller.process();
 
-	Device *device = firstDevice;
-	while (device)
+	for (byte x = 0; x < moduleCount; x++)
 	{
-		if (controllerConfig.controllerClass == ClassMulti)
-			device->processWire();
+		if (controllerClass == ControllerMulti)
+		{
+			if (modules[x])
+				modules[x]->processWire();
+		}
 		else
-			device->processNoWire();
-		yield();
-		device = device->getNextDevice();
+		{
+			if (modules[x])
+				modules[x]->processNoWire();
+		}
 	}
 
-	if (controllerConfig.controllerClass == ClassMulti)
+	if (controllerClass == ControllerMulti)
 		setStatusIndicator();
 
-	if (totalDevices == 0)
+	if (jsonTextToSave.length() > 0)
+	{
+		saveControllerConfig(jsonTextToSave, false);
+		jsonTextToSave = "";
+	}
+
+	if (nextModuleToNotify >= 0)
+	{
+		Module *m = modules[nextModuleToNotify++];
+		if (m)
+			m->sendStatusMessage();
+		if (nextModuleToNotify >= moduleCount)
+			nextModuleToNotify = -1;
+	}
+	if (moduleCount == 0)
 		delay(100);
+	else
+		delay(50);
 }
 
-void loadConfiguration(void)
+String getConfiguration(void)
 {
-	if (EEPROM.read(0) == 0xBB)
+	DEBUG_PRINT("GET CONTROLLER CONFIGURATION\n");
+	String json;
+	String fileName("/ControllerConfig.json");
+	File f = SPIFFS.open(fileName, "r");
+
+	if (f)
 	{
-		// Get the number of modules connected to this controller.
-		DEBUG_PRINT("Getting the controller configuration: \n");
-		EEPROM.get(MODULE_CONFIG_BASE_ADDRESS, controllerConfig);
-		DEBUG_PRINT("Controller configuration complete.  Total devices: %d\n", controllerConfig.deviceCount);
-
-		totalDevices = controllerConfig.deviceCount;
-
-		DEBUG_PRINT("DONE GETTING CONFIGURATION\n");
+		json = f.readString();
+		DEBUG_PRINT("Configuration  LENGTH: %d:\n%s\n", json.length(), json.c_str());
+		f.close();
 	}
 	else
 	{
-		DEBUG_PRINT("EEPROM not set.  Initializing to 0\n");
-		// This controller has not been configured yet or the configuration is no longer valid, 
-		// write default values to memory
+		DEBUG_PRINT("Configuration file %s is missing or can not be opened.  Initializing to 0\n", fileName.c_str());
+	}
+	return json;
+}
 
-		totalDevices = 0;
-		memset(&controllerConfig, 0, sizeof(ControllerConfigStruct));
-		saveControllerConfig();
-		DEBUG_PRINT("DONE SAVING EEPROM.  Initializing to 0\n");
+void loadControllerConfiguration(struct ControllerConfigStruct *config)
+{
+	DEBUG_PRINT("LOAD CONTROLLER CONFIGURATION\n");
+	String json(getConfiguration());
+
+	if (json.length() > 0)
+	{
+		if(parseControllerConfig(json, true, config) == false)
+			downloadConfigFlag = true;
+	}
+	else
+	{
 		downloadConfigFlag = true;
 	}
 }
 
-void loadDeviceConfiguration(void)
+void loadModuleConfiguration(byte address, struct ModuleConfigStruct *config)
 {
-	DEBUG_PRINT("LOAD DEVICE CONFIGURATION\n");
-	Device *device = firstDevice;
-	while (device)
+	DEBUG_PRINT("LOAD MODULE CONFIGURATION.  ADDRESS: %d\n", address);
+	String json;
+	String fileName("/ModuleConfig_");
+	fileName += address;
+	fileName += ".json";
+	File f = SPIFFS.open(fileName, "r");
+
+	if (f)
 	{
-		String json;
-		String fileName("/Device_");
-		fileName += device->getAddress();
-		fileName += "_";
-		fileName += device->getPort();
-		fileName += ".json";
-		File f = SPIFFS.open(fileName, "r");
+		json = f.readString();
+		DEBUG_PRINT("Configuration:\n%s\n", json.c_str());
+		f.close();
+	}
+	else
+	{
+		DEBUG_PRINT("Configuration file %s is missing or can not be opened.  Initializing to 0\n", fileName.c_str());
+	}
 
-		if (f)
-		{
-			DEBUG_PRINT("Reading Device config: %s\n", fileName.c_str());
-
-			json = f.readString();
-			f.close();
-
-			if (json.length() > 0)
-			{
-				StaticJsonBuffer<512> jsonBuffer;
-				JsonObject &root = jsonBuffer.parseObject(json);
-				device->netDeviceConfigCallback(NetActionUpdate, device->getAddress(), device->getPort(), root);
-			}
-		}
-		else
-		{
-			DEBUG_PRINT("Configuration file %s is missing or can not be opened\n", fileName.c_str());
-		}
-		device = device->getNextDevice();
+	if (json.length() > 0)
+	{
+		parseModuleConfig(json, config);
+	}
+	else
+	{
+		downloadConfigFlag = true;
 	}
 }
 
-void createDevices(void)
+void createDevices(struct ModuleConfigStruct *moduleConfig, Module *module)
 {
-	DEBUG_PRINT("CreateDevices\n");
-//	bool allDevicesCreated = true;
+	DEBUG_PRINT("CreateDevices.  Device Count: %d\n", moduleConfig->deviceCount);
 
-	while (firstDevice)
+	if (module)
 	{
-		Device *hold = firstDevice;
-		firstDevice = firstDevice->getNextDevice();
-		delete hold;
-
-	}
-	firstDevice = NULL;
-	for (byte x = 0; x > totalDevices; x++)
-	{
-		Device *device = NULL;
-		switch (controllerConfig.deviceConfigs[x].deviceClass)
+		for (byte x = 0; x < moduleConfig->deviceCount; x++)
 		{
-			case ClassTurnout:
+			Device *device = NULL;
+			switch (moduleConfig->devices[x].deviceClass)
 			{
-				DEBUG_PRINT("CreateModules:  Creating Turnout Module\n");
-//				device = new TurnoutModule();
+				case DeviceTurnout:
+				{
+					DEBUG_PRINT("CreateDevices:  Creating Turnout Device\n");
+					device = new TurnoutDevice();
+					break;
+				}
+				case DeviceBlock:
+				{
+					DEBUG_PRINT("CreateDevices:  Creating Block Device\n");
+					device = new BlockDevice();
+					break;
+				}
+				case DeviceSignal:
+				{
+					DEBUG_PRINT("CreateDevices:  Creating Signal Device\n");
+					device = new SignalDevice();
+					break;
+				}
+				case DeviceSemaphore:
+				{
+					DEBUG_PRINT("CreateDevices:  Creating Signal Device\n");
+					device = new SemaphoreDevice();
+					break;
+				}
+				case DevicePanelOutput:
+				{
+					DEBUG_PRINT("CreateDevices:  Creating PanelOutput Device\n");
+					device = new PanelOutputDevice();
+					break;
+				}
+				case DevicePanelInput:
+				{
+					DEBUG_PRINT("CreateDevices:  Creating PanelInput Device\n");
+					device = new PanelInputDevice();
+					break;
+				}
+				default:
+				{
+					DEBUG_PRINT("CreateDevices:  INVALID DEVICE CLASS: %d\n", moduleConfig->devices[x].deviceClass);
+					break;
+				}
+			}
+			if (device)
+			{
+				device->setup(moduleConfig->devices[x].deviceID, moduleConfig->devices[x].port);
+				module->addDevice(x, device);
+			}
+		}
+	}
+}
+
+void createModules(struct ControllerConfigStruct *controllerConfig)
+{
+	DEBUG_PRINT("CreateModules. Count: %d\n", moduleCount);
+	for (byte x = 0; x < moduleCount; x++)
+	{
+		Module *module = NULL;
+		loadModuleConfiguration(x, &controllerConfig->modules[x]);
+		switch (controllerConfig->modules[x].moduleClass)
+		{
+			case ModuleSemaphore:
+			case ModuleTurnout:
+			{
+				DEBUG_PRINT("createModules:  Creating Turnout Module address: %d\n", controllerConfig->modules[x].address);
+				module = new TurnoutModule;
 				break;
 			}
-			case ClassBlock:
-			case ClassInput:
+			case ModuleInput:
 			{
-				DEBUG_PRINT("CreateModules:  Creating Input Module\n");
-//				device = new InputModule();
+				DEBUG_PRINT("createModules:  Creating Input Module address: %d\n", controllerConfig->modules[x].address);
+				module = new InputModule;
 				break;
 			}
-			case ClassSignal:
-			case ClassOutput:
+			case ModuleOutput:
 			{
-				DEBUG_PRINT("CreateModules:  Creating Output Module\n");
-//				device = new OutputModule();
+				DEBUG_PRINT("createModules:  Creating Output Module address: %d\n", controllerConfig->modules[x].address);
+				module = new OutputModule;
 				break;
 			}
 			default:
 			{
-				DEBUG_PRINT("CreateDevices:  INVALID DEVICE CLASS: %d\n", controllerConfig.deviceConfigs[x].deviceClass);
-//				allDevicesCreated = false;
-				totalDevices = 0;
+				DEBUG_PRINT("createModules:  INVALID MODULE CLASS: %d\n", controllerConfig->modules[x].moduleClass);
 				break;
 			}
 		}
-		if (device)
+		modules[x] = module;
+		if (module)
 		{
-			if (firstDevice)
-				firstDevice->setNextDevice(device);
+			if (controllerClass == ControllerMulti)
+				module->setupWire(controllerConfig->modules[x].address);
 			else
-				firstDevice = device;
+				module->setupNoWire();
+			createDevices(&controllerConfig->modules[x], module);
 		}
 	}
 }
@@ -301,35 +449,154 @@ void downloadConfig(void)
 {
 	DEBUG_PRINT("downloadConfig\n");
 
-	downloadConfigFlag = false;
-	StaticJsonBuffer<200> jsonBuffer;
 	String payload = NetManager.getControllerConfig(ESP.getChipId());
-	JsonObject &json = jsonBuffer.parseObject(payload);
-
-	controllerConfig.controllerClass = (ClassEnum)(int)json["controllerClass"];
-
-	JsonArray &devices = json["devices"];
-	controllerConfig.controllerClass = json["controllerClass"];
-	controllerConfig.deviceCount = devices.size();
-	for (byte x = 0; x < devices.size(); x++)
+	if (payload.length() > 0)
 	{
-		controllerConfig.deviceConfigs[x].deviceClass = devices[x]["class"];
-		controllerConfig.deviceConfigs[x].address = devices[x]["address"];
-		controllerConfig.deviceConfigs[x].port = devices[x]["port"];
-		DEBUG_PRINT("Device Config  Class: %d  Address: %d Port: %d\n", controllerConfig.deviceConfigs[x].deviceClass, controllerConfig.deviceConfigs[x].address, controllerConfig.deviceConfigs[x].port);
+		ControllerConfigStruct config;
+		memset(&config, 0, sizeof(ControllerConfigStruct));
+		if (parseControllerConfig(payload, false, &config))
+		{
+			downloadModuleConfigs(&config);
+			downloadConfigFlag = false;
+			saveControllerConfig(payload, true);
+			controller.restart();
+		}
 	}
-
-	saveControllerConfig();
-	controller.restart();
 }
 
-void saveControllerConfig(void)
+void downloadModuleConfigs(ControllerConfigStruct *config)
 {
-	DEBUG_PRINT("Saving module configuration to EEPROM!!!!!!!\nTotal Devices: %d\n", controllerConfig.deviceCount);
-	
-	EEPROM.write(0, 0xBB);
-	EEPROM.put(MODULE_CONFIG_BASE_ADDRESS, controllerConfig);
-	EEPROM.commit();
+	for (byte x = 0; x < moduleCount; x++)
+	{
+		String json = NetManager.getModuleConfig(ESP.getChipId(), config->modules[x].address);
+		if (json.length() > 0)
+		{
+			saveModuleConfig(json, config->modules[x].address);
+		}
+	}
+}
+
+bool parseControllerConfig(const String &jsonText, bool checkVersion, ControllerConfigStruct *config)
+{
+	DEBUG_PRINT("parseControllerConfig\n");
+	StaticJsonBuffer<1024> jsonBuffer;
+	JsonObject &json = jsonBuffer.parseObject(jsonText);
+
+	if (checkVersion && json["version"] != (int)CONFIG_VERSION)
+	{
+		DEBUG_PRINT("parseControllerConfig  WRONG VERSION.\n");
+		return false;
+	}
+
+	controllerClass = (ControllerClassEnum)(int)json["controllerClass"];
+	controllerID = json["controllerID"];
+
+	if (controllerClass == ControllerUnknown)
+	{
+		DEBUG_PRINT("parseControllerConfig  INVALID CONTROLLER CLASS.\n");
+		return false;
+	}
+
+	JsonArray &modules = json["modules"];
+	moduleCount = modules.size();
+	for (byte x = 0; x < modules.size(); x++)
+	{
+		JsonArray &devices = modules[x]["devices"];
+		config->modules[x].moduleClass = modules[x]["class"];
+		config->modules[x].address = modules[x]["address"];
+	}
+
+	JsonArray &notifications = json["controllersToNotify"];
+	DEBUG_PRINT("parseControllerConfig:  Notification List size: %d\n", notifications.size());
+	for (byte x = 0; x < notifications.size(); x++)
+	{
+		int id = notifications[x]["id"];
+		if (controllerID != id)
+			NetManager.addNotificationController(id);
+	}
+
+	return true;
+}
+
+void parseModuleConfig(const String &jsonText, ModuleConfigStruct *config)
+{
+	DEBUG_PRINT("parseModuleConfig\n");
+	StaticJsonBuffer<2048> jsonBuffer;
+	JsonObject &json = jsonBuffer.parseObject(jsonText);
+
+	JsonArray &devices = json["devices"];
+	config->deviceCount = devices.size();
+	for (byte x = 0; x < devices.size(); x++)
+	{
+		config->devices[x].port = devices[x]["p"];
+		config->devices[x].deviceClass = devices[x]["c"];
+		config->devices[x].deviceID = devices[x]["id"];
+
+		DEBUG_PRINT("Device Config  Class: %d  Port: %d\n", config->devices[x].deviceClass, config->devices[x].port);
+	}
+}
+
+void saveControllerConfig(const String &jsonText, bool addVersion)
+{
+	DEBUG_PRINT("Saving controller configuration to file.  Total Modules: %d\n", moduleCount);
+	String s;
+	if (addVersion)
+	{
+		StaticJsonBuffer<1024> jsonBuffer;
+		JsonObject &json = jsonBuffer.parseObject(jsonText);
+
+		json["version"] = (int)CONFIG_VERSION;
+		json.printTo(s);
+	}
+	else
+	{
+		s = jsonText;
+	}
+
+	String fileName("/ControllerConfig.json");
+
+	if (SPIFFS.exists(fileName))
+		SPIFFS.remove(fileName);
+	File f = SPIFFS.open(fileName, "w");
+
+	if (f)
+	{
+		DEBUG_PRINT("Saving Controller config: %s\n", fileName.c_str());
+
+//		DEBUG_PRINT("Updated Configuration with version:\n%s\n", s.c_str());
+		f.write((const uint8_t *)s.c_str(), s.length());
+		f.close();
+	}
+	else
+	{
+		DEBUG_PRINT("Saving controller config FAILED: %s  COULD NOT OPEN FILE\n", fileName.c_str());
+	}
+}
+
+void saveModuleConfig(const String &jsonText, byte address)
+{
+	DEBUG_PRINT("Saving module configuration to file.\n");
+
+	String fileName("/ModuleConfig_");
+	fileName += address;
+	fileName +=".json";
+
+	if (SPIFFS.exists(fileName))
+		SPIFFS.remove(fileName);
+	File f = SPIFFS.open(fileName, "w");
+
+	if (f)
+	{
+		DEBUG_PRINT("Saving module config: %s\n", fileName.c_str());
+
+		//		DEBUG_PRINT("Updated Configuration with version:\n%s\n", s.c_str());
+		f.write((const uint8_t *)jsonText.c_str(), jsonText.length());
+		f.close();
+	}
+	else
+	{
+		DEBUG_PRINT("Saving module config FAILED: %s  COULD NOT OPEN FILE\n", fileName.c_str());
+	}
 }
 
 void checkLockoutPin(void)
@@ -342,11 +609,18 @@ void checkLockoutPin(void)
 		{
 			currentLockoutTimeout = t;
 			lockout = current;
-			Device *device = firstDevice;
-			while (device)
+			for (byte x = 0; x < moduleCount; x++)
 			{
-				device->controllerLockout(lockout == LOW);
-				device = device->getNextDevice();
+				Module *module = modules[x];
+				if (module)
+				{
+					for (byte index = 0; index < MAX_DEVICES; index++)
+					{
+						Device *device = module->getDevice(index);
+						if (device)
+							device->controllerLockout(lockout == LOW);
+					}
+				}
 			}
 		}
 	}
@@ -357,8 +631,25 @@ void checkLockoutPin(void)
 	lastLockoutRead = current;
 }
 
+void sendStatusMessage(void)
+{
+	DEBUG_PRINT("sendStatusMessage\n");
+	nextModuleToNotify = 0;
+}
+
+void notificationListChanged(const JsonArray &jsonArray)
+{
+	StaticJsonBuffer<2048> jsonBuffer;
+	JsonObject &json = jsonBuffer.parseObject(getConfiguration());
+
+	DEBUG_PRINT("notificationListChanged  New Count: %d\n", jsonArray.size());
+	json["controllersToNotify"] = jsonArray;
+	json.printTo(jsonTextToSave);
+}
+
 void setStatusIndicator(void)
 {
+//	DEBUG_PRINT("setStatusIndicator: %d\n", NetManager.getWiFiConnected());
 	if (NetManager.getWiFiConnected())
 		digitalWrite(STATUS_LED_PIN, LOW); // Turn LED on
 	else

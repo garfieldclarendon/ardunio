@@ -15,7 +15,9 @@ signals:
 public slots:
     void handleUrl(NetActionType actionType, const QUrl &url, const QString &payload, QString &returnPayload);
     void handleConfigUrl(NetActionType actionType, const QUrl &url, const QString &payload, QString &returnPayload);
-
+    void handleModuleConfigUrl(NetActionType actionType, const QUrl &url, const QString &payload, QString &returnPayload);
+    void handleDeviceConfigUrl(NetActionType actionType, const QUrl &url, const QString &payload, QString &returnPayload);
+    void handleGetNotificationListUrl(NetActionType actionType, const QUrl &url, const QString &payload, QString &returnPayload);
 };
 
 #endif // CONTROLLERHANDLER_H

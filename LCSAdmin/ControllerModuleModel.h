@@ -16,6 +16,7 @@ public:
 
     void setControllerID(int value);
     int getControllerlID(void) const { return m_controllerID; }
+    void setControllerModuleID(int value);
 
 signals:
     void controllerIDChanged(void);
@@ -40,6 +41,7 @@ private:
     void createEmptyObject(QJsonObject &obj) override;
 
     int m_controllerID;
+    int m_controllerModuleID;
 };
 
 #endif // CONTROLLERMODULEMODEL_H

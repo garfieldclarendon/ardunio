@@ -3,25 +3,33 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include <ArduinoJson.h>
+#include <IPAddress.h>
 
 #include "UDPMessage.h"
 #include "GlobalDefs.h"
 
 class WiFiClient;
 
+struct NotificationStruct
+{
+	int controllerID;
+	IPAddress address;
+	NotificationStruct *next;
+};
+typedef struct NotificationStruct NotificationStruct;
+
 class NetworkManager
 {
 public:
 	
 	typedef std::function<void(const UDPMessage &message)> TUDPMessageCallback;
-	typedef std::function<void(void)> TServerConnectedCallback;
-	typedef std::function<void(void)> TServerDisconnectedCallback;
 	typedef std::function<void(bool connected)> TWIFIConnectionCallback;
+	typedef std::function<void(const JsonArray &array)> TNotificationListChangedCallback;
 
 	NetworkManager(void);
 	~NetworkManager(void);
 
-	void init(int serverPort);
+	void init(int serverPort, int controllerID);
 	bool process(void);
 
 	void setServerAddress(const IPAddress &value);
@@ -30,22 +38,30 @@ public:
 	bool getWiFiConnected(void) const;
 
 	void sendUdpBroadcastMessage(const UDPMessage &message);
+	void sendUdpMessage(const UDPMessage &message);
+	bool sendUdpMessage(const UDPMessage &message, IPAddress &address);
 	String getControllerConfig(unsigned int serialNumber);
+	String getModuleConfig(unsigned int serialNumber, byte address);
 	String getDeviceConfig(int deviceID);
+	String getNotificationList(void);
 
 	void setUdpMessageCallback(TUDPMessageCallback value) { m_udpMessageCallback = value;  }
-	void setServerConnectedCallback(TServerConnectedCallback value) { m_serverConnectedCallback = value;  }
 	void setWIFIConnectCallback(TWIFIConnectionCallback value) { m_wifiConnectCallback = value; }
+	void setNotificationListChangedCallback(TNotificationListChangedCallback value) { m_notificationListChangedCallback = value;  }
 
 	void setControllerID(int value) { m_controllerID = value; }
 	void setControllerName(const String &value) { m_controllerName = value; }
-
-	void handleUdpMessage(NetActionType action, ClassEnum moduleClass, const String &path, const String &payload);
+	void addNotificationController(int controllerID);
+	bool updateNotificationList(int controllerID, const IPAddress &address);
+	void setNotificationList(const String &jsonText);
+	void clearNotificationList(void);
 
 private:
 	bool processWiFi(void);
 	void processUDP(void);
+	void checkNotificationList(void);
 	String httpGet(const String &url);
+	void getAddress(int controllerID);
 
 	WiFiUDP m_udp;
 
@@ -54,12 +70,14 @@ private:
 	static NetworkManager *m_this;
 	String m_controllerName;
 	int m_controllerID;
-	unsigned long m_disconnectTimeout;
+	unsigned long m_lastCheckTimeout;
+	NotificationStruct *m_firstNotification;
+	NotificationStruct *m_currentStruct;
 
 	//Callbacks
 	TUDPMessageCallback m_udpMessageCallback;
-	TServerConnectedCallback m_serverConnectedCallback;
 	TWIFIConnectionCallback m_wifiConnectCallback;
+	TNotificationListChangedCallback m_notificationListChangedCallback;
 };
 
 extern NetworkManager NetManager;

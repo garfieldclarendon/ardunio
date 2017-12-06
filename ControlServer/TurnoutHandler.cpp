@@ -10,21 +10,22 @@
 #include "ControllerManager.h"
 #include "DeviceManager.h"
 #include "WebServer.h"
+#include "MessageBroadcaster.h"
 
 TurnoutHandler::TurnoutHandler(QObject *parent)
-    : DeviceHandler(ClassTurnout, parent)
+    : DeviceHandler(DeviceTurnout, parent)
 {
 //    QTimer::singleShot(3000, this, SLOT(timerProc()));
     connect(ControllerManager::instance(), SIGNAL(controllerRemoved(int)), this, SLOT(controllerRemoved(int)));
     connect(ControllerManager::instance(), SIGNAL(messageACKed(ControllerMessage)), this, SLOT(messageACKed(ControllerMessage)));
 }
 
-void TurnoutHandler::newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
+void TurnoutHandler::newMessage(int serialNumber, int address, DeviceClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
 {
     Q_UNUSED(actionType);
-    if(uri == "/controller/module" && classCode == ClassTurnout)
+    if(uri == "/controller/module" && classCode == DeviceTurnout)
         updateTurnoutState(json, serialNumber, address);
-    else if(uri == "/controller/module/config" && classCode == ClassTurnout)
+    else if(uri == "/controller/module/config" && classCode == DeviceTurnout)
         sendConfig(serialNumber, address);
 }
 
@@ -47,7 +48,7 @@ void TurnoutHandler::activateTurnout(int deviceID, TurnoutState newState)
         int motorPinSetting = getMotorPinSetting(deviceID);
 
         getIPAddressAndaddressForDevice(deviceID, ipAddress, address, port, serialNumber);
-        obj["class"] = ClassTurnout;
+        obj["class"] = DeviceTurnout;
         obj["deviceID"] = deviceID;
         obj["newState"] = newState;
         obj["address"] = address;
@@ -59,6 +60,12 @@ void TurnoutHandler::activateTurnout(int deviceID, TurnoutState newState)
         ControllerMessage message(serialNumber, obj);
         ControllerManager::instance()->sendMessage(message);
     }
+    UDPMessage message;
+    message.setMessageID(TRN_ACTIVATE);
+    message.setSerialNumber(deviceID);
+    message.setField(0, newState);
+
+    MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 
 void TurnoutHandler::timerProc()
@@ -164,7 +171,7 @@ void TurnoutHandler::messageACKed(const ControllerMessage &message)
 {
     QJsonObject obj(message.getObject());
     int controllerClass = obj["class"].toInt();
-    if(controllerClass == ClassTurnout)
+    if(controllerClass == DeviceTurnout)
     {
         int deviceID = obj["deviceID"].toInt();
         int ns = obj["newState"].toInt();
@@ -255,7 +262,7 @@ void TurnoutHandler::createAndSendNotificationMessage(int deviceID, TurnoutState
     QString uri("/api/notification/turnout");
     QJsonObject obj;
     obj["deviceID"] = QString("%1").arg(deviceID);
-    obj["state"] = QString("%1").arg(newState);
+    obj["deviceState"] = QString("%1").arg(newState);
 
     emit sendNotificationMessage(uri, obj);
 }
@@ -274,3 +281,5 @@ TurnoutState TurnoutHandler::getTurnoutState(const QJsonObject &obj, int motorPi
 
     return turnoutState;
 }
+
+

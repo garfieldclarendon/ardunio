@@ -11,6 +11,7 @@
 #include "ControllerManager.h"
 #include "Database.h"
 #include "NotificationServer.h"
+#include "MessageBroadcaster.h"
 
 ControllerManager * ControllerManager::m_instance = NULL;
 
@@ -20,6 +21,7 @@ ControllerManager::ControllerManager(QObject *parent)
       m_pingTimer(NULL)
 {
     connect(this, &ControllerManager::sendNotificationMessage, NotificationServer::instance(), &NotificationServer::sendNotificationMessage);
+    connect(MessageBroadcaster::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(newUDPMessage(UDPMessage)));
     if (m_server->listen(QHostAddress::Any, UdpPort + 1))
     {
         qDebug() << "Controller listening on port" << (UdpPort + 1);
@@ -86,14 +88,14 @@ int ControllerManager::getConnectionSerialNumber(int index) const
     return serialNumber;
 }
 
-void ControllerManager::getConnectedInfo(int serialNumber, int &version, ControllerStatus &status)
+void ControllerManager::getConnectedInfo(int serialNumber, int &version, ControllerStatusEnum &status)
 {
     for(int x = 0; x < m_socketList.count(); x++)
     {
         if(m_socketList.value(x)->property("serialNumber").toInt() == serialNumber)
         {
             version = m_socketList.value(x)->property("version").toInt();
-            status = ControllerOnline;
+            status = ControllerStatusOnline;
             break;
         }
     }
@@ -108,7 +110,7 @@ void ControllerManager::controllerResetting(long serialNumber)
         QWebSocket *socket = m_socketList.value(x);
         if(socket->property("serialNumber").toInt() == serialNumber)
         {
-            createAndSendNotificationMessage(serialNumber, ControllerRestarting);
+            createAndSendNotificationMessage(serialNumber, ControllerStatusRestarting);
             socket->close();
         }
     }
@@ -164,7 +166,7 @@ void ControllerManager::connectionClosed(void)
         {
             qDebug(QString("Controller %1 disconnected.").arg(serialNumber).toLatin1());
             emit controllerRemoved(serialNumber);
-            createAndSendNotificationMessage(serialNumber, ControllerOffline);
+            createAndSendNotificationMessage(serialNumber, ControllerStatusOffline);
         }
     }
     emit controllerDisconnected(m_socketList.indexOf(socket));
@@ -208,8 +210,8 @@ void ControllerManager::processTextMessage(QString message)
         if(!found)
         {
             emit controllerAdded(serialNumber);
-            createAndSendNotificationMessage(serialNumber, ControllerConected);
-            createAndSendNotificationMessage(serialNumber, ControllerOnline);
+            createAndSendNotificationMessage(serialNumber, ControllerStatusConected);
+            createAndSendNotificationMessage(serialNumber, ControllerStatusOnline);
         }
         emit controllerConnected(m_socketList.indexOf(socket));
     }
@@ -218,16 +220,11 @@ void ControllerManager::processTextMessage(QString message)
         QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
         sendMultiControllerConfig(serialNumber, socket);
     }
-    else if(uri == "/controller/panel")
-    {
-        QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
-        sendPanelControllerConfig(serialNumber, socket);
-    }
     else
     {
         NetActionType actionType = (NetActionType)root["action"].toInt();
         int address = root["address"].toInt();
-        ClassEnum classCode = (ClassEnum)(int)root["class"].toInt();
+        DeviceClassEnum classCode = (DeviceClassEnum)(int)root["class"].toInt();
 
         emit newMessage(serialNumber, address, classCode, actionType, uri, root);
     }
@@ -265,16 +262,6 @@ void ControllerManager::sendMultiControllerConfig(int serialNumber, QWebSocket *
     qDebug(returnPayload.toLatin1());
 }
 
-void ControllerManager::sendPanelControllerConfig(int serialNumber, QWebSocket *socket)
-{
-    qDebug(QString("sendMultiControllerConfig: controller %1").arg(serialNumber).toLatin1());
-
-    Database db;
-    QString returnPayload = db.getPanelConfig(serialNumber);
-    socket->sendTextMessage(returnPayload);
-    qDebug(returnPayload.toLatin1());
-}
-
 void ControllerManager::pongReply(quint64 length, const QByteArray &)
 {
     QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
@@ -284,7 +271,7 @@ void ControllerManager::pongReply(quint64 length, const QByteArray &)
         //        QString txt = QString("Pong reply from %1  Total time: %2").arg(socket->peerAddress().toString()).arg(length);
         //        qDebug(txt.toLatin1());
         int serialNumber = socket->property("serialNumber").toInt();
-        createAndSendNotificationMessage(serialNumber, ControllerOnline, length);
+        createAndSendNotificationMessage(serialNumber, ControllerStatusOnline, length);
         emit controllerPing(m_socketList.indexOf(socket), length);
     }
 }
@@ -302,7 +289,7 @@ void ControllerManager::pingSlot()
     emit pingSignal(data);
 }
 
-void ControllerManager::createAndSendNotificationMessage(int serialNumber, ControllerStatus status, quint64 pingLength)
+void ControllerManager::createAndSendNotificationMessage(int serialNumber, ControllerStatusEnum status, quint64 pingLength)
 {
     QString uri("/api/notification/controller");
     QJsonObject obj;
@@ -311,4 +298,17 @@ void ControllerManager::createAndSendNotificationMessage(int serialNumber, Contr
     obj["pingLength"] = QString("%1").arg(pingLength);
 
     emit sendNotificationMessage(uri, obj);
+}
+
+
+void ControllerManager::newUDPMessage(const UDPMessage &message)
+{
+    if(message.getMessageID() == SYS_CONTROLLER_ONLINE)
+    {
+        int controllerID = message.getSerialNumber();
+        int majorVersion = message.getField(5);
+        int minorVersion = message.getField(6);
+        int build = message.getField(7);
+        emit controllerAdded(controllerID);
+    }
 }

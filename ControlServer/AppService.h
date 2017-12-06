@@ -34,6 +34,7 @@ protected slots:
     void timerProc(void);
     void stopTimerProc(void);
     void shutdownMonitor(int pin, int value);
+    void aboutToQuit(void);
 
 protected:
     void startWebServer(void);

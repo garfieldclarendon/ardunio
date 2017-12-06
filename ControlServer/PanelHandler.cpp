@@ -12,7 +12,7 @@
 #include "WebServer.h"
 
 PanelHandler::PanelHandler(QObject *parent)
-    : DeviceHandler(ClassPanel, parent)
+    : DeviceHandler(DevicePanel, parent)
 {
     connect(DeviceManager::instance(), SIGNAL(deviceStatusChanged(int,int)), this, SLOT(deviceStatusChanged(int,int)), Qt::QueuedConnection);
 //    connect(RouteHandler::instance(), SIGNAL(routeStatusChanged(int,bool)), this, SLOT(routeChanged(int, bool)));
@@ -50,7 +50,7 @@ void PanelHandler::deviceStatusChanged(int deviceID, int status)
                 QJsonObject root;
                 root["messageUri"] = "/controller/module";
                 root["address"] = currentaddress;
-                root["class"] = (int)ClassPanel;
+                root["class"] = (int)DevicePanel;
                 root["action"] = (int)NetActionUpdate;
                 root["pins"] = jsonArray;
 
@@ -83,7 +83,7 @@ void PanelHandler::deviceStatusChanged(int deviceID, int status)
         QJsonObject root;
         root["messageUri"] = "/controller/module";
         root["address"] = currentaddress;
-        root["class"] = (int)ClassPanel;
+        root["class"] = (int)DevicePanel;
         root["action"] = (int)NetActionUpdate;
         root["pins"] = jsonArray;
 
@@ -152,7 +152,7 @@ void PanelHandler::routeChanged(int routeID, bool isActive)
                 QJsonObject root;
                 root["messageUri"] = "/controller/module";
                 root["address"] = address;
-                root["class"] = (int)ClassPanel;
+                root["class"] = (int)DevicePanel;
                 root["action"] = (int)NetActionUpdate;
                 root["pins"] = jsonArray;
 
@@ -169,7 +169,7 @@ void PanelHandler::routeChanged(int routeID, bool isActive)
         QJsonObject root;
         root["messageUri"] = "/controller/module";
         root["address"] = address;
-        root["class"] = (int)ClassPanel;
+        root["class"] = (int)DevicePanel;
         root["action"] = (int)NetActionUpdate;
         root["pins"] = jsonArray;
 
@@ -188,9 +188,9 @@ void PanelHandler::routeChanged(int routeID, bool isActive)
     }
 }
 
-void PanelHandler::newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
+void PanelHandler::newMessage(int serialNumber, int address, DeviceClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
 {
-    if(uri == "/controller/module" && (classCode == ClassPanel || classCode == ClassInput))
+    if(uri == "/controller/device" && classCode == DevicePanel)
     {
         if(actionType == NetActionUpdate)
         {
@@ -209,7 +209,7 @@ void PanelHandler::newMessage(int serialNumber, int address, ClassEnum classCode
                 }
             }
         }
-        else if(actionType == NetActionGet && classCode == ClassPanel)
+        else if(actionType == NetActionGet && classCode == DevicePanel)
         {
             QString sql = QString("SELECT pinIndex, onValue, flashingValue, itemID FROM panelOutputEntry JOIN controllerModule ON panelOutputEntry.panelModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE serialNumber = %1 AND controllerModule.address = %2").arg(serialNumber).arg(address);
             Database db;

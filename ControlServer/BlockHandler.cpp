@@ -12,15 +12,15 @@
 #include "WebServer.h"
 
 BlockHandler::BlockHandler(QObject *parent)
-    : DeviceHandler(ClassBlock, parent)
+    : DeviceHandler(DeviceBlock, parent)
 {
     connect(ControllerManager::instance(), SIGNAL(controllerRemoved(int)), this, SLOT(controllerRemoved(int)));
 }
 
-void BlockHandler::newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
+void BlockHandler::newMessage(int serialNumber, int address, DeviceClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json)
 {
     Q_UNUSED(actionType);
-    if(uri == "/controller/module" && (classCode == ClassBlock || classCode == ClassInput))
+    if(uri == "/controller/device" && classCode == DeviceBlock)
         updateBlockState(json, serialNumber, address);
 }
 

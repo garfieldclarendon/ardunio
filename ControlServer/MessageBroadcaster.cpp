@@ -25,6 +25,7 @@ MessageBroadcaster *MessageBroadcaster::instance()
     return _this;
 }
 
+
 void MessageBroadcaster::setupSocket()
 {
     socket = new QUdpSocket(this);
@@ -36,7 +37,10 @@ void MessageBroadcaster::setupSocket()
     connect(socket, SIGNAL(readyRead()),
             this, SLOT(processPendingMessages()));
     if(!m_runAsClient)
+    {
         sendHeartbeatSlot(UDPMessage());
+        QTimer::singleShot(HEARTBEAT_INTERVAL, this, SLOT(heartbeatTimerSlot()));
+    }
 //    QTimer::singleShot(60000, this, SLOT(sendKeepAliveMessageSlot()));
 }
 
@@ -177,7 +181,7 @@ void MessageBroadcaster::processUdpBuffer()
             QString str(QString("Message: %1, Controller: %2 Version: %3 byteValue1 %4 byteValue2 %5").arg(datagram.messageID).arg(datagram.serialNumber).arg(datagram.version).arg(datagram.payload[0]).arg(datagram.payload[1]));
             qDebug(str.toLatin1());
             emit newRawUDPMessage(str);
-            if(message.getMessageID() == SYS_FIND_SERVER && !m_runAsClient)
+            if(message.getMessageID() == SYS_CONTROLLER_ONLINE && !m_runAsClient)
                 sendHeartbeatSlot(message);
             else if(message.getMessageID() == SYS_RESTARTING)
                 controllerRestarting(message);
@@ -202,6 +206,7 @@ void MessageBroadcaster::sendHeartbeatSlot(const UDPMessage &message)
 {
     if(message.getField(5) == 0)
     {
+        static quint8 firstTime = 1;
         UDPMessage outMessage;
         outMessage.setMessageID(SYS_SERVER_HEARTBEAT);
         QHostAddress address = getLocalAddress();
@@ -211,9 +216,27 @@ void MessageBroadcaster::sendHeartbeatSlot(const UDPMessage &message)
         outMessage.setField(1, a.bytes[2]);
         outMessage.setField(2, a.bytes[1]);
         outMessage.setField(3, a.bytes[0]);
+        outMessage.setField(4, firstTime);
+        firstTime = 0;
 
         sendUDPMessage(outMessage);
     }
+}
+
+void MessageBroadcaster::sendResetNotificationListCommand(int serialNumber)
+{
+    UDPMessage outMessage;
+    outMessage.setMessageID(SYS_RESET_NOTIFICATION_LIST);
+    outMessage.setSerialNumber(serialNumber);
+
+    sendUDPMessage(outMessage);
+}
+
+void MessageBroadcaster::heartbeatTimerSlot()
+{
+    UDPMessage message;
+    sendHeartbeatSlot(message);
+    QTimer::singleShot(HEARTBEAT_INTERVAL, this, SLOT(heartbeatTimerSlot()));
 }
 
 void MessageBroadcaster::sendKeepAliveMessageSlot()
@@ -244,6 +267,25 @@ void MessageBroadcaster::sendResetConfigCommand(int serialNumber)
     UDPMessage message;
     message.setMessageID(SYS_RESET_CONFIG);
     message.setSerialNumber(serialNumber);
+
+    MessageBroadcaster::instance()->sendUDPMessage(message);
+}
+
+void MessageBroadcaster::sendResetDeviceConfigCommand(int deviceID)
+{
+    UDPMessage message;
+    message.setMessageID(SYS_RESET_DEVICE_CONFIG);
+    message.setSerialNumber(deviceID);
+
+    MessageBroadcaster::instance()->sendUDPMessage(message);
+}
+
+void MessageBroadcaster::sendLockRouteCommand(int routeID, bool lock)
+{
+    UDPMessage message;
+    message.setMessageID(SYS_LOCK_ROUTE);
+    message.setSerialNumber(routeID);
+    message.setField(0, lock);
 
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }

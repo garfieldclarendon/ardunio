@@ -32,8 +32,11 @@ signals:
     void controllerResetting(long serialNumber);
 
 public slots:
+    void sendResetNotificationListCommand(int serialNumber);
     void sendResetCommand(int serialNumber);
     void sendResetConfigCommand(int serialNumber);
+    void sendResetDeviceConfigCommand(int deviceID);
+    void sendLockRouteCommand(int routeID, bool lock);
     void sendDownloadFirmware(int serialNumber);
     void sendMessage(int messageID, int serialNumber, quint8 byte1, quint8 byte2 = 0, quint8 byte3 = 0, quint8 byte4 = 0, quint8 byte5= 0);
     void sendUDPMessage(const UDPMessage &message);
@@ -44,6 +47,7 @@ protected slots:
     void processUdpBuffer(void);
     void sendMessageSlot(void);
     void sendHeartbeatSlot(const UDPMessage &message);
+    void heartbeatTimerSlot(void);
     void sendKeepAliveMessageSlot(void);
     void controllerRestarting(const UDPMessage &message);
 

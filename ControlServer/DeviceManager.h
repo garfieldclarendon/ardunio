@@ -6,6 +6,7 @@
 #include <QDateTime>
 
 #include "GlobalDefs.h"
+#include "UDPMessage.h"
 
 class DeviceHandler;
 
@@ -61,19 +62,22 @@ public:
 signals:
 //    void deviceStatusChanged(ClassEnum classCode);
     void deviceStatusChanged(int deviceID, int status);
+    void sendNotificationMessage(const QString &uri, const QJsonObject &obj);
 
 public slots:
-    DeviceHandler *getHandler(ClassEnum classCode) const { return m_deviceMap.value(classCode); }
+    DeviceHandler *getHandler(DeviceClassEnum classCode) const { return m_deviceMap.value(classCode); }
     void setDeviceStatus(int deviceID, int status);
+    void newUDPMessage(const UDPMessage &message);
 
 protected:
-    void addDeviceHandler(ClassEnum classCode, DeviceHandler *handler);
-    void removeDeviceHandler(ClassEnum classCode);
+    void addDeviceHandler(DeviceClassEnum classCode, DeviceHandler *handler);
+    void removeDeviceHandler(DeviceClassEnum classCode);
 
 private:
+    void createAndSendNotificationMessage(int deviceID, int newState);
     static DeviceManager *m_instance;
 
-    QMap<ClassEnum, DeviceHandler *> m_deviceMap;
+    QMap<DeviceClassEnum, DeviceHandler *> m_deviceMap;
     QMap<int, DeviceStatus> m_statusMap;
 
     friend class DeviceHandler;

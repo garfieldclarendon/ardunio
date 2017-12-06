@@ -22,5 +22,5 @@ include($$PWD/QtSolutionsService/src/qtservice.pri)
 #Windows resource file
 #win32:RC_FILE = AppServer.rc
 
-#RESOURCES += \
-#    Resources.qrc
+RESOURCES += \
+    Resources.qrc

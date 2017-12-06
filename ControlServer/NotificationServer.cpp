@@ -37,11 +37,12 @@ void NotificationServer::startServer(quint16 port)
 }
 
 
-void NotificationServer::sendNotificationMessage(const QString &uri, QJsonObject &obj)
+void NotificationServer::sendNotificationMessage(const QString &uri, const QJsonObject &obj)
 {
-    obj["uri"] = uri;
+    QJsonObject o(obj);
+    o["uri"] = uri;
     QJsonDocument doc;
-    doc.setObject(obj);
+    doc.setObject(o);
 
     emit broadcastTextMessage(doc.toJson());
 }

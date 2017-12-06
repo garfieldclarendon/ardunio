@@ -6,6 +6,10 @@
 #include <QFont>
 #include <QFontInfo>
 #include <QFontMetrics>
+#include <QTextDocument>
+
+class QPrinter;
+class DeviceModel;
 
 class UI : public QObject
 {
@@ -32,6 +36,12 @@ signals:
 public slots:
     int applyFontRatio(const int value);
     int applyRatio(const int value);
+    void printModuleLable(int moduleID);
+
+protected slots:
+    void buildModuleTextDocumentForPrint(DeviceModel *model);
+    void printerPaintRequested(QPrinter *printer);
+    QString getDeviceTypeName(int deviceType);
 
 private:
 
@@ -41,6 +51,7 @@ private:
     // standard definitions
     int m_margin;
     int m_baseFontSize;
+    DeviceModel *m_deviceModel;
 };
 
 #endif // UI_H

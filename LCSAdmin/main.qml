@@ -362,9 +362,8 @@ ApplicationWindow {
         var entity;
         var model;
         entity = deviceStackView.currentItem.deviceEntity;
-        deviceStackView.pop();
 
-        model = deviceStackView.currentItem.model;
+        model = deviceStackView.get(deviceStackView.index, false).model;
         var ret;
         ret = api.saveEntity(entity);
         if(ret.hasError())
@@ -375,7 +374,7 @@ ApplicationWindow {
         }
         else
         {
-            model.setEntity(deviceStackView.currentItem.currentIndex, entity);
+            model.setEntity(deviceStackView.get(deviceStackView.index, false).currentIndex, entity);
             signalConditionModel.save();
         }
     }

@@ -16,7 +16,7 @@ public:
 signals:
 
 public slots:
-    void routeChanged(int routeID, bool isActive);
+    void routeChanged(int routeID, bool isActive, bool isLocked, bool canLock);
     int getRouteRow(int routeID);
 
     // QAbstractItemModel interface

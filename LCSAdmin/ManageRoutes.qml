@@ -79,6 +79,11 @@ Item {
                 width: 90
             }
             TableViewColumn {
+                role: "isLocked"
+                title: "Locked?"
+                width: 90
+            }
+            TableViewColumn {
                 role: "isActive"
                 title: ""
                 width: 130
@@ -92,11 +97,24 @@ Item {
                          }
                     }
             }
+            TableViewColumn {
+                role: "isLocked"
+                title: ""
+                width: 130
+                delegate:
+                    Button {
+                         enabled: styleData.value ? routeModel.data(styleData.row, "canLock") === false : 0
+                         text: styleData.value === false ? "Lock" : "Unlock"
+                         onClicked: {
+                             api.lockRoute(routeModel.data(styleData.row, "routeID"), styleData.value === false);
+                         }
+                    }
+            }
             itemDelegate: Text {
                 property variant value: styleData.value
                 elide: styleData.elideMode
                 text: styleData.value !== undefined ? styleData.value : ""
-                color: parent ? (parent.parent.children[3].item.value ? "green" : "black") : "black"
+                color: parent && parent.parent.children[3].item ? (parent.parent.children[3].item.value ? "green" : "black") : "black"
                 renderType: Text.NativeRendering
             }
         }

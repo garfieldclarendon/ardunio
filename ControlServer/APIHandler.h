@@ -115,20 +115,26 @@ private:
     void handleGetRouteEntryList(QTcpSocket *socket, const QUrl &url);
     void handleGetPanelList(QTcpSocket *socket, const QUrl &url);
     void handleGetDeviceList(QTcpSocket *socket, const QUrl &url);
+    void handleGetDevicePropertyList(QTcpSocket *socket, const QUrl &url);
     void handleGetControllerList(QTcpSocket *socket, const QUrl &url);
     void handleGetControllerModuleList(QTcpSocket *socket, const QUrl &url);
     void handleGetSignalAspectList(QTcpSocket *socket, const QUrl &url);
     void handleGetSignalConditionList(QTcpSocket *socket, const QUrl &url);
     void handleSendModuleConfig(QTcpSocket *socket, const QUrl &url);
+    void handleSendDeviceConfig(QTcpSocket *socket, const QUrl &url);
     void handleControllerFirmwareUpdate(QTcpSocket *socket, const QUrl &url);
     void handleControllerReset(QTcpSocket *socket, const QUrl &url);
     void handleControllerResetConfig(QTcpSocket *socket, const QUrl &url);
+    void handleResetNotificationList(QTcpSocket *socket, const QUrl &url);
+    void handleLockRoute(QTcpSocket *socket, const QUrl &url);
 
     void handleEntity(QTcpSocket *socket, const QUrl &, const QString &actionText, const QString &jsonText);
     QString fetchEntity(const QString &name);
     QString saveEntity(const QString &name, const QString &jsonText);
     QString addEntity(const QString &name, const QString &jsonText);
     void deleteEntity(const QString &name, const QString &jsonText);
+
+private:
 };
 
 #endif // APIHANDLER_H

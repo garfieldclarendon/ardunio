@@ -4,7 +4,7 @@
 #include "API.h"
 
 DeviceModel::DeviceModel(QObject *parent)
-    : EntityModel("device", parent), m_controllerModuleID(0), m_controllerID(0), m_class(ClassUnknown)
+    : EntityModel("device", parent), m_controllerModuleID(0), m_controllerID(0), m_class(DeviceUnknown)
 {
     connect(API::instance(), SIGNAL(apiReady()), this, SLOT(apiReady()));
     connect(API::instance(), SIGNAL(deviceChanged(int,int)), this, SLOT(deviceChanged(int,int)));
@@ -51,9 +51,11 @@ void DeviceModel::setControllerID(int value)
 
 void DeviceModel::setClass(int value)
 {
-    if(m_class != (ClassEnum)value)
+    if(m_class != (DeviceClassEnum)value)
     {
-        m_class = (ClassEnum)value;
+        m_class = (DeviceClassEnum)value;
+        if(m_class != 0)
+            setFilterText(QString());
         emit classChanged();
         invalidateFilter();
     }
@@ -72,11 +74,19 @@ bool DeviceModel::filterAcceptsRow(int source_row, const QModelIndex &) const
         if(m_jsonModel->data(source_row, "controllerID", Qt::EditRole).toInt() != m_controllerID)
             ret = false;
     }
-    else if(m_class != ClassUnknown)
+    else if(m_class != DeviceUnknown)
     {
         if(m_jsonModel->data(source_row, "deviceClass", Qt::EditRole).toInt() != (int)m_class)
             ret = false;
     }
+
+    if(ret && m_filterText.length() > 0)
+    {
+        QString name = m_jsonModel->data(source_row, "deviceName", Qt::EditRole).toString();
+        if(name.startsWith(m_filterText, Qt::CaseInsensitive) == false)
+            ret = false;
+    }
+
     return ret;
 }
 
@@ -134,6 +144,18 @@ int DeviceModel::getDeviceClass(int deviceID)
         }
     }
     return retClass;
+}
+
+void DeviceModel::setFilterText(const QString &filterText)
+{
+    if(filterText != m_filterText)
+    {
+        m_filterText = filterText;
+        if(m_filterText.length() > 0)
+            setClass(0);
+        emit filterTextChanged();
+        invalidateFilter();
+    }
 }
 
 void DeviceModel::createEmptyObject(QJsonObject &obj)

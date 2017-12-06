@@ -4,10 +4,10 @@
 #include "API.h"
 
 ControllerModel::ControllerModel(QObject *parent)
-    : EntityModel("controller", parent), m_class(ClassUnknown)
+    : EntityModel("controller", parent), m_class(ControllerUnknown)
 {
     connect(API::instance(), SIGNAL(apiReady()), this, SLOT(apiReady()));
-    connect(API::instance(), SIGNAL(controllerChanged(int,ControllerStatus,quint64)), this, SLOT(controllerChanged(int,ControllerStatus,quint64)));
+    connect(API::instance(), SIGNAL(controllerChanged(int,ControllerStatusEnum,quint64)), this, SLOT(controllerChanged(int,ControllerStatusEnum,quint64)));
     apiReady();
 }
 
@@ -29,9 +29,9 @@ QHash<int, QByteArray> ControllerModel::roleNames(void) const
 
 void ControllerModel::setClass(int value)
 {
-    if(m_class != (ClassEnum)value)
+    if(m_class != (ControllerClassEnum)value)
     {
-        m_class = (ClassEnum)value;
+        m_class = (ControllerClassEnum)value;
         emit classChanged();
         invalidateFilter();
     }
@@ -40,7 +40,7 @@ void ControllerModel::setClass(int value)
 bool ControllerModel::filterAcceptsRow(int source_row, const QModelIndex &) const
 {
     bool ret = true;
-    if(m_class != ClassUnknown)
+    if(m_class != ControllerUnknown)
     {
         if(m_jsonModel->data(source_row, "controllerClass", Qt::EditRole).toInt() != (int)m_class)
             ret = false;
@@ -78,7 +78,7 @@ void ControllerModel::apiReady()
     }
 }
 
-void ControllerModel::controllerChanged(int serialNumber, ControllerStatus status, quint64 pingLength)
+void ControllerModel::controllerChanged(int serialNumber, ControllerStatusEnum status, quint64 pingLength)
 {
     bool found = false;
     for(int x = 0; x < m_jsonModel->rowCount(); x++)
@@ -92,7 +92,7 @@ void ControllerModel::controllerChanged(int serialNumber, ControllerStatus statu
             break;
         }
     }
-    if(found == false && status == ControllerConected)
+    if(found == false && status == ControllerStatusConected)
     {
         emit newController(serialNumber);
     }

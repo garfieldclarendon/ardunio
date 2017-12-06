@@ -1,7 +1,8 @@
-import QtQuick 2.5
+import QtQuick 2.9
 import QtQuick.Controls 1.4
-import QtQuick.Layouts 1.2
+import QtQuick.Layouts 1.3
 import Utils 1.0
+import Track 1.0
 
 Item {
     property alias model: listView.model
@@ -16,7 +17,10 @@ Item {
 
     DeviceModel {
         id: deviceModel
-        deviceClass: 1
+        onClassChanged: {
+            if(deviceClass == 0)
+                deviceTypeCombo.currentIndex = 0
+        }
     }
     function getClassName(classID)
     {
@@ -84,26 +88,66 @@ Item {
 
     GridLayout {
         anchors.fill: parent
-        anchors.margins: 5
-        columns: 3
+//        anchors.margins: 5
+        columns: 4
+        TrackSingle {
+            isActive: false
+            model: deviceModel
+            deviceID: 1
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignBottom
+        }
+        TrackTurnout {
+            isActive: true
+            model: deviceModel
+            deviceID: 4
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignBottom
+        }
+        TrackSingle {
+            isActive: true
+            blockStatus: 2
+            model: deviceModel
+            deviceID: 5
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignBottom
+        }
+        TrackSingle {
+            isActive: true
+            blockStatus: 3
+            model: deviceModel
+            deviceID: 6
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignBottom
+        }
+
+        TextField {
+            id: searchText
+            placeholderText: "Enter Search Text"
+            text: deviceModel.filterText
+            inputMethodHints: Qt.ImhNoPredictiveText
+            Layout.fillWidth: true
+            onTextChanged: {
+                deviceModel.filterText = searchText.text;
+            }
+        }
+
         Text {
             id: name
-            text: qsTr("Device Type:")
+            horizontalAlignment: Text.AlignRight
+            text: qsTr("Filter By:")
             font.bold: true
-            horizontalAlignment: Qt.AlignRight
             Layout.fillWidth: true
         }
 /*
-        ClassUnknown,
-        ClassTurnout,
-        ClassPanel,
-        ClassRoute,
-        ClassSignal,
-        ClassSemaphore,
-        ClassBlock,
-        ClassMulti,
-        ClassSystem,
-        ClassApp
+    DeviceUnknown,
+    DeviceTurnout,
+    DevicePanelInput,
+    DevicePanelOutput,
+    DeviceSignal = 4,
+    DeviceSemaphore = 5,
+    DeviceBlock = 6,
+    DevicePanel = 7 // For old versions--no longer used
   */
         ComboBox {
             id: deviceTypeCombo
@@ -112,6 +156,8 @@ Item {
                 id: classModel
                 ListElement { text: "All"; classID: 0 }
                 ListElement { text: "Turnout"; classID: 1 }
+                ListElement { text: "Panel Input"; classID: 2 }
+                ListElement { text: "Panel Output"; classID: 3 }
                 ListElement { text: "Signal"; classID: 4 }
                 ListElement { text: "Semaphore"; classID: 5 }
                 ListElement { text: "Block"; classID: 6 }
@@ -141,7 +187,7 @@ Item {
             model: deviceModel
             focus: true
             clip: true
-            Layout.columnSpan: 3
+            Layout.columnSpan: 4
             Layout.fillHeight: true
             Layout.fillWidth: true
             onClicked: {

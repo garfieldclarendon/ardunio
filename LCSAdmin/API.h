@@ -31,23 +31,26 @@ public:
     void setServerPort(int value) { m_port = value; emit serverPortChanged(); }
 
 signals:
-    void controllerChanged(int serialNumber, ControllerStatus status, quint64 pingLength);
+    void controllerChanged(int serialNumber, ControllerStatusEnum status, quint64 pingLength);
     void deviceChanged(int deviceID, int status);
     void apiReady(void);
     void serverAddressChanged(void);
     void serverPortChanged(void);
-    void routeChanged(int routeID, bool isActive);
+    void routeChanged(int routeID, bool isActive, bool isLocked, bool canLock);
 
 public slots:
     void activateTurnout(int deviceID, int newState);
     void activateRoute(int routeID);
+    void lockRoute(int routeID, bool lock);
     QString getControllerList(void);
-    QString getControllerModuleList(int controllerID);
-    QString getDeviceList(ClassEnum deviceType = ClassUnknown);
+    QString getControllerModuleListByControllerID(int controllerID);
+    QString getControllerModuleListByModuleID(int controllerModuleID);
+    QString getDeviceList(DeviceClassEnum deviceType = DeviceUnknown);
     QString getSignalAspectList(int deviceID);
     QString getSignalConditionList(int aspectID);
     QString getRouteList(void);
     QString getRouteEntryList(int routeID);
+    QString getDevicePropertyList(int deviceID);
 
     Entity saveEntity(const Entity &entity, bool isNew = false);
     Entity deleteEntity(const Entity &entity);
@@ -56,6 +59,7 @@ public slots:
 
     void restartController(int serialNumber);
     void sendControllerConfig(int serialNumber);
+    void sendDeviceConfig(int deviceID);
 
 protected slots:
     void textMessageReceived(const QString &message);

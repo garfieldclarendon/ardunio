@@ -50,10 +50,10 @@ public:
 public:
 
 signals:
-    void sendNotificationMessage(const QString &uri, QJsonObject &obj);
+    void sendNotificationMessage(const QString &uri, const QJsonObject &obj);
 
 public slots:
-    void newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
+    void newMessage(int serialNumber, int address, DeviceClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
     void controllerRemoved(int serialNumber);
 
 private:

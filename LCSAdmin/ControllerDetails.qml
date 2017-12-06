@@ -236,9 +236,9 @@ Rectangle {
                 GridLayout {
                     anchors.fill: parent
                     anchors.margins: 5
-                    columns: 9
+                    columns: 10
                     Label {
-                        text:"<b>Module Name:</b>"
+                        text:"<b>Name:</b>"
                         horizontalAlignment: Qt.AlignRight
                     }
                     TextField {
@@ -246,7 +246,7 @@ Rectangle {
                         text: moduleName
                     }
                     Label {
-                        text: "<b>Index (address): </b>"
+                        text: "<b>Address: </b>"
                         horizontalAlignment: Qt.AlignRight
                     }
                     TextField {
@@ -255,7 +255,7 @@ Rectangle {
                         text: address
                     }
                     Label {
-                        text: "Module Class:"
+                        text: "Class:"
                         font.bold: true
                         horizontalAlignment: Qt.AlignRight
                     }
@@ -287,6 +287,17 @@ Rectangle {
                         }
                         onClicked: {
                             moduleModel.deleteRow(index);
+                        }
+                    }
+                    ToolButton {
+                        id: printLabelButton
+                        contentItem: Image {
+                            source: "Images/printer.png"
+                            sourceSize.width: 18
+                            sourceSize.height: 18
+                        }
+                        onClicked: {
+                            ui.printModuleLable(controllerModuleID);
                         }
                     }
                 }

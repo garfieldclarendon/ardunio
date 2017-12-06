@@ -19,16 +19,26 @@ Rectangle {
         id: comboMetrics
         text: "CONTROLLER NAME"
     }
-
+/*
+    DeviceUnknown,
+    DeviceTurnout,
+    DevicePanelInput,
+    DevicePanelOutput,
+    DeviceSignal = 4,
+    DeviceSemaphore = 5,
+    DeviceBlock = 6,
+    DevicePanel = 7 // For old versions--no longer used
+*/
     ListModel {
         id: classModel
         ListElement { text: "Unknown"; classID: 0 }
         ListElement { text: "Turnout"; classID: 1 }
+        ListElement { text: "Panel Input"; classID: 2 }
+        ListElement { text: "Panel Output"; classID: 3 }
         ListElement { text: "Signal"; classID: 4 }
         ListElement { text: "Semaphore"; classID: 5 }
         ListElement { text: "Block"; classID: 6 }
-        ListElement { text: "Panel"; classID: 2 }
-        ListElement { text: "Multi-Controller"; classID: 7}
+        ListElement { text: "Panel (do not use)"; classID: 7}
     }
 
     function getClassRow(classCode)
@@ -101,6 +111,7 @@ Rectangle {
             onClicked: {
                 saveData();
                 saveClicked();
+                deviceProperties.saveData();
             }
         }
 // Second Row
@@ -134,9 +145,12 @@ Rectangle {
             text: deviceEntity.data.deviceDescription
             Layout.fillWidth: true
         }
-        Item {
-            width: 10
-            height: 10
+        Button {
+            id: sendConfigButton
+            text: "Send"
+            onClicked: {
+                api.sendDeviceConfig(deviceEntity.data.deviceID);
+            }
         }
 // Fourth Row
         Label {
@@ -208,8 +222,10 @@ Rectangle {
             height: 10
         }
 // Last Row
-        Item {
-            id: fill
+        DeviceProperties {
+            id: deviceProperties
+            deviceID: deviceEntity.data.deviceID
+            deviceClass: deviceEntity.data.deviceClass
             Layout.columnSpan: 3
             Layout.fillHeight: true
             Layout.fillWidth: true

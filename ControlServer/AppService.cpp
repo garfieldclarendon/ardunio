@@ -70,6 +70,7 @@ void CAppService::start(void)
 {
     qDebug(QObject::tr("Server started. START function").toLatin1());
 
+    connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(aboutToQuit()));
     NCEInterface::instance()->setup();
 
     WebServer::instance();
@@ -123,6 +124,11 @@ void CAppService::start(void)
 
 void CAppService::stop(void)
 {	
+    UDPMessage message;
+
+    message.setMessageID(SYS_SERVER_SHUTDOWN);
+    MessageBroadcaster::instance()->sendUDPMessage(message);
+
     QStringList l = QSqlDatabase::connectionNames();
     for(int x = 0; x < l.count(); x++)
     {
@@ -188,6 +194,14 @@ void CAppService::shutdownMonitor(int pin, int value)
     }
 }
 
+void CAppService::aboutToQuit()
+{
+    UDPMessage message;
+
+    message.setMessageID(SYS_SERVER_SHUTDOWN);
+    MessageBroadcaster::instance()->sendUDPMessage(message);
+}
+
 void CAppService::startWebServer()
 {
     WebServer *webServer = WebServer::instance();
@@ -205,6 +219,12 @@ void CAppService::startWebServer()
         connect(handler, SIGNAL(handleUrl(NetActionType,QUrl,QString,QString&)), controllerHandler, SLOT(handleUrl(NetActionType,QUrl,QString,QString&)), Qt::DirectConnection);
         handler = webServer->createUrlHandler("/controller/config");
         connect(handler, SIGNAL(handleUrl(NetActionType,QUrl,QString,QString&)), controllerHandler, SLOT(handleConfigUrl(NetActionType,QUrl,QString,QString&)), Qt::DirectConnection);
+        handler = webServer->createUrlHandler("/controller/module/config");
+        connect(handler, SIGNAL(handleUrl(NetActionType,QUrl,QString,QString&)), controllerHandler, SLOT(handleModuleConfigUrl(NetActionType,QUrl,QString,QString&)), Qt::DirectConnection);
+        handler = webServer->createUrlHandler("/controller/device/config");
+        connect(handler, SIGNAL(handleUrl(NetActionType,QUrl,QString,QString&)), controllerHandler, SLOT(handleDeviceConfigUrl(NetActionType,QUrl,QString,QString&)), Qt::DirectConnection);
+        handler = webServer->createUrlHandler("/controller/notification_list");
+        connect(handler, SIGNAL(handleUrl(NetActionType,QUrl,QString,QString&)), controllerHandler, SLOT(handleGetNotificationListUrl(NetActionType,QUrl,QString,QString&)), Qt::DirectConnection);
 
         TurnoutHandler *turnoutHandler = new TurnoutHandler(this);
         connect(ControllerManager::instance(), &ControllerManager::newMessage, turnoutHandler, &TurnoutHandler::newMessage, Qt::QueuedConnection);

@@ -4,7 +4,7 @@
 #include "API.h"
 
 ControllerModuleModel::ControllerModuleModel(QObject *parent)
-    : EntityModel("controllerModule", parent), m_controllerID(0)
+    : EntityModel("controllerModule", parent), m_controllerID(0), m_controllerModuleID(0)
 {
     connect(API::instance(), SIGNAL(apiReady()), this, SLOT(apiReady()));
 }
@@ -32,7 +32,26 @@ void ControllerModuleModel::setControllerID(int value)
         QJsonDocument jsonDoc;
         if(API::instance()->getApiReady())
         {
-            QString json = API::instance()->getControllerModuleList(m_controllerID);
+            QString json = API::instance()->getControllerModuleListByControllerID(m_controllerID);
+            jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+            beginResetModel();
+            m_jsonModel->setJson(jsonDoc, false);
+            endResetModel();
+            emit rowCountChanged();
+        }
+    }
+}
+
+void ControllerModuleModel::setControllerModuleID(int value)
+{
+    if(m_controllerModuleID != value)
+    {
+        m_controllerModuleID = value;
+        emit controllerIDChanged();
+        QJsonDocument jsonDoc;
+        if(API::instance()->getApiReady())
+        {
+            QString json = API::instance()->getControllerModuleListByModuleID(m_controllerModuleID);
             jsonDoc = QJsonDocument::fromJson(json.toLatin1());
             beginResetModel();
             m_jsonModel->setJson(jsonDoc, false);

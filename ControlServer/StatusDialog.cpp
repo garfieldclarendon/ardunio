@@ -213,7 +213,7 @@ void StatusDialog::setupPanelList()
     ui->panelTable->horizontalHeader()->setStyleSheet("color: blue");
     ui->panelTable->verticalHeader()->setStyleSheet("color: blue");
 
-    PanelHandler *handler = qobject_cast<PanelHandler *>(DeviceManager::instance()->getHandler(ClassPanel));
+    PanelHandler *handler = qobject_cast<PanelHandler *>(DeviceManager::instance()->getHandler(DevicePanel));
     connect(handler, &PanelHandler::pinStateChanged, this, &StatusDialog::onPinStateChanged);
 }
 

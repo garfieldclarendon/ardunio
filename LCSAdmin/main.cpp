@@ -1,9 +1,10 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QFontMetrics>
 
 #include "DeviceModel.h"
+#include "DevicePropertyModel.h"
 #include "SignalAspectModel.h"
 #include "SignalConditionModel.h"
 #include "ControllerModel.h"
@@ -13,14 +14,25 @@
 #include "UI.h"
 #include "API.h"
 #include "Entity.h"
+#include "TrackSingle.h"
+#include "TrackSiding.h"
+#include "TrackTurnout.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QGuiApplication app(argc, argv);
+    QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);
+    QApplication app(argc, argv);
+
     qRegisterMetaType<Entity>();
+    qRegisterMetaType<ControllerStatusEnum>("ControllerStatusEnum");
+    qRegisterMetaType<ControllerClassEnum>("ControllerClassEnum");
+    qRegisterMetaType<DeviceClassEnum>("DeviceClassEnum");
+    qRegisterMetaType<ModuleClassEnum>("ModuleClassEnum");
+    qRegisterMetaType<NetActionType>("NetActionType");
 
     qmlRegisterType<DeviceModel>("Utils", 1, 0, "DeviceModel");
+    qmlRegisterType<DevicePropertyModel>("Utils", 1, 0, "DevicePropertyModel");
     qmlRegisterType<SignalAspectModel>("Utils", 1, 0, "SignalAspectModel");
     qmlRegisterType<SignalConditionModel>("Utils", 1, 0, "SignalConditionModel");
     qmlRegisterType<ControllerModel>("Utils", 1, 0, "ControllerModel");
@@ -30,6 +42,10 @@ int main(int argc, char *argv[])
 //    qmlRegisterType<PanelModuleModel>("Utils", 1, 0, "PanelModuleModel");
 //    qmlRegisterType<PanelInputModel>("Utils", 1, 0, "PanelInputModel");
 //    qmlRegisterType<PanelOutputModel>("Utils", 1, 0, "PanelOutputModel");
+
+    qmlRegisterType<TrackSingle>("Track", 1, 0, "TrackSingle");
+    qmlRegisterType<TrackSiding>("Track", 1, 0, "TrackSiding");
+    qmlRegisterType<TrackTurnout>("Track", 1, 0, "TrackTurnout");
 
     QQmlApplicationEngine engine;
     UI ui;

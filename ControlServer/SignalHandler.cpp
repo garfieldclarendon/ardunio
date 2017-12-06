@@ -11,7 +11,7 @@
 #include "WebServer.h"
 
 SignalHandler::SignalHandler(QObject *parent)
-    : DeviceHandler(ClassSignal, parent)
+    : DeviceHandler(DeviceSignal, parent)
 {
     connect(DeviceManager::instance(), SIGNAL(deviceStatusChanged(int,int)), this, SLOT(deviceStatusChanged(int,int)), Qt::QueuedConnection);
 }
@@ -37,9 +37,9 @@ void SignalHandler::deviceStatusChanged(int deviceID, int status)
     }
 }
 
-void SignalHandler::newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject & /*json*/)
+void SignalHandler::newMessage(int serialNumber, int address, DeviceClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject & /*json*/)
 {
-    if(uri == "/controller/module" && (classCode == ClassSignal || classCode == ClassOutput))
+    if(uri == "/controller/device" && classCode == DeviceSignal)
     {
         if(actionType == NetActionGet)
         {

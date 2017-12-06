@@ -7,7 +7,7 @@ RouteModel::RouteModel(QObject *parent)
     : EntityModel("route", parent)
 {
     connect(API::instance(), SIGNAL(apiReady()), this, SLOT(apiReady()));
-    connect(API::instance(), SIGNAL(routeChanged(int,bool)), this, SLOT(routeChanged(int,bool)));
+    connect(API::instance(), SIGNAL(routeChanged(int,bool,bool,bool)), this, SLOT(routeChanged(int,bool,bool,bool)));
     apiReady();
 }
 
@@ -19,6 +19,8 @@ QHash<int, QByteArray> RouteModel::roleNames(void) const
     roleNames[Qt::UserRole + 1] = QByteArray("routeName");
     roleNames[Qt::UserRole + 2] = QByteArray("routeDescription");
     roleNames[Qt::UserRole + 3] = QByteArray("isActive");
+    roleNames[Qt::UserRole + 4] = QByteArray("isLocked");
+    roleNames[Qt::UserRole + 5] = QByteArray("canLock");
 
     return roleNames;
 }
@@ -43,7 +45,7 @@ void RouteModel::apiReady()
     }
 }
 
-void RouteModel::routeChanged(int routeID, bool isActive)
+void RouteModel::routeChanged(int routeID, bool isActive, bool isLocked, bool canLock)
 {
     for(int x = 0; x < m_jsonModel->rowCount(); x++)
     {
@@ -51,6 +53,8 @@ void RouteModel::routeChanged(int routeID, bool isActive)
         if(d == routeID)
         {
             m_jsonModel->setData(x, "isActive", isActive);
+            m_jsonModel->setData(x, "isLocked", isLocked);
+            m_jsonModel->setData(x, "canLock", canLock);
             break;
         }
     }
@@ -80,7 +84,7 @@ void RouteModel::createEmptyObject(QJsonObject &obj)
     {
         QString key(names.values().value(x));
         QVariant v;
-        if(key == "isActive")
+        if(key == "isActive" || key == "isLocked" || key == "canLock")
             v = 0;
         obj[key] = QJsonValue::fromVariant(v);
     }

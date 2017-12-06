@@ -10,14 +10,16 @@
 #include "DeviceManager.h"
 #include "TurnoutHandler.h"
 #include "NotificationServer.h"
+#include "MessageBroadcaster.h"
 
 RouteHandler *RouteHandler::m_this = NULL;
 
 RouteHandler::RouteHandler(QObject *parent)
     : QObject(parent)
 {
+    connect(this, SIGNAL(sendNotificationMessage(QString,QJsonObject)), NotificationServer::instance(), SLOT(sendNotificationMessage(QString,QJsonObject)), Qt::QueuedConnection);
     connect(DeviceManager::instance(), SIGNAL(deviceStatusChanged(int,int)), this, SLOT(deviceStatusChanged(int,int)), Qt::QueuedConnection);
-    connect(this, &RouteHandler::sendNotificationMessage, NotificationServer::instance(), &NotificationServer::sendNotificationMessage);
+//    connect(this, &RouteHandler::sendNotificationMessage, NotificationServer::instance(), &NotificationServer::sendNotificationMessage);
 }
 
 RouteHandler *RouteHandler::instance()
@@ -29,26 +31,82 @@ RouteHandler *RouteHandler::instance()
 
 void RouteHandler::activateRoute(int routeID)
 {
-    TurnoutHandler *turnoutHandler = qobject_cast<TurnoutHandler *>(DeviceManager::instance()->getHandler(ClassTurnout));
-    if(turnoutHandler)
+//    TurnoutHandler *turnoutHandler = qobject_cast<TurnoutHandler *>(DeviceManager::instance()->getHandler(DeviceTurnout));
+//    if(turnoutHandler)
+//    {
+//        QString sql = QString("SELECT id, deviceID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID);
+//        Database db;
+//        QList<int> deviceIDs;
+//        QList<TurnoutState> newStates;
+
+//        QSqlQuery query = db.executeQuery(sql);
+//        while(query.next())
+//        {
+//            deviceIDs << query.value("deviceID").toInt();
+//            newStates << (TurnoutState)query.value("turnoutState").toInt();
+//        }
+
+//        for(int x =0; x < deviceIDs.count(); x++)
+//        {
+//            turnoutHandler->activateTurnout(deviceIDs.value(x), newStates.value(x));
+//        }
+//    }
+    UDPMessage message;
+    message.setMessageID(TRN_ACTIVATE_ROUTE);
+    message.setSerialNumber(routeID);
+    MessageBroadcaster::instance()->sendUDPMessage(message);
+}
+
+void RouteHandler::lockRoute(int routeID, bool lock)
+{
+//    TurnoutHandler *turnoutHandler = qobject_cast<TurnoutHandler *>(DeviceManager::instance()->getHandler(DeviceTurnout));
+//    if(turnoutHandler)
+//    {
+//        QString sql = QString("SELECT id, deviceID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID);
+//        Database db;
+//        QList<int> deviceIDs;
+//        QList<TurnoutState> newStates;
+
+//        QSqlQuery query = db.executeQuery(sql);
+//        while(query.next())
+//        {
+//            deviceIDs << query.value("deviceID").toInt();
+//            newStates << (TurnoutState)query.value("turnoutState").toInt();
+//        }
+
+//        for(int x =0; x < deviceIDs.count(); x++)
+//        {
+//            turnoutHandler->activateTurnout(deviceIDs.value(x), newStates.value(x));
+//        }
+//    }
+    if(lock)
     {
-        QString sql = QString("SELECT id, deviceID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID);
+        if(m_lockedRoutes.contains(routeID) == false)
+            m_lockedRoutes << routeID;
         Database db;
-        QList<int> deviceIDs;
-        QList<TurnoutState> newStates;
-
-        QSqlQuery query = db.executeQuery(sql);
-        while(query.next())
+        QList<int> excludeList = db.getExcludeRouteList(routeID);
+        m_excludeRoutes.append(excludeList);
+        for(int x = 0; x < m_excludeRoutes.count(); x++)
         {
-            deviceIDs << query.value("deviceID").toInt();
-            newStates << (TurnoutState)query.value("turnoutState").toInt();
-        }
-
-        for(int x =0; x < deviceIDs.count(); x++)
-        {
-            turnoutHandler->activateTurnout(deviceIDs.value(x), newStates.value(x));
+            if(excludeList.value(x) != routeID)
+                createAndSendNotificationMessage(m_excludeRoutes.value(x), false);
         }
     }
+    else
+    {
+        m_lockedRoutes.removeAll(routeID);
+        Database db;
+        QList<int> excludeList = db.getExcludeRouteList(routeID);
+        for(int x = 0; x < excludeList.count(); x++)
+        {
+            m_excludeRoutes.removeAll(excludeList.value(x));
+            if(excludeList.value(x) != routeID)
+                createAndSendNotificationMessage(excludeList.value(x), false);
+        }
+    }
+    MessageBroadcaster::instance()->sendLockRouteCommand(routeID, lock);
+    bool isActive = isRouteActive(routeID);
+    createAndSendNotificationMessage(routeID, isActive);
 }
 
 void RouteHandler::deviceStatusChanged(int deviceID, int status)
@@ -121,8 +179,13 @@ void RouteHandler::createAndSendNotificationMessage(int routeID, bool isActive)
 {
     QString uri("/api/notification/route");
     QJsonObject obj;
+    bool isLocked = isRouteLocked(routeID);
+    bool canLock = canRouteLock(routeID);
+
     obj["routeID"] = routeID;
     obj["isActive"] = isActive;
+    obj["isLocked"] = isLocked;
+    obj["canLock"] = canLock;
 
     emit sendNotificationMessage(uri, obj);
 }

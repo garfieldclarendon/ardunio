@@ -29,16 +29,18 @@ public:
     int getDBVersion(void);
     void setDBVersion(int newVersion);
 
-    QByteArray getTurnoutConfig(quint32 serialNumber, int address);
-    QByteArray getPanelConfig(quint32 serialNumber);
-    QByteArray getPanelRouteConfig(quint32 serialNumber);
-    QByteArray getSignalConfig(quint32 serialNumber, int address);
-    QByteArray getBlockConfig(quint32 serialNumber, int address);
     QByteArray getMultiControllerConfig(quint32 serialNumber);
+    QJsonArray getNotificationList(quint32 serialNumber);
     QByteArray getControllerModuleConfig(quint32 serialNumber, quint32 address);
+
+    QString getDeviceConfig(int deviceID);
+    void getDeviceProperties(int deviceID, QJsonObject &device);
+    void getTurnoutConfig(int deviceID, QJsonObject &device);
+    void getSignalConfig(int deviceID, QJsonObject &device);
 
     QString getTurnoutName(int deviceID);
     int getdeviceID(const QString &name);
+    QList<int> getExcludeRouteList(int routeID);
 
     void getControllerIDAndName(quint32 serialNumber, int &deviceID, QString &controllerName);
 

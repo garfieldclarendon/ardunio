@@ -196,171 +196,161 @@ void Database::setDBVersion(int newVersion)
     }
 }
 
-QByteArray Database::getTurnoutConfig(quint32 serialNumber, int address)
+QString Database::getDeviceConfig(int deviceID)
 {
-    int deviceIDs[MAX_TURNOUTS];
-    int turnoutInputPinSetting[MAX_TURNOUTS];
-    memset(&deviceIDs, 0, sizeof(int[MAX_TURNOUTS]));
+    QJsonDocument doc;
+    QJsonObject obj = fetchItem(QString("SELECT deviceClass FROM device WHERE id = %1").arg(deviceID));
+    DeviceClassEnum deviceClass = (DeviceClassEnum)obj["deviceClass"].toVariant().toInt();
+    getDeviceProperties(deviceID, obj);
 
-    QString buffer;
+    if(deviceClass == DeviceTurnout)
+        getTurnoutConfig(deviceID, obj);
+    else if(deviceClass == DeviceSignal)
+        getSignalConfig(deviceID, obj);
 
-    QSqlQuery query(db);
-    query.exec(QString("SELECT device.id, deviceProperty.value FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID LEFT OUTER JOIN deviceProperty on device.id = deviceProperty.deviceID WHERE serialNumber = %1 AND controllerModule.address = %2 ORDER BY controllerModule.address").arg(serialNumber).arg(address));
-    int index = 0;
-    while (query.next())
-    {
-       deviceIDs[index] = query.value(0).toInt();
-       turnoutInputPinSetting[index++] = query.value(1).toInt();
-
-    }
-    for(int x = 0; x < MAX_TURNOUTS; x++)
-    {
-        buffer += QString("ID,%1;INPUTPIN,%2;").arg(deviceIDs[x]).arg(turnoutInputPinSetting[x]);
-
-        QSqlQuery query2(db);
-        query2.exec(QString("SELECT routeID, turnoutState FROM routeEntry WHERE deviceID = %1").arg(deviceIDs[x]));
-        while (query2.next())
-        {
-            buffer += QString("ROUTE,%1;STATE,%2;").arg(query2.value(0).toString()).arg(query2.value(1).toString());
-        }
-    }
-
-    buffer += "\n";
-    qDebug(buffer.toLatin1());
-
-    return buffer.toLatin1();
+    doc.setObject(obj);
+    return doc.toJson();
 }
 
-QByteArray Database::getSignalConfig(quint32 , int )
+void Database::getDeviceProperties(int deviceID, QJsonObject &device)
 {
-    QString buffer;
-
-    return buffer.toLatin1();
-}
-
-QByteArray Database::getBlockConfig(quint32 serialNumber, int address)
-{
-    QString buffer;
-
-    QSqlQuery query(db);
-    query.exec(QString("SELECT block.id FROM block JOIN controller ON block.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.address = %2 ORDER BY address").arg(serialNumber).arg(address));
-
-    while (query.next())
+    QJsonArray array = fetchItems(QString("SELECT key, value FROM deviceProperty WHERE deviceID = %1").arg(deviceID));
+    for(int x = 0; x < array.size(); x++)
     {
-        buffer = QString("ID,%1;").arg(query.value(0).toString());
-    }
-
-    buffer += "\n";
-    qDebug(buffer.toLatin1());
-
-    return buffer.toLatin1();
-}
-
-QByteArray Database::getPanelConfig(quint32 serialNumber)
-{
-    QJsonDocument jsonDoc;
-    QJsonObject obj;
-    QJsonArray array;
-
-    if(db.isValid() == false)
-        db = QSqlDatabase::database();
-    db.open();
-    QSqlQuery query(db);
-    query.exec(QString("SELECT deviceClass, address FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 ORDER BY address").arg(serialNumber));
-    while (query.next())
-    {
-        QJsonObject o;
-        o["class"] = query.value(0).toString();
-        o["index"] = query.value(1).toString();
-        array.append(o);
-    }
-    obj["messageUri"] = "/controllerConfig";
-    obj["modules"] = array;
-    jsonDoc.setObject(obj);
-
-    return jsonDoc.toJson();
-}
-
-QByteArray Database::getPanelRouteConfig(quint32 serialNumber)
-{
-    QSqlQuery routesQuery(db);
-    routesQuery.exec(QString("SELECT routeID, deviceID, turnoutState FROM routeEntry WHERE RouteID IN (SELECT inputID FROM panelInputEntry WHERE inputType = 1 AND panelModuleID IN (SELECT controllerModule.id FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1)) ORDER BY routeID").arg(serialNumber));
-    int currentRouteID = 0;
-    QString buffer;
-
-    while (routesQuery.next())
-    {
-        if(currentRouteID == 0)
+        QJsonObject o = array.at(x).toObject();
+        for (int index = 0; index < o.size(); index++)
         {
-            currentRouteID = routesQuery.value(0).toInt();
-            buffer += QString("ID,%1;").arg(currentRouteID);
-        }
-        if(currentRouteID == routesQuery.value(0).toInt())
-        {
-            buffer += QString("TURNOUT,%1;STATE,%2;").arg(routesQuery.value(1).toString()).arg(routesQuery.value(2).toString());
-        }
-        else
-        {
-            currentRouteID = routesQuery.value(0).toInt();
-            buffer += QString("ID,%1;").arg(currentRouteID);
+            device[o["key"].toString()] = o["value"];
         }
     }
+}
 
-    buffer += "\n";
-    qDebug(buffer.toLatin1());
+void Database::getTurnoutConfig(int deviceID, QJsonObject &device)
+{
+    QJsonArray routes = fetchItems(QString("SELECT routeID, turnoutState FROM routeEntry WHERE deviceID = %1").arg(deviceID));
+    device["routes"] = routes;
+}
 
-    return buffer.toLatin1();
+void Database::getSignalConfig(int deviceID, QJsonObject &device)
+{
+    QJsonArray aspects = fetchItems(QString("SELECT id as aspectID, redMode, greenMode, yellowMode FROM signalAspect WHERE deviceID = %1 ORDER BY sortIndex").arg(deviceID));
+
+    for(int x = 0; x < aspects.count(); x++)
+    {
+        QJsonObject o = aspects[x].toObject();
+        int aspectID = o["aspectID"].toVariant().toInt();
+        QJsonArray conditions = fetchItems(QString("select deviceID, conditionOperand, deviceState FROM signalCondition WHERE signalAspectID = %1").arg(aspectID));
+        o["conditions"] = conditions;
+        aspects[x] = o;
+    }
+    device["aspects"] = aspects;
 }
 
 QByteArray Database::getMultiControllerConfig(quint32 serialNumber)
 {
-    QJsonDocument jsonDoc;
-    QJsonObject obj;
-    QJsonArray array;
-
     if(db.isValid() == false)
         db = QSqlDatabase::database();
     db.open();
-    QSqlQuery query(db);
-    query.exec(QString("SELECT DISTINCT moduleClass, address, controllerClass FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.disable <> 1 ORDER BY address").arg(serialNumber));
     QString controllerClass;
-    while (query.next())
+    QString controllerID;
+    QJsonObject currentModule;
+    QJsonArray moduleArray;
     {
-        controllerClass = query.value(2).toString();
-        QJsonObject o;
-        o["class"] = query.value(0).toString();
-        o["address"] = query.value(1).toString();
-        array.append(o);
+        QSqlQuery query(db);
+        query.exec(QString("SELECT DISTINCT controller.id AS controllerID, moduleClass, address, controllerClass FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND controllerModule.disable <> 1 ORDER BY address").arg(serialNumber));
+
+        QString address;
+        QString currentAddress;
+
+        while (query.next())
+        {
+            controllerClass = query.value("controllerClass").toString();
+            controllerID =  query.value("controllerID").toString();
+            address = query.value("address").toString();
+            if(currentAddress.length() == 0)
+            {
+                currentAddress = address;
+                currentModule["class"] = query.value("moduleClass").toString();
+                currentModule["address"] = address;
+            }
+            if(address != currentAddress)
+            {
+                currentAddress = address;
+                moduleArray << currentModule;
+
+                currentModule = QJsonObject();
+                currentModule["class"] = query.value("moduleClass").toString();
+                currentModule["address"] = address;
+            }
+        }
     }
+    moduleArray << currentModule;
+    QJsonArray array = getNotificationList(serialNumber);
+    QJsonDocument jsonDoc;
+    QJsonObject obj;
     obj["messageUri"] = "/controllerConfig";
     obj["controllerClass"] = controllerClass;
-    obj["modules"] = array;
+    obj["controllerID"] = controllerID;
+    obj["modules"] = moduleArray;
+    obj["controllersToNotify"] = array;
     jsonDoc.setObject(obj);
 
     return jsonDoc.toJson();
 }
 
+QJsonArray Database::getNotificationList(quint32 serialNumber)
+{
+    QList<int> ids;
+    int controllerID = getControllerID(serialNumber);
+    ids << controllerID;
+    QJsonArray array1 = fetchItems(QString("SELECT DISTINCT controllerID as id  FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id JOIN deviceProperty ON device.id = deviceProperty.deviceID AND deviceProperty.key = 'ITEMID' WHERE serialNumber %1").arg(serialNumber));
+    for(int x = array1.size() - 1; x >= 0; x--)
+    {
+        int id = array1[x].toObject()["id"].toVariant().toInt();
+        if(ids.contains(id) == false)
+            ids << id;
+        else
+            array1.removeAt(x);
+    }
+    QJsonArray array2 = fetchItems(QString("SELECT DISTINCT controllerID as id FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id WHERE controllerModule.controllerID IN ( SELECT pc.controllerID FROM controllerModule AS pc JOIN device on pc.id = device.controllerModuleID JOIN signalAspect on device.id = signalAspect.deviceID JOIN signalCondition ON signalAspect.id = signalCondition.signalAspectID WHERE  signalCondition.deviceID IN (SELECT device.id FROM controller JOIN controllerModule ON controller.id = controllerModule.controllerID JOIN device ON device.controllerModuleID = controllerModule.id WHERE serialNumber = %1))").arg(serialNumber));
+    for(int x = array2.size() - 1; x >= 0; x--)
+    {
+        QJsonObject o = array2[x].toObject();
+        if(ids.contains(o["id"].toVariant().toInt()) == false)
+        {
+            array1 += array2[x];
+        }
+    }
+
+    return array1;
+}
+
 QByteArray Database::getControllerModuleConfig(quint32 serialNumber, quint32 address)
 {
-    QString classCode;
+    if(db.isValid() == false)
+        db = QSqlDatabase::database();
+    db.open();
+    QJsonArray deviceArray;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT deviceClass FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID WHERE serialNumber = %1 AND address = %2").arg(serialNumber).arg(address));
+    query.exec(QString("SELECT DISTINCT controller.id, moduleClass, address, device.id as deviceID, deviceClass, port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID LEFT OUTER JOIN device ON controllerModule.id = device.controllerModuleID WHERE serialNumber = %1 AND controllerModule.address = %2 AND controllerModule.disable <> 1 ORDER BY address").arg(serialNumber).arg(address));
+
     while (query.next())
     {
-        classCode = query.value(0).toString();
+        QJsonObject device;
+        device["id"] = query.value("deviceID").toString();
+        device["c"] = query.value("deviceClass").toString();
+        device["p"] = query.value("port").toString();
+        deviceArray << device;
     }
-    if(classCode == "1")
-        return getTurnoutConfig(serialNumber, address);
-    else if(classCode == "2")
-        return getPanelConfig(serialNumber);
-    else if(classCode == "4")
-        return getSignalConfig(serialNumber, address);
-    else if(classCode == "6")
-        return getBlockConfig(serialNumber, address);
 
-    QString configData("\n7");
-    return configData.toLatin1();
+    QJsonDocument jsonDoc;
+    QJsonObject obj;
+    obj["messageUri"] = "/controllerModuleConfig";
+    obj["devices"] = deviceArray;
+    jsonDoc.setObject(obj);
+
+    return jsonDoc.toJson();
 }
 
 QString Database::getTurnoutName(int deviceID)
@@ -405,6 +395,28 @@ int Database::getdeviceID(const QString &name)
     }
 
     return id;
+}
+
+QList<int> Database::getExcludeRouteList(int routeID)
+{
+    QList<int> ids;
+
+    if(db.isValid() == false)
+        db = QSqlDatabase::database();
+    db.open();
+    QSqlQuery query(db);
+
+    bool ret = query.exec(QString("SELECT DISTINCT routeID FROM routeEntry WHERE deviceID IN (SELECT deviceID FROM routeEntry JOIN device ON routeEntry.deviceID = device.id WHERE routeID = %1)").arg(routeID));
+
+    if(ret == false)
+        qDebug(query.lastError().text().toLatin1());
+
+    while(query.next())
+    {
+       ids << query.value(0).toInt();
+    }
+
+    return ids;
 }
 
 void Database::getControllerIDAndName(quint32 serialNumber, int &deviceID, QString &controllerName)
@@ -461,7 +473,8 @@ QJsonObject Database::createJsonObject(QSqlQuery &query)
     {
         for(int x = 0; x < query.record().count(); x++)
         {
-            obj[query.record().fieldName(x)] = query.value(x).toString();
+            QVariant v = query.value(x);
+            obj[query.record().fieldName(x)] = v.toString();
         }
     }
     return obj;

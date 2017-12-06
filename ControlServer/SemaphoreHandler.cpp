@@ -11,7 +11,7 @@
 #include "WebServer.h"
 
 SemaphoreHandler::SemaphoreHandler(QObject *parent)
-    : DeviceHandler(ClassSemaphore, parent)
+    : DeviceHandler(DeviceSemaphore, parent)
 {
     connect(DeviceManager::instance(), SIGNAL(deviceStatusChanged(int,int)), this, SLOT(deviceStatusChanged(int,int)), Qt::QueuedConnection);
 }
@@ -37,9 +37,9 @@ void SemaphoreHandler::deviceStatusChanged(int deviceID, int status)
     }
 }
 
-void SemaphoreHandler::newMessage(int serialNumber, int address, ClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject & /*json*/)
+void SemaphoreHandler::newMessage(int serialNumber, int address, DeviceClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject & /*json*/)
 {
-    if(uri == "/controller/module" && classCode == ClassSemaphore)
+    if(uri == "/controller/device" && classCode == DeviceSemaphore)
     {
         if(actionType == NetActionGet)
         {

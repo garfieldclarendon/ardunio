@@ -11,6 +11,7 @@ class DeviceModel : public EntityModel
     Q_PROPERTY(int controllerModuleID READ getControllerModuleID WRITE setControllerModuleID NOTIFY controllerIDChanged)
     Q_PROPERTY(int controllerID READ getControllerID WRITE setControllerID NOTIFY controllerIDChanged)
     Q_PROPERTY(int deviceClass READ getClass() WRITE setClass NOTIFY classChanged)
+    Q_PROPERTY(QString filterText READ filterText WRITE setFilterText NOTIFY filterTextChanged)
 
 public:
     DeviceModel(QObject *parent = NULL);
@@ -25,9 +26,13 @@ public:
     void setClass(int value);
     int getClass(void) const { return m_class; }
 
+    QString filterText(void) const { return m_filterText; }
+    void setFilterText(const QString &filterText);
+
 signals:
     void controllerIDChanged(void);
     void classChanged(void);
+    void filterTextChanged(void);
 
 public slots:
     void deviceChanged(int deviceID, int status);
@@ -51,7 +56,8 @@ private:
     void createEmptyObject(QJsonObject &obj) override;
     int m_controllerModuleID;
     int m_controllerID;
-    ClassEnum m_class;
+    DeviceClassEnum m_class;
+    QString m_filterText;
 };
 
 #endif // DEVICEMODEL_H

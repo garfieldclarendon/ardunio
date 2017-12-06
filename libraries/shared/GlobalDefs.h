@@ -1,7 +1,9 @@
 #pragma once
 #include "Local.h"
 
-const int ControllerVersion = 13;
+const unsigned char MajorVersion = 3;
+const unsigned char MinorVersion = 0;
+const unsigned char ControllerVersion = 14;
 
 #ifdef PROJECT_DEBUG
 #define DEBUG_PRINT(...) Serial.printf( __VA_ARGS__ )
@@ -13,22 +15,21 @@ const int ControllerVersion = 13;
 #define MAX_BLOCKS 2
 #define MAX_SIGNALS 3
 #define MAX_MODULES 8
-#define MAX_DEVICES 8
-#define MAX_PANEL_MODULES 8
-#define MAX_PANEL_OUTPUTS 8
-#define MAX_PANEL_INPUTS 8
-#define MAX_SIGNAL_PINS 8
+#define MAX_DEVICES 16
+#define MAX_ROUTE_ENTRIES 5
+#define MAX_SIGNAL_DEVICES 10
+#define MAX_SIGNAL_CONDITIONS 5
 
 #define TIMEOUT_INTERVAL 200
 #define HEARTBEAT_INTERVAL 60000 // One minute
 
-enum ControllerStatus
+enum ControllerStatusEnum
 {
-    ControllerUnknown,
-    ControllerOffline,
-    ControllerOnline,
-    ControllerRestarting,
-    ControllerConected
+    ControllerStatusUnknown,
+    ControllerStatusOffline,
+    ControllerStatusOnline,
+    ControllerStatusRestarting,
+    ControllerStatusConected
 };
 
 enum ConditionEnum
@@ -77,20 +78,34 @@ enum BlockState
     BlockOccupied
 };
 
-enum ClassEnum
+enum ControllerClassEnum
 {
-        ClassUnknown,
-        ClassTurnout,
-        ClassPanel,
-        ClassRoute,
-        ClassSignal,
-        ClassSemaphore,
-        ClassBlock,
-        ClassMulti,
-        ClassInput,
-        ClassOutput,
-        ClassSystem,
-        ClassApp
+    ControllerUnknown,
+    ControllerMulti = 7,
+    ControllerTurnout = 1,
+    ControllerServer = 10,
+    ControllerApp
+};
+
+enum DeviceClassEnum
+{
+    DeviceUnknown,
+    DeviceTurnout,
+    DevicePanelInput,
+    DevicePanelOutput,
+    DeviceSignal = 4,
+    DeviceSemaphore = 5,
+    DeviceBlock = 6,
+    DevicePanel = 7 // For old versions--no longer used
+};
+
+enum ModuleClassEnum
+{
+    ModuleUnknown,
+    ModuleTurnout = 1,
+    ModuleSemaphore = 5,
+    ModuleInput = 8,
+    ModuleOutput = 9
 };
 
 const unsigned char UdpBroadcast[] = {0xFF, 0xFF, 0xFF, 0xFF};
@@ -101,9 +116,16 @@ const unsigned int sendTimeout = 100;
 // config addresses for EEPROM
 #define CONTROLLER_ID_ADDRESS 7
 
-//Message IDS
+// Status Message IDS
+#define TRN_STATUS 1
+#define BLK_STATUS 2
+
+#define END_STATUS_MESSAGES 5
+#define TRN_ACTIVATE 6
+#define TRN_ACTIVATE_ROUTE 7
+
 //System Messages
-#define SYS_FIND_SERVER 11
+#define SYS_CONTROLLER_ONLINE 11
 #define SYS_SERVER_HEARTBEAT 12
 #define SYS_RESET_CONFIG 13
 #define SYS_REBOOT_CONTROLLER 14
@@ -111,3 +133,9 @@ const unsigned int sendTimeout = 100;
 #define SYS_RESTARTING 16
 #define SYS_UDP_HTTP 17
 #define SYS_KEEP_ALIVE 18
+#define SYS_RESET_DEVICE_CONFIG 19
+#define SYS_SERVER_SHUTDOWN 20
+#define SYS_FIND_CONTROLLER 21
+#define SYS_RESET_NOTIFICATION_LIST 22
+#define SYS_LOCK_DEVICE 23
+#define SYS_LOCK_ROUTE 24

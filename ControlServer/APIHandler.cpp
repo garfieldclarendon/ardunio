@@ -51,6 +51,10 @@ void APIHandler::handleClient(QTcpSocket *socket, const QString &path, const QSt
     {
         handleGetDeviceList(socket, url);
     }
+    else if(url.path().contains("device_property_list"))
+    {
+        handleGetDevicePropertyList(socket, url);
+    }
     else if(url.path().contains("controller_list"))
     {
         handleGetControllerList(socket, url);
@@ -62,6 +66,18 @@ void APIHandler::handleClient(QTcpSocket *socket, const QString &path, const QSt
     else if(url.path().contains("send_module_config"))
     {
         handleSendModuleConfig(socket, url);
+    }
+    else if(url.path().contains("send_device_config"))
+    {
+        handleSendDeviceConfig(socket, url);
+    }
+    else if(url.path().contains("notification_list"))
+    {
+        handleResetNotificationList(socket, url);
+    }
+    else if(url.path().contains("lock_route"))
+    {
+        handleLockRoute(socket, url);
     }
     else if(url.path().contains("send_controller_firmware"))
     {
@@ -131,7 +147,7 @@ void APIHandler::handleActivateTurnout(QTcpSocket *socket, const QUrl &url, cons
     }
     if((newState == TrnNormal || newState == TrnDiverging))
     {
-        TurnoutHandler *turnoutHandler = qobject_cast<TurnoutHandler *>(DeviceManager::instance()->getHandler(ClassTurnout));
+        TurnoutHandler *turnoutHandler = qobject_cast<TurnoutHandler *>(DeviceManager::instance()->getHandler(DeviceTurnout));
         if(turnoutHandler)
             turnoutHandler->activateTurnout(deviceID, newState);
     }
@@ -182,7 +198,11 @@ void APIHandler::handleGetPanelRouteList(QTcpSocket *socket, const QUrl &url)
         QJsonObject obj = jsonArray[x].toObject();
         QString routeID = obj["routeID"].toString();
         bool isActive = RouteHandler::instance()->isRouteActive(routeID.toInt());
+        bool isLocked = RouteHandler::instance()->isRouteLocked(routeID.toInt());
+        bool canLock = RouteHandler::instance()->canRouteLock(routeID.toInt());
         obj["isActive"] = isActive;
+        obj["isLocked"] = isLocked;
+        obj["canLocked"] = canLock;
         jsonArray[x] = obj;
     }
 
@@ -212,7 +232,12 @@ void APIHandler::handleGetRouteList(QTcpSocket *socket, const QUrl &)
         QJsonObject obj = jsonArray[x].toObject();
         QString routeID = obj["routeID"].toString();
         bool isActive = RouteHandler::instance()->isRouteActive(routeID.toInt());
+        bool isLocked = RouteHandler::instance()->isRouteLocked(routeID.toInt());
+        bool canLock = RouteHandler::instance()->canRouteLock(routeID.toInt());
+        obj["routeID"] = routeID;
         obj["isActive"] = isActive;
+        obj["isLocked"] = isLocked;
+        obj["canLock"] = canLock;
         jsonArray[x] = obj;
     }
 
@@ -274,6 +299,7 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
 {
     QUrlQuery urlQuery(url);
     int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
+    int moduleID = urlQuery.queryItemValue("moduleID").toInt();
     int port = -1;
     int classCode = urlQuery.queryItemValue("classCode").toInt();
     if(urlQuery.hasQueryItem("address"))
@@ -290,6 +316,15 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     {
         useAnd = true;
         where += QString("serialNumber = %1 ").arg(serialNumber);
+    }
+    if(moduleID > 0)
+    {
+        if(useAnd)
+            where += QString("AND moduleID = %1 ").arg(moduleID);
+        else
+            where += QString("moduleID = %1 ").arg(moduleID);
+
+        useAnd = true;
     }
     if(port > -1)
     {
@@ -311,7 +346,10 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     }
     if(useAnd)
         sql += where;
-    sql += QString(" ORDER BY deviceName");
+    if(moduleID > 0)
+        sql += QString(" ORDER BY device.port");
+    else
+        sql += QString(" ORDER BY deviceName");
 
     QJsonArray jsonArray = db.fetchItems(sql);
     for(int x = 0; x < jsonArray.size(); x++)
@@ -323,6 +361,29 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
         obj["deviceState"] = deviceState;
         jsonArray[x] = obj;
     }
+
+    QJsonDocument doc;
+    doc.setArray(jsonArray);
+    QByteArray data(doc.toJson());
+
+    QString header = WebServer::createHeader("200 OK", data.size());
+
+    socket->write(header.toLatin1());
+    socket->write(data);
+    socket->flush();
+    socket->close();
+}
+
+void APIHandler::handleGetDevicePropertyList(QTcpSocket *socket, const QUrl &url)
+{
+    QUrlQuery urlQuery(url);
+    int deviceID = urlQuery.queryItemValue("deviceID").toInt();
+    qDebug(QString("handleGetDevicePropertyList.  deviceID = %1").arg(deviceID).toLatin1());
+    Database db;
+
+    QString sql = QString("SELECT deviceID, id, key, value FROM deviceProperty WHERE deviceID = %1").arg(deviceID);
+
+    QJsonArray jsonArray = db.fetchItems(sql);
 
     QJsonDocument doc;
     doc.setArray(jsonArray);
@@ -351,7 +412,7 @@ void APIHandler::handleGetControllerList(QTcpSocket *socket, const QUrl & /*url*
         QJsonObject obj = jsonArray[x].toObject();
         QString serialNumber = obj["serialNumber"].toString();
         int version = 0;
-        ControllerStatus status = ControllerUnknown;
+        ControllerStatusEnum status = ControllerStatusUnknown;
         ControllerManager::instance()->getConnectedInfo(serialNumber.toInt(), version, status);
         obj["status"] = status;
         obj["version"] = version;
@@ -380,9 +441,12 @@ void APIHandler::handleGetControllerModuleList(QTcpSocket *socket, const QUrl &u
 
     QUrlQuery urlQuery(url);
     int controllerID = urlQuery.queryItemValue("controllerID").toInt();
+    int controllerModuleID = urlQuery.queryItemValue("controllerModuleID").toInt();
     QString sql = QString("SELECT id as controllerModuleID, controllerID, moduleName, moduleClass, address, disable FROM controllerModule");
     if(controllerID > 0)
         sql += QString(" WHERE controllerID = %1").arg(controllerID);
+    else if(controllerModuleID > 0)
+        sql += QString(" WHERE id = %1").arg(controllerModuleID);
     sql += QString(" ORDER BY address");
 
     QJsonArray jsonArray = db.fetchItems(sql);
@@ -469,15 +533,34 @@ void APIHandler::handleSendModuleConfig(QTcpSocket *socket, const QUrl &url)
     while(query.next())
     {
         int deviceClass = query.value("deviceClass").toInt();
-        if(deviceClass == ClassTurnout)
+        if(deviceClass == DeviceTurnout)
         {
-            TurnoutHandler *turnoutHandler = qobject_cast<TurnoutHandler *>(DeviceManager::instance()->getHandler(ClassTurnout));
+            TurnoutHandler *turnoutHandler = qobject_cast<TurnoutHandler *>(DeviceManager::instance()->getHandler(DeviceTurnout));
             if(turnoutHandler)
             {
                 turnoutHandler->sendConfig(serialNumber, address);
             }
         }
     }
+}
+
+void APIHandler::handleSendDeviceConfig(QTcpSocket *socket, const QUrl &url)
+{
+    QString header = WebServer::createHeader("200 OK", 0);
+
+    socket->write(header.toLatin1());
+    socket->flush();
+    socket->close();
+
+    QUrlQuery urlQuery(url);
+    int deviceID = urlQuery.queryItemValue("deviceID").toInt();
+    qDebug(QString("handleSendDeviceConfig.  DeviceID = %1").arg(deviceID).toLatin1());
+
+    UDPMessage message;
+    message.setMessageID(SYS_RESET_DEVICE_CONFIG);
+    message.setSerialNumber(deviceID);
+
+    MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 
 void APIHandler::handleControllerFirmwareUpdate(QTcpSocket *socket, const QUrl &url)
@@ -520,6 +603,35 @@ void APIHandler::handleControllerResetConfig(QTcpSocket *socket, const QUrl &url
     int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
 
     MessageBroadcaster::instance()->sendResetConfigCommand(serialNumber);
+}
+
+void APIHandler::handleResetNotificationList(QTcpSocket *socket, const QUrl &url)
+{
+    QString header = WebServer::createHeader("200 OK", 0);
+
+    socket->write(header.toLatin1());
+    socket->flush();
+    socket->close();
+
+    QUrlQuery urlQuery(url);
+    int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
+
+    MessageBroadcaster::instance()->sendResetNotificationListCommand(serialNumber);
+}
+
+void APIHandler::handleLockRoute(QTcpSocket *socket, const QUrl &url)
+{
+    QString header = WebServer::createHeader("200 OK", 0);
+
+    socket->write(header.toLatin1());
+    socket->flush();
+    socket->close();
+
+    QUrlQuery urlQuery(url);
+    int routeID = urlQuery.queryItemValue("routeID").toInt();
+    bool lock= urlQuery.queryItemValue("lock").toInt() == 1;
+
+    RouteHandler::instance()->lockRoute(routeID, lock);
 }
 
 void APIHandler::handleEntity(QTcpSocket *socket, const QUrl &url, const QString &actionText, const QString &jsonText)

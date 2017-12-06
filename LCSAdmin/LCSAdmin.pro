@@ -1,4 +1,4 @@
-QT += quick websockets gui
+QT += quick websockets gui printsupport
 CONFIG += c++11
 
 # The following define makes your compiler emit warnings if you use
@@ -27,7 +27,12 @@ HEADERS += API.h \
     ControllerModel.h \
     ControllerModuleModel.h \
     RouteModel.h \
-    RouteEntryModel.h
+    RouteEntryModel.h \
+    DevicePropertyModel.h \
+    TrackSegment.h \
+    TrackSingle.h \
+    TrackSiding.h \
+    TrackTurnout.h
 
 SOURCES += main.cpp \
            DeviceModel.cpp \
@@ -43,7 +48,12 @@ SOURCES += main.cpp \
     ControllerModel.cpp \
     ControllerModuleModel.cpp \
     RouteModel.cpp \
-    RouteEntryModel.cpp
+    RouteEntryModel.cpp \
+    DevicePropertyModel.cpp \
+    TrackSegment.cpp \
+    TrackSingle.cpp \
+    TrackSiding.cpp \
+    TrackTurnout.cpp
 
 RESOURCES += qml.qrc
 
