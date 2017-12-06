@@ -1,6 +1,6 @@
 #ifndef CONTROLLERMODEL_H
 #define CONTROLLERMODEL_H
-#include "../ControlServer/UDPMessage.h"
+#include "../LCSServer/UDPMessage.h"
 #include "EntityModel.h"
 
 class JSonModel;
@@ -25,6 +25,7 @@ public slots:
     void controllerChanged(int serialNumber, ControllerStatusEnum status, quint64 pingLength = 0);
     int getControllerRow(int controllerID);
     int getControllerClass(int controllerID);
+    void setControllerID(int value);
 
     // QAbstractItemModel interface
 public:

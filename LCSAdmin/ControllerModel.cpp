@@ -70,7 +70,7 @@ void ControllerModel::apiReady()
     if(m_jsonModel && API::instance()->getApiReady())
     {
         QJsonDocument jsonDoc;
-        QString json = API::instance()->getControllerList();
+        QString json = API::instance()->getControllerList(0);
         jsonDoc = QJsonDocument::fromJson(json.toLatin1());
         beginResetModel();
         m_jsonModel->setJson(jsonDoc, false);
@@ -126,4 +126,17 @@ int ControllerModel::getControllerClass(int controllerID)
         }
     }
     return retClass;
+}
+
+void ControllerModel::setControllerID(int value)
+{
+    if(m_jsonModel && API::instance()->getApiReady())
+    {
+        QJsonDocument jsonDoc;
+        QString json = API::instance()->getControllerList(value);
+        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+        beginResetModel();
+        m_jsonModel->setJson(jsonDoc, false);
+        endResetModel();
+    }
 }

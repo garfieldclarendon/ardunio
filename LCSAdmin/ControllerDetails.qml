@@ -27,23 +27,52 @@ Rectangle {
         id: moduleModel
         controllerID: controllerEntity.data ? controllerEntity.data.controllerID : 0
     }
-
+/*
+    ControllerUnknown,
+    ControllerMulti = 7,
+    ControllerTurnout = 1,
+    ControllerServer = 10,
+    ControllerApp
+*/
     ListModel {
-        id: classModel
+        id: controllerClassModel
         ListElement { text: "Unknown"; classID: 0 }
         ListElement { text: "Turnout"; classID: 1 }
-        ListElement { text: "Signal"; classID: 4 }
-        ListElement { text: "Semaphore"; classID: 5 }
-        ListElement { text: "Block"; classID: 6 }
-        ListElement { text: "Panel"; classID: 2 }
         ListElement { text: "Multi-Controller"; classID: 7}
     }
+    /*
+        ModuleUnknown,
+        ModuleTurnout = 1,
+        ModuleSemaphore = 5,
+        ModuleInput = 8,
+        ModuleOutput = 9
+    */
+    ListModel {
+        id: moduleClassModel
+        ListElement { text: "Unknown"; classID: 0 }
+        ListElement { text: "Turnout"; classID: 1 }
+        ListElement { text: "Semaphore"; classID: 5 }
+        ListElement { text: "Input"; classID: 8 }
+        ListElement { text: "Output"; classID: 9 }
+    }
 
-    function getClassRow(classCode)
+    function getControllerClassRow(classCode)
     {
-        for(var x = 0; x < classModel.count; x++)
+        for(var x = 0; x < controllerClassModel.count; x++)
         {
-            if(classModel.get(x).classID == classCode)
+            if(controllerClassModel.get(x).classID == classCode)
+            {
+                return x;
+            }
+        }
+        return -1;
+    }
+
+    function getModuleClassRow(classCode)
+    {
+        for(var x = 0; x < moduleClassModel.count; x++)
+        {
+            if(moduleClassModel.get(x).classID == classCode)
             {
                 return x;
             }
@@ -62,28 +91,41 @@ Rectangle {
         console.debug("saveData!!!!!!!!!!!!!!!!!!!! COMPLETE");
     }
 
-    function getClassName(classID)
+    function getControllerClassName(classID)
     {
         if(classID === 0)
             return "Unknown";
         else if(classID === "1")
             return "Turnout";
-        else if(classID === "2")
-            return "Panel";
-        else if(classID === "3")
-            return "Route";
-        else if(classID === "4")
-            return "Signal";
-        else if(classID === "5")
-            return "Semaphore";
-        else if(classID === "6")
-            return "Block";
         else if(classID === "7")
             return "Multi-Controller";
-        else if(classID === "8")
-            return "System";
-        else if(classID === "9")
+        else if(classID === "10")
+            return "Server";
+        else if(classID === "11")
             return "Application";
+
+        return classID;
+    }
+    /*
+        ModuleUnknown,
+        ModuleTurnout = 1,
+        ModuleSemaphore = 5,
+        ModuleInput = 8,
+        ModuleOutput = 9
+    */
+
+    function getModuleClassName(classID)
+    {
+        if(classID === 0)
+            return "Unknown";
+        else if(classID === "1")
+            return "Turnout";
+        else if(classID === "5")
+            return "Semaphore";
+        else if(classID === "8")
+            return "Input";
+        else if(classID === "9")
+            return "Output";
 
         return classID;
     }
@@ -162,17 +204,20 @@ Rectangle {
         }
         ComboBox {
             id: classCombo
-            model: classModel
+            model: controllerClassModel
             textRole: "text"
             Layout.fillWidth: true
-            currentIndex: getClassRow(controllerEntity.data.controllerClass)
+            currentIndex: getControllerClassRow(controllerEntity.data.controllerClass)
             onActivated: {
                 controllerClass = classModel.get(currentIndex).classID;
             }
         }
-        Item {
-            Layout.fillWidth: true
-            height: 10
+        Button {
+            id: printButton
+            text: "Print"
+            onClicked: {
+                ui.printControllerLabel(controllerEntity.data.controllerID);
+            }
         }
         // Fifth Row
         Label {
@@ -261,10 +306,10 @@ Rectangle {
                     }
                     ComboBox {
                         id: moduleClassCombo
-                        model: classModel
+                        model: moduleClassModel
                         textRole: "text"
                         Layout.fillWidth: true
-                        currentIndex: getClassRow(moduleClass)
+                        currentIndex: getModuleClassRow(moduleClass)
                         onActivated: {
                             moduleClass = classModel.get(currentIndex).classID;
                         }
@@ -297,7 +342,7 @@ Rectangle {
                             sourceSize.height: 18
                         }
                         onClicked: {
-                            ui.printModuleLable(controllerModuleID);
+                            ui.printModuleLabel(controllerModuleID);
                         }
                     }
                 }

@@ -139,7 +139,7 @@ void SerialPortThread::reset()
 
 void SerialPortThread::openPort(void)
 {
-    QSettings settings("ControlServer.ini", QSettings::IniFormat);
+    QSettings settings("LCSServer.ini", QSettings::IniFormat);
 #ifdef QT_DEBUG
 #ifdef Q_OS_WIN
 //    QString serialPort = settings.value("serialPort", "COM5").toString();

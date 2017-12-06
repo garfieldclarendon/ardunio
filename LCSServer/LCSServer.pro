@@ -7,7 +7,7 @@ else
     QT -= gui
 }
 
-TARGET = ControlServer
+TARGET = LCSServer
 CONFIG += console
 CONFIG -= app_bundle
 

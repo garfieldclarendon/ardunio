@@ -6,10 +6,12 @@
 #include <QFont>
 #include <QFontInfo>
 #include <QFontMetrics>
-#include <QTextDocument>
+
+#include "GlobalDefs.h"
 
 class QPrinter;
-class DeviceModel;
+class EntityModel;
+class LabelPainter;
 
 class UI : public QObject
 {
@@ -36,14 +38,13 @@ signals:
 public slots:
     int applyFontRatio(const int value);
     int applyRatio(const int value);
-    void printModuleLable(int moduleID);
+    void printModuleLabel(int moduleID);
+    void printControllerLabel(int controllerID);
 
 protected slots:
-    void buildModuleTextDocumentForPrint(DeviceModel *model);
-    void printerPaintRequested(QPrinter *printer);
-    QString getDeviceTypeName(int deviceType);
 
 private:
+    LabelPainter *createLabelPainter(ModuleClassEnum moduleClass, EntityModel *model);
 
     qreal m_ratio;
     qreal m_ratioFont;
@@ -51,7 +52,6 @@ private:
     // standard definitions
     int m_margin;
     int m_baseFontSize;
-    DeviceModel *m_deviceModel;
 };
 
 #endif // UI_H

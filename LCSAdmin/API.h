@@ -42,10 +42,10 @@ public slots:
     void activateTurnout(int deviceID, int newState);
     void activateRoute(int routeID);
     void lockRoute(int routeID, bool lock);
-    QString getControllerList(void);
+    QString getControllerList(int controllerID);
     QString getControllerModuleListByControllerID(int controllerID);
     QString getControllerModuleListByModuleID(int controllerModuleID);
-    QString getDeviceList(DeviceClassEnum deviceType = DeviceUnknown);
+    QString getDeviceList(int controllerID, int moduleID, DeviceClassEnum deviceType = DeviceUnknown);
     QString getSignalAspectList(int deviceID);
     QString getSignalConditionList(int aspectID);
     QString getRouteList(void);

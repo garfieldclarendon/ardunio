@@ -1,6 +1,6 @@
 #ifndef ROUTEMODEL_H
 #define ROUTEMODEL_H
-#include "../ControlServer/UDPMessage.h"
+#include "../LCSServer/UDPMessage.h"
 #include "EntityModel.h"
 
 class JSonModel;

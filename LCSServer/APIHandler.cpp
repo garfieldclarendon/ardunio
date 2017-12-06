@@ -300,6 +300,7 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     QUrlQuery urlQuery(url);
     int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
     int moduleID = urlQuery.queryItemValue("moduleID").toInt();
+    int controllerID = urlQuery.queryItemValue("controllerID").toInt();
     int port = -1;
     int classCode = urlQuery.queryItemValue("classCode").toInt();
     if(urlQuery.hasQueryItem("address"))
@@ -308,7 +309,7 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     qDebug(QString("handleGetDeviceList.  SerialNumber = %1 address = %2").arg(serialNumber).arg(port).toLatin1());
     Database db;
 
-    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, device.port, controllerModule.address, controllerModule.id as controllerModuleID, deviceClass, serialNumber, controller.id as controllerID FROM device LEFT OUTER JOIN controllerModule ON device.controllerModuleID = controllerModule.id LEFT OUTER JOIN controller ON controller.id = controllerModule.controllerID");
+    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, device.port, controllerModule.address, controllerModule.id as controllerModuleID, deviceClass, serialNumber, controller.id as controllerID, controllerModule.moduleClass FROM device LEFT OUTER JOIN controllerModule ON device.controllerModuleID = controllerModule.id LEFT OUTER JOIN controller ON controller.id = controllerModule.controllerID");
 
     QString where(" WHERE ");
     bool useAnd = false;
@@ -317,12 +318,21 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
         useAnd = true;
         where += QString("serialNumber = %1 ").arg(serialNumber);
     }
+    if(controllerID > 0)
+    {
+        if(useAnd)
+            where += QString("AND controllerID = %1 ").arg(controllerID);
+        else
+            where += QString("controllerID = %1 ").arg(controllerID);
+
+        useAnd = true;
+    }
     if(moduleID > 0)
     {
         if(useAnd)
-            where += QString("AND moduleID = %1 ").arg(moduleID);
+            where += QString("AND controllerModuleID = %1 ").arg(moduleID);
         else
-            where += QString("moduleID = %1 ").arg(moduleID);
+            where += QString("controllerModuleID = %1 ").arg(moduleID);
 
         useAnd = true;
     }
@@ -346,7 +356,7 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     }
     if(useAnd)
         sql += where;
-    if(moduleID > 0)
+    if(moduleID > 0 || controllerID > 0)
         sql += QString(" ORDER BY device.port");
     else
         sql += QString(" ORDER BY deviceName");
@@ -397,13 +407,18 @@ void APIHandler::handleGetDevicePropertyList(QTcpSocket *socket, const QUrl &url
     socket->close();
 }
 
-void APIHandler::handleGetControllerList(QTcpSocket *socket, const QUrl & /*url*/)
+void APIHandler::handleGetControllerList(QTcpSocket *socket, const QUrl & url)
 {
     qDebug(QString("handleGetModuleList.").toLatin1());
+    QUrlQuery urlQuery(url);
+    int controllerID = urlQuery.queryItemValue("controllerID").toInt();
     Database db;
 
     QString sql = QString("SELECT serialNumber, id as controllerID, controllerName, controllerDescription, controllerClass FROM controller");
-    sql += QString(" ORDER BY controllerName");
+    if(controllerID > 0)
+        sql += QString(" WHERE id = %1").arg(controllerID);
+    else
+        sql += QString(" ORDER BY controllerName");
 
     QJsonArray jsonArray = db.fetchItems(sql);
 

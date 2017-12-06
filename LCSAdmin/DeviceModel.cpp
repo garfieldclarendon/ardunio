@@ -35,7 +35,15 @@ void DeviceModel::setControllerModuleID(int value)
     {
         m_controllerModuleID = value;
         emit controllerIDChanged();
-        invalidateFilter();
+        if(m_jsonModel && API::instance()->getApiReady())
+        {
+            QJsonDocument jsonDoc;
+            QString json = API::instance()->getDeviceList(-1, m_controllerModuleID, DeviceUnknown);
+            jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+            beginResetModel();
+            m_jsonModel->setJson(jsonDoc, false);
+            endResetModel();
+        }
     }
 }
 
@@ -45,7 +53,15 @@ void DeviceModel::setControllerID(int value)
     {
         m_controllerID = value;
         emit controllerIDChanged();
-        invalidateFilter();
+        if(m_jsonModel && API::instance()->getApiReady())
+        {
+            QJsonDocument jsonDoc;
+            QString json = API::instance()->getDeviceList(m_controllerID, -1, DeviceUnknown);
+            jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+            beginResetModel();
+            m_jsonModel->setJson(jsonDoc, false);
+            endResetModel();
+        }
     }
 }
 
@@ -64,17 +80,8 @@ void DeviceModel::setClass(int value)
 bool DeviceModel::filterAcceptsRow(int source_row, const QModelIndex &) const
 {
     bool ret = true;
-    if(m_controllerModuleID > 0)
-    {
-        if(m_jsonModel->data(source_row, "controllerModuleID", Qt::EditRole).toInt() != m_controllerModuleID)
-            ret = false;
-    }
-    else if(m_controllerID > 0)
-    {
-        if(m_jsonModel->data(source_row, "controllerID", Qt::EditRole).toInt() != m_controllerID)
-            ret = false;
-    }
-    else if(m_class != DeviceUnknown)
+
+    if(m_class != DeviceUnknown)
     {
         if(m_jsonModel->data(source_row, "deviceClass", Qt::EditRole).toInt() != (int)m_class)
             ret = false;
@@ -95,7 +102,7 @@ void DeviceModel::apiReady()
     if(m_jsonModel && API::instance()->getApiReady())
     {
         QJsonDocument jsonDoc;
-        QString json = API::instance()->getDeviceList();
+        QString json = API::instance()->getDeviceList(m_controllerID, m_controllerModuleID, DeviceUnknown);
         jsonDoc = QJsonDocument::fromJson(json.toLatin1());
         beginResetModel();
         m_jsonModel->setJson(jsonDoc, false);

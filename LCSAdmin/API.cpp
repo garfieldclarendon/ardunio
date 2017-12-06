@@ -12,7 +12,7 @@
 #include <QCoreApplication>
 #include <QThread>
 
-#include "../ControlServer/MessageBroadcaster.h"
+#include "../LCSServer/MessageBroadcaster.h"
 
 #include "API.h"
 
@@ -71,10 +71,14 @@ void API::lockRoute(int routeID, bool lock)
     sendToServer(url, QString(), NetActionGet);
 }
 
-QString API::getControllerList()
+QString API::getControllerList(int controllerID)
 {
     QString json;
-    QUrl url(buildUrl("controller_list"));
+    QString s("controller_list");
+    if(controllerID > 0)
+        s += QString("?controllerID=%1").arg(controllerID);
+
+    QUrl url(buildUrl(s));
 
     json = sendToServer(url, QString(), NetActionGet);
 
@@ -107,12 +111,16 @@ QString API::getControllerModuleListByModuleID(int controllerModuleID)
     return json;
 }
 
-QString API::getDeviceList(DeviceClassEnum deviceType)
+QString API::getDeviceList(int controllerID, int moduleID, DeviceClassEnum deviceType)
 {
     QString json;
     QString s("device_list");
     if(deviceType != DeviceUnknown)
         s.append(QString("?classCode=%1").arg(deviceType));
+    else if(controllerID > 0)
+        s.append(QString("?controllerID=%1").arg(controllerID));
+    else if(moduleID > 0)
+        s.append(QString("?moduleID=%1").arg(moduleID));
     QUrl url(buildUrl(s));
 
     json = sendToServer(url, QString(), NetActionGet);

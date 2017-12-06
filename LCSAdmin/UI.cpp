@@ -5,11 +5,15 @@
 #include <QPrinter>
 #include <QPrintPreviewDialog>
 #include <QApplication>
-#include <QPainter>
 
 #include "UI.h"
 #include "DeviceModel.h"
 #include "API.h"
+#include "LabelTurnout.h"
+#include "LabelInput.h"
+#include "LabelOutput.h"
+#include "LabelController.h"
+#include "ControllerModel.h"
 
 const qreal refDpi = 162.;
 const qreal refHeight = 962.;
@@ -57,110 +61,50 @@ int UI::applyRatio(const int value)
     return ret;
 }
 
-void UI::printModuleLable(int moduleID)
+void UI::printModuleLabel(int moduleID)
 {
     DeviceModel model;
-    m_deviceModel = &model;
     model.setControllerModuleID(moduleID);
 
     QPrinter printer(QPrinter::HighResolution);
-    qDebug(QString("BEFORE SIZE: %1 %2").arg(printer.pageRect().height()).arg(printer.pageRect().width()).toLatin1());
     QPageSize pageSize(QSizeF(50.0, 100.0), QPageSize::Millimeter, QString(), QPageSize::ExactMatch);
     printer.setPageSize(pageSize);
-//    printer.setPageOrientation(QPageLayout::Landscape);
-    qDebug(QString("AFTER SIZE: %1 %2").arg(printer.pageRect().height()).arg(printer.pageRect().width()).toLatin1());
 
-    buildModuleTextDocumentForPrint(&model);
     QPrintPreviewDialog dlg(&printer, QApplication::focusWidget());
-    connect(&dlg, SIGNAL(paintRequested(QPrinter*)), this, SLOT(printerPaintRequested(QPrinter*)));
+    LabelPainter *painter = createLabelPainter((ModuleClassEnum)model.data(0, "moduleClass").toInt(), &model);
+    painter->setParent(&dlg);
+    connect(&dlg, SIGNAL(paintRequested(QPrinter*)), painter, SLOT(printerPaintRequested(QPrinter*)));
 
     dlg.exec();
 }
 
-void UI::buildModuleTextDocumentForPrint(DeviceModel *model)
+void UI::printControllerLabel(int controllerID)
 {
-    QString text("<table \"width:100%\" style=\"border-collapse:collapse\" >");
-    for(int x = 0; x < model->rowCount(); x++)
-    {
-        text += QString("<tr><td><b>%1</b></td></tr>").arg(model->data(x, "deviceName").toString());
-        text += QString("<tr><td>%1</td>").arg(getDeviceTypeName(model->data(x, "deviceClass").toInt()));
-        text += QString("<tr><td><b>Port:</b> %1</td>").arg(model->data(x, "port").toString());
-        text += "<tr><td></td></tr><tr><td></td></tr>";
-    }
-    text += "</table>";
+    ControllerModel model;
+    model.setControllerID(controllerID);
+
+    QPrinter printer(QPrinter::HighResolution);
+    QPageSize pageSize(QSizeF(50.0, 100.0), QPageSize::Millimeter, QString(), QPageSize::ExactMatch);
+    printer.setPageSize(pageSize);
+
+    QPrintPreviewDialog dlg(&printer, QApplication::focusWidget());
+    LabelController *painter = new LabelController(&model, &dlg);
+    painter->setParent(&dlg);
+    connect(&dlg, SIGNAL(paintRequested(QPrinter*)), painter, SLOT(printerPaintRequested(QPrinter*)));
+
+    dlg.exec();
 }
 
-void UI::printerPaintRequested(QPrinter *printer)
+LabelPainter *UI::createLabelPainter(ModuleClassEnum moduleClass, EntityModel *model)
 {
-    QPainter painter(printer);
+    LabelPainter *painter = NULL;
 
-    QRectF r = printer->pageRect();
-    QRectF size;
+    if(moduleClass == ModuleTurnout)
+        painter = new LabelTurnout(model, this);
+    else if(moduleClass == ModuleInput)
+        painter = new LabelInput(model, this);
+    else if(moduleClass == ModuleOutput)
+        painter = new LabelOutput(model, this);
 
-    QPen pen;
-    pen.setColor(Qt::black);
-    painter.setPen(pen);
-
-    for(int x = 0; x < m_deviceModel->rowCount(); x++)
-    {
-        QFont font = painter.font();
-        font.setPointSize(18);
-        font.setBold(true);
-        painter.setFont(font);
-        painter.drawText(r, 0, m_deviceModel->data(x, "deviceName").toString(), &size);
-
-        font.setBold(false);
-        painter.setFont(font);
-        r.setTop(r.top() + size.height() + 5);
-        painter.drawText(r, 0, getDeviceTypeName(m_deviceModel->data(x, "deviceClass").toInt()), &size);
-        r.setTop(r.top() + size.height() + 5);
-        painter.drawText(r, 0, QString("Port: %1").arg(m_deviceModel->data(x, "port").toString()), &size);
-        if(x < m_deviceModel->rowCount() - 1)
-        {
-            r.setTop(r.top() + size.height() + 15);
-            pen.setWidth(3);
-            painter.setPen(pen);
-            painter.drawLine(r.topLeft(), r.topRight());
-            pen.setWidth(1);
-            painter.setPen(pen);
-            r.setTop(r.top() + 15);
-        }
-    }
-}
-
-QString UI::getDeviceTypeName(int deviceType)
-{
-    QString ret;
-    /*
-    DeviceUnknown,
-    DeviceTurnout,
-    DevicePanelInput,
-    DevicePanelOutput,
-    DeviceSignal = 4,
-    DeviceSemaphore = 5,
-    DeviceBlock = 6, */
-
-    switch (deviceType) {
-    case DeviceTurnout:
-        ret = "Turnout";
-        break;
-    case DevicePanelInput:
-        ret = "Panel Input";
-        break;
-    case DevicePanelOutput:
-        ret = "Panel Output";
-        break;
-    case DeviceSignal:
-        ret = "Signal";
-        break;
-    case DeviceSemaphore:
-        ret = "Semaphore";
-        break;
-    case DeviceBlock:
-        ret = "Block";
-        break;
-    default:
-        break;
-    }
-    return ret;
+    return painter;
 }

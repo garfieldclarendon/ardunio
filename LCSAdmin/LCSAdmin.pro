@@ -18,8 +18,8 @@ HEADERS += API.h \
            DeviceModel.h \
            JSonModel.h \
            UI.h \
-    ../ControlServer/UDPMessage.h \
-    ../ControlServer/MessageBroadcaster.h \
+    ../LCSServer/UDPMessage.h \
+    ../LCSServer/MessageBroadcaster.h \
     Entity.h \
     SignalAspectModel.h \
     EntityModel.h \
@@ -32,15 +32,20 @@ HEADERS += API.h \
     TrackSegment.h \
     TrackSingle.h \
     TrackSiding.h \
-    TrackTurnout.h
+    TrackTurnout.h \
+    LabelPainter.h \
+    LabelTurnout.h \
+    LabelInput.h \
+    LabelOutput.h \
+    LabelController.h
 
 SOURCES += main.cpp \
            DeviceModel.cpp \
            API.cpp \
            JSonModel.cpp \
            UI.cpp \
-            ../ControlServer/UDPMessage.cpp \
-            ../ControlServer/MessageBroadcaster.cpp \
+            ../LCSServer/UDPMessage.cpp \
+            ../LCSServer/MessageBroadcaster.cpp \
     Entity.cpp \
     SignalAspectModel.cpp \
     EntityModel.cpp \
@@ -53,7 +58,12 @@ SOURCES += main.cpp \
     TrackSegment.cpp \
     TrackSingle.cpp \
     TrackSiding.cpp \
-    TrackTurnout.cpp
+    TrackTurnout.cpp \
+    LabelPainter.cpp \
+    LabelTurnout.cpp \
+    LabelInput.cpp \
+    LabelOutput.cpp \
+    LabelController.cpp
 
 RESOURCES += qml.qrc
 

@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
     qRegisterMetaType<NetActionType>("NetActionType");
     qRegisterMetaType<QJsonObject>();
 
-    QString name(QObject::tr("ControlServer"));
-    QString description(QObject::tr("GCMRR Layout Control Server"));
+    QString name(QObject::tr("LCSServer"));
+    QString description(QObject::tr("GCMRR Layout Control System (LCS)"));
 
     QString s;
     for(int x = 0; x < argc; x++)
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            qWarning(QObject::tr("Wrong number of parameters!\nUsage: ControlServer.exe [flags] [name description]").toLatin1());
+            qWarning(QObject::tr("Wrong number of parameters!\nUsage: LCSServer.exe [flags] [name description]").toLatin1());
             return 1;
         }
     }

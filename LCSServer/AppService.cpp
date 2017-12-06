@@ -42,7 +42,7 @@ CAppService::CAppService(int argc, char **argv, const QString &name, const QStri
       m_initialized(false), m_shutdownPi(false), m_restartPi(false)
 {
     logMessage("starting");
-    QString m = QString("%1 Server Starting.").arg(name);
+    QString m = QString("%1 Starting.").arg(name);
     qDebug(m.toLatin1());
     setServiceDescription(description);
     setStartupType(QtServiceController::AutoStartup);
