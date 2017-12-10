@@ -59,6 +59,7 @@ public slots:
 
     void restartController(int serialNumber);
     void sendControllerConfig(int serialNumber);
+    void sendControllerNotificationList(int serialNumber);
     void sendDeviceConfig(int deviceID);
 
 protected slots:

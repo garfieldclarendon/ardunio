@@ -100,12 +100,14 @@ void Controller::processMessage(const UDPMessage &message)
 		IPAddress address(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
 		DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s\n", address.toString().c_str());
 		// A 1 in field 4 indicates the server is just coming online
+		DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s  SAVING ADDRESS  FIELD 4 %d\n", address.toString().c_str(), message.getField(4));
 		if (address != NetManager.getServerAddress() || message.getField(4) == 1)
 		{
 			DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s  SAVING ADDRESS\n", address.toString().c_str());
 			NetManager.setServerAddress(address);
 			if (m_serverFoundCallback)
 				m_serverFoundCallback();
+			networkOnline();
 		}
 	}
 }
@@ -164,7 +166,7 @@ void Controller::restart(void)
 
 	NetManager.sendUdpBroadcastMessage(message);
 	delay(250);
-	ESP.restart();
+	ESP.reset();
 }
 
 void Controller::networkOnline(void)

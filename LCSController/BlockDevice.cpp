@@ -104,6 +104,7 @@ void BlockDevice::serverFound(void)
 			setup(getID(), getPort());
 		}
 	}
+	sendStatusMessage();
 }
 
 void BlockDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message)

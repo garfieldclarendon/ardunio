@@ -31,6 +31,7 @@ Rectangle {
     ControllerUnknown,
     ControllerMulti = 7,
     ControllerTurnout = 1,
+    ControllerSemaphore = 5,
     ControllerServer = 10,
     ControllerApp
 */
@@ -38,6 +39,7 @@ Rectangle {
         id: controllerClassModel
         ListElement { text: "Unknown"; classID: 0 }
         ListElement { text: "Turnout"; classID: 1 }
+        ListElement { text: "Semaphore"; classID: 5 }
         ListElement { text: "Multi-Controller"; classID: 7}
     }
     /*
@@ -86,7 +88,7 @@ Rectangle {
         controllerEntity.setValue("controllerName", nameEdit.text);
         controllerEntity.setValue("controllerDescription", descriptionEdit.text);
         controllerEntity.setValue("serialNumber", serialNumberEdit.text);
-        controllerEntity.setValue("controllerClass", classModel.get(classCombo.currentIndex).classID);
+        controllerEntity.setValue("controllerClass", controllerClassModel.get(classCombo.currentIndex).classID);
         moduleModel.save();
         console.debug("saveData!!!!!!!!!!!!!!!!!!!! COMPLETE");
     }
@@ -97,6 +99,8 @@ Rectangle {
             return "Unknown";
         else if(classID === "1")
             return "Turnout";
+        else if(classID === "5")
+            return "Semaphore"
         else if(classID === "7")
             return "Multi-Controller";
         else if(classID === "10")
@@ -209,14 +213,14 @@ Rectangle {
             Layout.fillWidth: true
             currentIndex: getControllerClassRow(controllerEntity.data.controllerClass)
             onActivated: {
-                controllerClass = classModel.get(currentIndex).classID;
+                controllerEntity.data.controllerClass = controllerClassModel.get(currentIndex).classID;
             }
         }
         Button {
-            id: printButton
-            text: "Print"
+            id: sendNotificationButton
+            text: "Reset Not. List"
             onClicked: {
-                ui.printControllerLabel(controllerEntity.data.controllerID);
+                api.sendControllerNotificationList(controllerEntity.data.controllerID);
             }
         }
         // Fifth Row
@@ -231,9 +235,12 @@ Rectangle {
             text: controllerEntity.data.serialNumber
             Layout.fillWidth: true
         }
-        Item {
-            width: 10
-            height: 10
+        Button {
+            id: printButton
+            text: "Print"
+            onClicked: {
+                ui.printControllerLabel(controllerEntity.data.controllerID);
+            }
         }
         Item {
             width: addButton.width
@@ -311,7 +318,7 @@ Rectangle {
                         Layout.fillWidth: true
                         currentIndex: getModuleClassRow(moduleClass)
                         onActivated: {
-                            moduleClass = classModel.get(currentIndex).classID;
+                            moduleClass = moduleClassModel.get(currentIndex).classID;
                         }
                     }
                     Label {

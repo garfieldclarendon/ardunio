@@ -1,5 +1,6 @@
 import QtQuick 2.9
 import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
 import QtQuick.Layouts 1.3
 import Utils 1.0
 import Track 1.0
@@ -14,6 +15,15 @@ Item {
     signal editClicked(int deviceClass, int index, var entity);
     signal addClicked(int deviceClass);
     signal deleteClicked(int index);
+
+    TextMetrics {
+        id: textMetrics
+//        font.family: "Courier New"
+//        font.pixelSize: 25
+//        font.pointSize: ui.baseFontSize
+        font.bold: false
+        text: "CLASS>MULTI-CONTROLLER"
+    }
 
     DeviceModel {
         id: deviceModel
@@ -187,6 +197,7 @@ Item {
             model: deviceModel
             focus: true
             clip: true
+            alternatingRowColors: true
             Layout.columnSpan: 4
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -196,6 +207,11 @@ Item {
             onDoubleClicked: {
                 var ent = deviceModel.getEntity(row);
                 editClicked(deviceModel.data(row, "deviceClass"), row, ent);
+            }
+            rowDelegate: Rectangle{
+                width: parent.width
+                height: textMetrics.height + 10
+                color: styleData.selected ? "#448" : (styleData.alternate? "#eee" : "#fff")
             }
             TableViewColumn {
                 role: "deviceID"
@@ -218,7 +234,9 @@ Item {
                 width: 70
                 delegate:
                     Text {
-                    font.pointSize: ui.baseFontSize
+                        verticalAlignment: Text.AlignVCenter
+                        elide: styleData.elideMode
+                        font: textMetrics.font
                         text: getClassName(styleData.value)
                     }
             }
@@ -243,23 +261,42 @@ Item {
                 width: 75
                 delegate:
                     Text {
-                        font.bold: true
+                        verticalAlignment: Text.AlignVCenter
+                        elide: styleData.elideMode
+                        font: textMetrics.font
                         text: getDeviceState(deviceModel.data(styleData.row, "deviceClass"), styleData.value)
                     }
             }
             TableViewColumn {
                 role: "deviceClass"
                 title: ""
-                width: 50
+                width: 120
                 delegate:
                     Button {
-
                          text: "Activate"
+                         style: ButtonStyle {
+                             label: Text {
+                                 font: textMetrics.font
+                                 verticalAlignment: Text.AlignVCenter
+                                 horizontalAlignment: Text.AlignHCenter
+                                 text: "Activate"
+                             }
+                         }
+
                          enabled: styleData.value === "1" ? true : false
                          onClicked: {
                              api.activateTurnout(deviceModel.data(styleData.row, "deviceID"), 0);
                          }
                     }
+            }
+            itemDelegate: Text {
+                property variant value: styleData.value
+                verticalAlignment: Text.AlignVCenter
+                height: textMetrics.height
+                elide: styleData.elideMode
+                text: styleData.value !== undefined ? styleData.value : ""
+                renderType: Text.NativeRendering
+                font: textMetrics.font
             }
         }
     }

@@ -69,6 +69,7 @@ class QWebSocket;
 class QJsonObject;
 class QTimer;
 
+
 class ControllerManager : public QObject
 {
     Q_OBJECT
@@ -81,7 +82,7 @@ public:
     bool sendMessage(const ControllerMessage &message);
     int getConnectionCount(void) const { return m_socketList.count(); }
     int getConnectionSerialNumber(int index) const;
-    void getConnectedInfo(int serialNumber, int &version, ControllerStatusEnum &status);
+    void getConnectedInfo(int serialNumber, QString &version, ControllerStatusEnum &status);
 
 signals:
     void newMessage(int serialNumber, int address, DeviceClassEnum classCode, NetActionType actionType, const QString &uri, const QJsonObject &json);
@@ -103,6 +104,7 @@ public slots:
     void connectionClosed(void);
     void processTextMessage(QString message);
     void controllerResetting(long serialNumber);
+    unsigned long getSerialNumber(int controllerID);
 
 protected slots:
     void sendMessageSlot(int transactionID, int serialNumber, const QString &data);
@@ -121,6 +123,7 @@ private:
     QWebSocketServer *m_server;
     QTimer *m_pingTimer;
     QList<QWebSocket *> m_socketList;
+    QMap<int, ControllerEntry *> m_controllerMap;
     QMap<int, ControllerMessage> m_messageMap;
 };
 

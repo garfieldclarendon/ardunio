@@ -153,18 +153,7 @@ void WebServerThread::handleDownloadFirmware(QTcpSocket* socket, const QUrl &url
     QDir::setCurrent(path);
     path += "/Builds/";
     QString returnCode("200 OK");
-    if(controllerType == "1")
-        fileName = path + "TurnoutController/TurnoutController.ino.bin";
-    else if(controllerType == "2")
-        fileName = path + "PanelController/PanelController.ino.bin";
-    else if(controllerType == "4")
-        fileName = path + "SignalController/SignalController.ino.bin";
-    else if(controllerType == "5")
-        fileName = path + "SemaphoreController/SemaphoreController.ino.bin";
-    else if(controllerType == "6")
-        fileName = path + "BlockController/BlockController.ino.bin";
-    else if(controllerType == "7")
-        fileName = path + "MultiModuleController/MultiModuleController.ino.bin";
+    fileName = path + "LCSController.ino.bin";
 
     qDebug(fileName.toLatin1());
     // PROCESS //

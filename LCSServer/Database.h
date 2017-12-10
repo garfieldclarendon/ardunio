@@ -6,7 +6,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-const int CurrentDatabaseVersion = 3;
+const int CurrentDatabaseVersion = 4;
 
 class Database : public QObject
 {
@@ -23,6 +23,7 @@ public:
 
     // Table functions
     int getControllerID(long serialNumber);
+    unsigned long getSerialNumber(int controllerID);
     int addController(int controllerClass, const QString &controllerName, const QString &controllerDescription);
     QSqlDatabase getDatabase(void) const { return db; }
     int getNextID(const QString &tableName);
@@ -73,6 +74,7 @@ private:
     bool createPanelRouteTable(void);
 
     void updateDatabaseSchema(int currentVersion);
+    void upgradeToVersion4(void);
 
     static QString fullPathAndFile;
     QSqlDatabase db;

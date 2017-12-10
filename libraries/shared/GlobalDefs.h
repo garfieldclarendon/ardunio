@@ -83,6 +83,7 @@ enum ControllerClassEnum
     ControllerUnknown,
     ControllerMulti = 7,
     ControllerTurnout = 1,
+    ControllerSemaphore = 5,
     ControllerServer = 10,
     ControllerApp
 };

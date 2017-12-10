@@ -67,8 +67,8 @@ bool Database::createDatabase(void)
                                 if(createDevicePropertyTable())
                                     if(createRouteTable())
                                         if(createRouteEntryTable())
-                                            if(createPanelInputEntryTable())
-                                                if(createPanelOutputEntryTable())
+//                                            if(createPanelInputEntryTable())
+//                                                if(createPanelOutputEntryTable())
                                                     if(createsignalAspect())
                                                         if(createSignalConditionTable())
                                                             ret = createPanelRouteTable();
@@ -103,6 +103,29 @@ int Database::getControllerID(long serialNumber)
     }
 
     return controllerID;
+}
+
+unsigned long Database::getSerialNumber(int controllerID)
+{
+    unsigned long serialNumber(-1);
+
+    if(db.isValid() == false)
+        db = QSqlDatabase::database();
+    db.open();
+    QSqlQuery query(db);
+
+    bool ret = query.exec(QString("SELECT serialNumber FROM controller WHERE id = %1").arg(controllerID));
+
+    if(ret == false)
+        qDebug(query.lastError().text().toLatin1());
+
+    while(query.next())
+    {
+       serialNumber = query.value(0).toInt();
+       qDebug(QString("Found serialNumber %1 for ControllerID %2").arg(serialNumber).arg(controllerID).toLatin1());
+    }
+
+    return serialNumber;
 }
 
 int Database::addController(int controllerClass, const QString &controllerName, const QString &controllerDescription)
@@ -844,13 +867,71 @@ bool Database::createDevicePropertyTable()
     return ret;
 }
 
-void Database::updateDatabaseSchema(int /*currentVersion*/)
+void Database::updateDatabaseSchema(int /* currentVersion */)
 {
     // Add db schema changes here from version to versioin
     // If all changes are succesful, call setDBVersion() with the CurrentDatabaseVersion
     // REMEMBER!  currentVersion will = 0 if the database did not exist and was just
     // created....In this instance, the database will have the most recent database
     // schema, so no changes will be needed.
+
     setDBVersion(CurrentDatabaseVersion);
+}
+
+void Database::upgradeToVersion4()
+{
+    QJsonArray array = this->fetchItems("SELECT pinIndex, inputName, inputID, panelModuleID FROM panelInputEntry JOIN controllerModule ON panelInputEntry.panelModuleID = controllerModule.id");
+
+    for(int x = 0; x < array.count(); x++)
+    {
+        QJsonObject obj = array[x].toObject();
+        QString pinIndex = obj["pinIndex"].toString();
+        QString moduleID = obj["panelModuleID"].toString();
+        QString name = obj["inputName"].toString();
+
+        QString sql = QString("INSERT INTO device (deviceClass, port, controllerModuleID, deviceName) VALUES(2, %1, %2, '%3')").arg(pinIndex).arg(moduleID).arg(name);
+        this->executeQuery(sql);
+    }
+    array = this->fetchItems("SELECT device.id AS deviceID, inputID FROM panelInputEntry JOIN device ON panelInputEntry.inputName = device.deviceName AND deviceClass = 2");
+    for(int x = 0; x < array.count(); x++)
+    {
+        QJsonObject obj = array[x].toObject();
+        QString deviceID = obj["deviceID"].toString();
+        QString inputID = obj["inputID"].toString();
+
+        QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ROUTEID', %2)").arg(deviceID).arg(inputID);
+        this->executeQuery(sql);
+    }
+
+
+
+    array = this->fetchItems("SELECT pinIndex, outputName, panelModuleID FROM panelOutputEntry JOIN controllerModule ON panelOutputEntry.panelModuleID = controllerModule.id");
+
+    for(int x = 0; x < array.count(); x++)
+    {
+        QJsonObject obj = array[x].toObject();
+        QString pinIndex = obj["pinIndex"].toString();
+        QString moduleID = obj["panelModuleID"].toString();
+        QString name = obj["outputName"].toString();
+
+        QString sql = QString("INSERT INTO device (deviceClass, port, controllerModuleID, deviceName) VALUES(3, %1, %2, '%3')").arg(pinIndex).arg(moduleID).arg(name);
+        this->executeQuery(sql);
+    }
+    array = this->fetchItems("SELECT device.id AS deviceID, itemID, onValue, flashingValue FROM panelOutputEntry JOIN device ON panelOutputEntry.outputName = device.deviceName AND deviceClass = 3");
+    for(int x = 0; x < array.count(); x++)
+    {
+        QJsonObject obj = array[x].toObject();
+        QString deviceID = obj["deviceID"].toString();
+        QString itemID = obj["itemID"].toString();
+        QString onValue = obj["onValue"].toString();
+        QString flashingValue = obj["flashingValue"].toString();
+
+        QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ITEMID', %2)").arg(deviceID).arg(itemID);
+        this->executeQuery(sql);
+        sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ONVALUE', %2)").arg(deviceID).arg(onValue);
+        this->executeQuery(sql);
+        sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'FLASHINGVALUE', %2)").arg(deviceID).arg(flashingValue);
+        this->executeQuery(sql);
+    }
 }
 

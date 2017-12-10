@@ -146,10 +146,11 @@ bool EntityModel::save()
         }
 
         QList<QJsonObject> objs = m_jsonModel->getDeletedIndexs();
-
         for(int x = 0; x < objs.count(); x++)
         {
-            Entity retEntity = API::instance()->deleteEntity(objs.value(x));
+            Entity entity(objs.value(x));
+            entity.setEntityName(m_entityName);
+            Entity retEntity = API::instance()->deleteEntity(entity);
             if(retEntity.hasError())
                 emit error(rows.value(x), retEntity.errorText());
         }

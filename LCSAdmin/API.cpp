@@ -197,7 +197,7 @@ Entity API::deleteEntity(const Entity &entity)
     QJsonDocument doc;
     doc.setObject(obj);
     QString retJson;
-    QString s("save_entity");
+    QString s(QString("entity/%1").arg(entity.getEntityName()));
     QUrl url(buildUrl(s));
 
     retJson = sendToServer(url, doc.toJson(), NetActionDelete);
@@ -244,6 +244,11 @@ void API::restartController(int serialNumber)
 void API::sendControllerConfig(int serialNumber)
 {
     MessageBroadcaster::instance()->sendResetConfigCommand(serialNumber);
+}
+
+void API::sendControllerNotificationList(int serialNumber)
+{
+    MessageBroadcaster::instance()->sendResetNotificationListCommand(serialNumber);
 }
 
 void API::sendDeviceConfig(int deviceID)

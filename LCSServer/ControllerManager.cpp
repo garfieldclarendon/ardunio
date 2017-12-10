@@ -13,6 +13,39 @@
 #include "NotificationServer.h"
 #include "MessageBroadcaster.h"
 
+class ControllerEntry
+{
+public:
+    ControllerEntry(void) : m_serialNumber(-1), m_controllerID(-1), m_status(ControllerStatusUnknown) { }
+    ControllerEntry(const ControllerEntry &other) { copy(other); }
+
+    int getSerialNumber(void) const { return m_serialNumber; }
+    void setSerialNumber(int value) { m_serialNumber = value; }
+    int getControllerID(void) const { return m_controllerID; }
+    void setControllerID(int value) { m_controllerID = value; }
+    ControllerStatusEnum getStatus(void) const { return m_status; }
+    void setStatus(ControllerStatusEnum value) { m_status = value; }
+    QString getVersion(void) const { return m_version; }
+    void setVersion(int major, int minor, int build)
+    {
+        m_version = QString("%1.%2.%3").arg(major).arg(minor).arg(build);
+    }
+    void operator = (const ControllerEntry &other) { copy(other); }
+
+private:
+    void copy(const ControllerEntry &other)
+    {
+        m_serialNumber = other.m_serialNumber;
+        m_controllerID = other.m_controllerID;
+        m_status = other.m_status;
+    }
+
+    int m_serialNumber;
+    int m_controllerID;
+    ControllerStatusEnum m_status;
+    QString m_version;
+};
+
 ControllerManager * ControllerManager::m_instance = NULL;
 
 ControllerManager::ControllerManager(QObject *parent)
@@ -88,17 +121,28 @@ int ControllerManager::getConnectionSerialNumber(int index) const
     return serialNumber;
 }
 
-void ControllerManager::getConnectedInfo(int serialNumber, int &version, ControllerStatusEnum &status)
+void ControllerManager::getConnectedInfo(int serialNumber, QString &version, ControllerStatusEnum &status)
 {
-    for(int x = 0; x < m_socketList.count(); x++)
+    QList<ControllerEntry *> list = m_controllerMap.values();
+
+    for(int x = 0; x < list.count(); x++)
     {
-        if(m_socketList.value(x)->property("serialNumber").toInt() == serialNumber)
+        if(list.value(x)->getSerialNumber() == serialNumber)
         {
-            version = m_socketList.value(x)->property("version").toInt();
-            status = ControllerStatusOnline;
+            version = list.value(x)->getVersion();
+            status = list.value(x)->getStatus();
             break;
         }
     }
+//    for(int x = 0; x < m_socketList.count(); x++)
+//    {
+//        if(m_socketList.value(x)->property("serialNumber").toInt() == serialNumber)
+//        {
+//            version = m_socketList.value(x)->property("version").toInt();
+//            status = ControllerStatusOnline;
+//            break;
+//        }
+//    }
 }
 
 void ControllerManager::controllerResetting(long serialNumber)
@@ -114,6 +158,21 @@ void ControllerManager::controllerResetting(long serialNumber)
             socket->close();
         }
     }
+    QList<ControllerEntry *> list = m_controllerMap.values();
+    for(int x = 0; x < list.count(); x++)
+    {
+        if(list.value(x)->getSerialNumber() == serialNumber)
+        {
+            list.value(x)->setStatus(ControllerStatusRestarting);
+            createAndSendNotificationMessage(serialNumber, ControllerStatusRestarting);
+        }
+    }
+}
+
+unsigned long ControllerManager::getSerialNumber(int controllerID)
+{
+    Database db;
+    return db.getSerialNumber(controllerID);
 }
 
 void ControllerManager::sendMessageSlot(int transactionID, int serialNumber, const QString &data)
@@ -309,6 +368,28 @@ void ControllerManager::newUDPMessage(const UDPMessage &message)
         int majorVersion = message.getField(5);
         int minorVersion = message.getField(6);
         int build = message.getField(7);
-        emit controllerAdded(controllerID);
+        int serialNumber = this->getSerialNumber(controllerID);
+
+        ControllerEntry *entry = m_controllerMap.value(controllerID);
+        if(entry == NULL)
+           entry = new ControllerEntry;
+        entry->setControllerID(controllerID);
+        entry->setSerialNumber(serialNumber);
+        entry->setStatus(ControllerStatusConected);
+        entry->setVersion(majorVersion, minorVersion, build);
+        m_controllerMap[controllerID] = entry;
+
+        emit controllerAdded(serialNumber);
+        createAndSendNotificationMessage(serialNumber, ControllerStatusConected);
+    }
+    int serialNumber = message.getSerialNumber();
+    QList<ControllerEntry *> list = m_controllerMap.values();
+    for(int x = 0; x < list.count(); x++)
+    {
+        if(list.value(x)->getSerialNumber() == serialNumber)
+        {
+            list.value(x)->setStatus(ControllerStatusRestarting);
+            createAndSendNotificationMessage(serialNumber, ControllerStatusRestarting);
+        }
     }
 }

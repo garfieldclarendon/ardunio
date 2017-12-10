@@ -339,7 +339,7 @@ ApplicationWindow {
 
         model = controllerStackView.currentItem.model;
         var ret;
-        ret = api.saveEntity(entity);
+        ret = api.saveEntity(entity, entity.data.controllerID < 1);
         if(ret.hasError())
         {
             console.debug("ERROR SAVING!!!!!! " + ret.errorText());
@@ -365,7 +365,7 @@ ApplicationWindow {
 
         model = deviceStackView.get(deviceStackView.index, false).model;
         var ret;
-        ret = api.saveEntity(entity);
+        ret = api.saveEntity(entity, entity.data.deviceID < 1);
         if(ret.hasError())
         {
             console.debug("ERROR SAVING!!!!!! " + ret.errorText());

@@ -1,6 +1,7 @@
 import QtQuick 2.9
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.2
+import QtQuick.Dialogs 1.2
 import Utils 1.0
 
 Item {
@@ -78,7 +79,13 @@ Item {
 
                 return classID;
             }
-
+/*
+    ControllerStatusUnknown,
+    ControllerStatusOffline,
+    ControllerStatusOnline,
+    ControllerStatusRestarting,
+    ControllerStatusConected
+  */
             function getControllerState(currentState)
             {
                 if(currentState == "0")
@@ -89,6 +96,8 @@ Item {
                     return "Online";
                 else if(currentState == "3")
                     return "Restarting";
+                else if(currentState == "4")
+                    return "Connected";
                 return "Unknown";
             }
 
@@ -127,7 +136,7 @@ Item {
                     id: statusText
                     text: "<b>Status:</b> " + getControllerState(status)
                     verticalAlignment: Text.AlignVCenter
-                    color: status == "2" ? "blue" : status == "3" ? "yellow" : "red"
+                    color: status == "4" ? "blue" : status == "3" ? "yellow" : "red"
                     Layout.minimumWidth: statusTextMetrics.width
                 }
                 // Line 2
@@ -163,8 +172,7 @@ Item {
                 }
                 Text
                 {
-                    text: "<b>Ping Timeout:</b> " + (pingLength === -1 ? "NA" : pingLength.toString() + " ms")
-                    color: pingLength > 500 ? "red" : "black"
+                    text: "<b>Version:</b> " + version
                 }
             }
         }
@@ -210,7 +218,7 @@ Item {
                 addClicked(listView.model.data(listView.currentIndex, "controllerClass"));
             }
             onDeleteButtonClicked: {
-                deleteClicked(listView.currentIndex);
+                messageDialog.visible = true;
             }
             onUpdateButtonClicked:  {
                 updateClicked(listView.model.data(listView.currentIndex, "controllerClass"), listView.currentIndex);
@@ -228,6 +236,22 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
         }
+    }
+    MessageDialog {
+        id: messageDialog
+        title: "Delete Controller"
+        text: "Are you sure you want to delete the currently selected controller?"
+        standardButtons: StandardButton.Yes | StandardButton.No
+        onYes: {
+            controllerModel.deleteRow(listView.currentIndex);
+            controllerModel.save();
+            visible = false;
+        }
+        onNo: {
+            visible = false;
+        }
+
+        Component.onCompleted: visible = false
     }
 }
 

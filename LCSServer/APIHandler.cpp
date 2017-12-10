@@ -426,7 +426,7 @@ void APIHandler::handleGetControllerList(QTcpSocket *socket, const QUrl & url)
     {
         QJsonObject obj = jsonArray[x].toObject();
         QString serialNumber = obj["serialNumber"].toString();
-        int version = 0;
+        QString version = "0.0.0";
         ControllerStatusEnum status = ControllerStatusUnknown;
         ControllerManager::instance()->getConnectedInfo(serialNumber.toInt(), version, status);
         obj["status"] = status;
