@@ -204,7 +204,7 @@ void MessageBroadcaster::sendMessageSlot()
 
 void MessageBroadcaster::sendHeartbeatSlot(const UDPMessage &message)
 {
-    if(message.getField(5) == 0)
+    if(message.getField(4) == 0)
     {
         static quint8 firstTime = 1;
         UDPMessage outMessage;

@@ -406,7 +406,7 @@ QString API::sendToServer(const QUrl &url, const QString &json, NetActionType ne
     while (true)
     {
         QCoreApplication::processEvents();
-        QThread::currentThread()->msleep(100);
+        QThread::currentThread()->msleep(50);
         if(reply->isFinished() || reply->isRunning() == false)
             break;
     }

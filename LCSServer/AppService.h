@@ -29,6 +29,7 @@ public:
     ~CAppService(void);
 
     void initiateStop(void);
+    void startSimulator(void);
 
 protected slots:
     void timerProc(void);
@@ -48,6 +49,7 @@ private:
     bool m_initialized;
     bool m_shutdownPi;
     bool m_restartPi;
+    bool m_startSimulator;
     QTimer m_shutdownTimer;
     QTimer m_restartTimer;
 #ifdef Q_OS_UNIX

@@ -12,6 +12,7 @@ bool enableDebugMessages = false;
 
 int main(int argc, char *argv[])
 {
+    bool startSimulator = false;
     EntityMetadata::instance();
     qInstallMessageHandler(messageOutput);
     qRegisterMetaType<ControllerStatusEnum>("ControllerStatusEnum");
@@ -30,6 +31,8 @@ int main(int argc, char *argv[])
         QString s = QString(argv[x]);
         if(s == "-d" || s == "-D")
             enableDebugMessages = true;
+        if(s == "-s" || s == "-S")
+            startSimulator = true;
     }
     if(argc > 2 && s != "-c")
     {
@@ -63,6 +66,9 @@ int main(int argc, char *argv[])
     }
 
     CAppService service(argc, argv, name, description);
+
+    if(startSimulator)
+        service.startSimulator();
 
     return service.exec();
 }

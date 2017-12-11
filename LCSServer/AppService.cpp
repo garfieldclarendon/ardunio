@@ -17,6 +17,7 @@
 #include "DeviceManager.h"
 #include "ControllerManager.h"
 #include "NCEInterface.h"
+#include "Simulator.h"
 
 #include "TurnoutHandler.h"
 #include "BlockHandler.h"
@@ -39,7 +40,7 @@ CAppService::CAppService(int argc, char **argv, const QString &name, const QStri
 #else
     : QtService<QCoreApplication>(argc, argv, name),
 #endif
-      m_initialized(false), m_shutdownPi(false), m_restartPi(false)
+      m_initialized(false), m_shutdownPi(false), m_restartPi(false), m_startSimulator(false)
 {
     logMessage("starting");
     QString m = QString("%1 Starting.").arg(name);
@@ -64,6 +65,11 @@ CAppService::~CAppService(void)
 void CAppService::initiateStop()
 {
     QTimer::singleShot(100, this, SLOT(stopTimerProc()));
+}
+
+void CAppService::startSimulator()
+{
+    m_startSimulator = true;
 }
 
 void CAppService::start(void)
@@ -115,6 +121,11 @@ void CAppService::start(void)
         StatusDialog *dlg = new StatusDialog;
         dlg->show();
 #endif
+        if(m_startSimulator)
+        {
+            Simulator *simulator = new Simulator(this);
+            Q_UNUSED(simulator)
+        }
     }
     else
     {
