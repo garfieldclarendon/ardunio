@@ -32,6 +32,16 @@ Item {
                 deviceTypeCombo.currentIndex = 0
         }
     }
+    /*
+        DeviceUnknown,
+        DeviceTurnout,
+        DevicePanelInput,
+        DevicePanelOutput,
+        DeviceSignal = 4,
+        DeviceSemaphore = 5,
+        DeviceBlock = 6,
+        DevicePanel = 7 // For old versions--no longer used
+      */
     function getClassName(classID)
     {
         if(classID === 0)
@@ -39,21 +49,15 @@ Item {
         else if(classID === "1")
             return "Turnout";
         else if(classID === "2")
-            return "Panel";
+            return "Panel Input";
         else if(classID === "3")
-            return "Route";
+            return "Panel Output";
         else if(classID === "4")
             return "Signal";
         else if(classID === "5")
             return "Semaphore";
         else if(classID === "6")
             return "Block";
-        else if(classID === "7")
-            return "Multi-Controller";
-        else if(classID === "8")
-            return "System";
-        else if(classID === "9")
-            return "Application";
 
         return classID;
     }

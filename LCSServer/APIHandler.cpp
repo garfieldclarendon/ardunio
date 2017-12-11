@@ -293,7 +293,8 @@ void APIHandler::handleGetPanelList(QTcpSocket *socket, const QUrl &)
     socket->write(header.toLatin1());
     socket->write(data);
     socket->flush();
-    socket->close();}
+    socket->close();
+}
 
 void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
 {
@@ -381,7 +382,8 @@ void APIHandler::handleGetDeviceList(QTcpSocket *socket, const QUrl &url)
     socket->write(header.toLatin1());
     socket->write(data);
     socket->flush();
-    socket->close();
+    socket->waitForBytesWritten();
+//    socket->close();
 }
 
 void APIHandler::handleGetDevicePropertyList(QTcpSocket *socket, const QUrl &url)
@@ -404,6 +406,7 @@ void APIHandler::handleGetDevicePropertyList(QTcpSocket *socket, const QUrl &url
     socket->write(header.toLatin1());
     socket->write(data);
     socket->flush();
+    socket->waitForBytesWritten();
     socket->close();
 }
 
