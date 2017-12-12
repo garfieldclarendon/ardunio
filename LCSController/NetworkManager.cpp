@@ -33,18 +33,11 @@ void NetworkManager::init(int serverPort, int controllerID)
 	m_controllerID = controllerID;
 
 	WiFi.mode(WIFI_STA);
-	WiFi.setAutoConnect(true);
+	WiFi.setAutoConnect(false);
 	WiFi.setAutoReconnect(true);
-	wl_status_t status = WiFi.status();
-	if (status == WL_CONNECTED)
-	{
-		if (m_wifiConnectCallback)
-			m_wifiConnectCallback(true);
-	}
-	else
-	{
-		processWiFi();
-	}
+
+	processWiFi();
+
 	if (m_udp.begin(UdpPort))
 		DEBUG_PRINT("Now listening on %s, UDP port %d\n", WiFi.localIP().toString().c_str(), UdpPort);
 	else

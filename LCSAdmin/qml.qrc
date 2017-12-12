@@ -23,7 +23,6 @@
         <file>ManageRoutes.qml</file>
         <file>RouteDetails.qml</file>
         <file>NewController.qml</file>
-        <file>TurnoutSegment.qml</file>
         <file>Images/printer.png</file>
         <file>DeviceProperties.qml</file>
     </qresource>
