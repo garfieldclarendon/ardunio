@@ -298,11 +298,15 @@ void loadControllerConfiguration(struct ControllerConfigStruct *config)
 
 	if (json.length() > 0)
 	{
-		if(parseControllerConfig(json, true, config) == false)
+		if (parseControllerConfig(json, true, config) == false)
+		{
+			DEBUG_PRINT("SETTING DOWLOADFLAG TO TRUE\n");
 			downloadConfigFlag = true;
+		}
 	}
 	else
 	{
+		DEBUG_PRINT("SETTING DOWLOADFLAG TO TRUE\n");
 		downloadConfigFlag = true;
 	}
 }
@@ -333,7 +337,7 @@ void loadModuleConfiguration(byte address, struct ModuleConfigStruct *config)
 	}
 	else
 	{
-		downloadConfigFlag = true;
+//		downloadConfigFlag = true;
 	}
 }
 
@@ -510,7 +514,7 @@ bool parseControllerConfig(const String &jsonText, bool checkVersion, Controller
 	DEBUG_PRINT("parseControllerConfig:  Notification List size: %d\n", notifications.size());
 	for (byte x = 0; x < notifications.size(); x++)
 	{
-		int id = notifications[x]["id"];
+		int id = notifications[x]["controllerID"];
 		if (controllerID != id)
 			NetManager.addNotificationController(id);
 	}

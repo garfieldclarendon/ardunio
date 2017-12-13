@@ -168,6 +168,10 @@ void NetworkManager::sendUdpMessage(const UDPMessage &message)
 			if (sendUdpMessage(message, current->address) == false)
 				current->address = IPAddress();
 		}
+		else
+		{
+			DEBUG_PRINT("Missing address for controller: %d\n", current->controllerID);
+		}
 		current = current->next;
 	}
 
@@ -319,6 +323,15 @@ void NetworkManager::getAddress(int controllerID)
 	UDPMessage message;
 	message.setMessageID(SYS_FIND_CONTROLLER);
 	message.setID(controllerID);
+	IPAddress ip;
+	ip = WiFi.localIP();
+	message.setField(0, ip[0]);
+	message.setField(1, ip[1]);
+	message.setField(2, ip[2]);
+	message.setField(3, ip[3]);
+	message.setField(5, MajorVersion);
+	message.setField(6, MinorVersion);
+	message.setField(7, ControllerVersion);
 
 	sendUdpBroadcastMessage(message);
 }

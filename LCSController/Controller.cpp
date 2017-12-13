@@ -36,7 +36,7 @@ void Controller::process(void)
 
 void Controller::processMessage(const UDPMessage &message)
 {
-	DEBUG_PRINT("NEW MESSAGE! MessageID %d\n", message.getMessageID());
+	DEBUG_PRINT("NEW MESSAGE! MessageID %d  ID %d\n", message.getMessageID(), message.getID());
 	if (message.getMessageID() == SYS_REBOOT_CONTROLLER && (message.getID() == 0 || message.getID() == ESP.getChipId()))
 	{
 		DEBUG_PRINT("REBOOT MESSAGE! Controller restarting.\n");
