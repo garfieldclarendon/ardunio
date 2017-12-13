@@ -3,7 +3,7 @@
 
 const unsigned char MajorVersion = 3;
 const unsigned char MinorVersion = 0;
-const unsigned char ControllerVersion = 14;
+const unsigned char ControllerVersion = 15;
 
 #ifdef PROJECT_DEBUG
 #define DEBUG_PRINT(...) Serial.printf( __VA_ARGS__ )
@@ -126,6 +126,7 @@ const unsigned int sendTimeout = 100;
 #define TRN_ACTIVATE_ROUTE 7
 
 //System Messages
+#define SYS_ACK 10
 #define SYS_CONTROLLER_ONLINE 11
 #define SYS_SERVER_HEARTBEAT 12
 #define SYS_RESET_CONFIG 13

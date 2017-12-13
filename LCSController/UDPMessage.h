@@ -24,7 +24,11 @@ class UDPMessage
 		messageStruct.startSig[1] = 0xEF;
 		messageStruct.endSig[0] = 0xEF;
 		messageStruct.endSig[1] = 0xEE;
-		messageStruct.transactionNumber = nextTransactionNumber++;
+		if (nextTransactionNumber < 255)
+			nextTransactionNumber++;
+		else
+			nextTransactionNumber++;
+		messageStruct.transactionNumber = nextTransactionNumber;
 	}
 	UDPMessage(const UDPMessage &other)
 	{
@@ -42,9 +46,19 @@ class UDPMessage
 	byte getMessageID(void) const { return messageStruct.messageID; }
 	long getID(void) const { return messageStruct.id; }
 	byte getTransactionNumber(void) const { return messageStruct.transactionNumber; }
+	void setTransactionNumber(byte value) { messageStruct.transactionNumber = value; }
 	byte getField(byte fieldIndex) const
 	{
 		return messageStruct.payload[fieldIndex];
+	}
+	void copyFrom(const UDPMessage &other)
+	{
+		messageStruct = other.messageStruct;
+		if (nextTransactionNumber < 255)
+			nextTransactionNumber++;
+		else
+			nextTransactionNumber++;
+		messageStruct.transactionNumber = nextTransactionNumber;
 	}
 
 private:

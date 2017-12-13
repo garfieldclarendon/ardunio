@@ -177,14 +177,30 @@ void MessageBroadcaster::processUdpBuffer()
             m_udpBuffer.remove(0, startIndex);
 
             UDPMessage message(datagram);
-            emit newMessage(message);
-            QString str(QString("Message: %1, Controller: %2 Version: %3 byteValue1 %4 byteValue2 %5").arg(datagram.messageID).arg(datagram.serialNumber).arg(datagram.version).arg(datagram.payload[0]).arg(datagram.payload[1]));
-            qDebug(str.toLatin1());
-            emit newRawUDPMessage(str);
-            if(message.getMessageID() == SYS_CONTROLLER_ONLINE && !m_runAsClient)
-                sendHeartbeatSlot(message);
-            else if(message.getMessageID() == SYS_RESTARTING)
-                controllerRestarting(message);
+            if(message.getMessageID() == SYS_ACK)
+            {
+                // ignore the ack for now
+                QString str(QString("GOT ACK MESSAGE FROM %1 FOR: %2").arg(datagram.serialNumber).arg(datagram.transactionNumber));
+                qDebug(str.toLatin1());
+            }
+            else
+            {
+                // socket->peerAddress() does not return anything so we can't send back ACKS
+//                UDPMessage ack;
+//                ack.setMessageID(SYS_ACK);
+//                ack.setTransactionNumber(message.getTransactionNumber());
+//                qDebug(QString("SEND ACK MESSAGE TO %1 Transaction %2").arg(socket->peerAddress().toString()).arg(ack.getTransactionNumber()).toLatin1());
+//                socket->writeDatagram(ack.getMessageRef(), sizeof(MessageStruct), QHostAddress::Broadcast, m_udpPort);
+
+                emit newMessage(message);
+                QString str(QString("Message: %1, Controller: %2 Transaction: %3 byteValue1 %4 byteValue2 %5").arg(datagram.messageID).arg(datagram.serialNumber).arg(datagram.transactionNumber).arg(datagram.payload[0]).arg(datagram.payload[1]));
+                qDebug(str.toLatin1());
+                emit newRawUDPMessage(str);
+                if(message.getMessageID() == SYS_CONTROLLER_ONLINE && !m_runAsClient)
+                    sendHeartbeatSlot(message);
+                else if(message.getMessageID() == SYS_RESTARTING)
+                    controllerRestarting(message);
+            }
 
             signitureFound = false;
         }
@@ -202,25 +218,22 @@ void MessageBroadcaster::sendMessageSlot()
     }
 }
 
-void MessageBroadcaster::sendHeartbeatSlot(const UDPMessage &message)
+void MessageBroadcaster::sendHeartbeatSlot(const UDPMessage &)
 {
-    if(message.getField(4) == 0)
-    {
-        static quint8 firstTime = 1;
-        UDPMessage outMessage;
-        outMessage.setMessageID(SYS_SERVER_HEARTBEAT);
-        QHostAddress address = getLocalAddress();
-        IP4AddressUnion a;
-        a.address32 = address.toIPv4Address();
-        outMessage.setField(0, a.bytes[3]);
-        outMessage.setField(1, a.bytes[2]);
-        outMessage.setField(2, a.bytes[1]);
-        outMessage.setField(3, a.bytes[0]);
-        outMessage.setField(4, firstTime);
-        firstTime = 0;
+    static quint8 firstTime = 1;
+    UDPMessage outMessage;
+    outMessage.setMessageID(SYS_SERVER_HEARTBEAT);
+    QHostAddress address = getLocalAddress();
+    IP4AddressUnion a;
+    a.address32 = address.toIPv4Address();
+    outMessage.setField(0, a.bytes[3]);
+    outMessage.setField(1, a.bytes[2]);
+    outMessage.setField(2, a.bytes[1]);
+    outMessage.setField(3, a.bytes[0]);
+    outMessage.setField(4, firstTime);
+    firstTime = 0;
 
-        sendUDPMessage(outMessage);
-    }
+    sendUDPMessage(outMessage);
 }
 
 void MessageBroadcaster::sendResetNotificationListCommand(int serialNumber)

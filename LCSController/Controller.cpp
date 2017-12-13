@@ -78,36 +78,22 @@ void Controller::processMessage(const UDPMessage &message)
 	else if (message.getMessageID() == SYS_FIND_CONTROLLER && message.getID() == m_controllerID)
 	{
 		DEBUG_PRINT("FIND CONTROLLER MESSAGE.  LOOKING FOR ME!\n");
-		IPAddress ip;
-		ip = WiFi.localIP();
-		UDPMessage out;
-		out.setMessageID(SYS_CONTROLLER_ONLINE);
-		out.setID(m_controllerID);
-		out.setField(0, ip[0]);
-		out.setField(1, ip[1]);
-		out.setField(2, ip[2]);
-		out.setField(3, ip[3]);
-		out.setField(5, MajorVersion);
-		out.setField(6, MinorVersion);
-		out.setField(7, ControllerVersion);
-
 		IPAddress to(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
-		NetManager.sendUdpMessage(out, to);
+		sendControllerOnlineMessage(to);
 	}
 	else if (message.getMessageID() == SYS_SERVER_HEARTBEAT)
 	{
 		m_serverFound = true;
 		IPAddress address(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
-		DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s\n", address.toString().c_str());
+//		DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s\n", address.toString().c_str());
 		// A 1 in field 4 indicates the server is just coming online
-		DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s  SAVING ADDRESS  FIELD 4 %d\n", address.toString().c_str(), message.getField(4));
 		if (address != NetManager.getServerAddress() || message.getField(4) == 1)
 		{
 			DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s  SAVING ADDRESS\n", address.toString().c_str());
 			NetManager.setServerAddress(address);
 			if (m_serverFoundCallback)
 				m_serverFoundCallback();
-			networkOnline();
+			sendControllerOnlineMessage(address);
 		}
 	}
 }
@@ -173,7 +159,12 @@ void Controller::networkOnline(void)
 {
 	m_serverFound = false;
 	DEBUG_PRINT("networkOnline\n");
+	IPAddress address;
+	sendControllerOnlineMessage(address);
+}
 
+void Controller::sendControllerOnlineMessage(IPAddress &address)
+{
 	IPAddress ip;
 	ip = WiFi.localIP();
 	UDPMessage message;
@@ -187,7 +178,10 @@ void Controller::networkOnline(void)
 	message.setField(6, MinorVersion);
 	message.setField(7, ControllerVersion);
 
-	NetManager.sendUdpBroadcastMessage(message);
+	if (address == (uint32_t)0)
+		NetManager.sendUdpBroadcastMessage(message);
+	else
+		NetManager.sendUdpMessage(message, address);
 }
 
 void Controller::networkOffline(void)

@@ -18,6 +18,15 @@ struct NotificationStruct
 };
 typedef struct NotificationStruct NotificationStruct;
 
+struct MessageQueueStruct
+{
+	UDPMessage message;
+	byte count;
+	IPAddress address;
+	MessageQueueStruct *next;
+};
+typedef struct MessageQueueStruct MessageQueueStruct;
+
 class NetworkManager
 {
 public:
@@ -38,8 +47,8 @@ public:
 	bool getWiFiConnected(void) const;
 
 	void sendUdpBroadcastMessage(const UDPMessage &message);
-	void sendUdpMessage(const UDPMessage &message);
-	bool sendUdpMessage(const UDPMessage &message, IPAddress &address);
+	void sendUdpMessage(const UDPMessage &message, bool addToQueue = true);
+	bool sendUdpMessage(const UDPMessage &message, IPAddress &address, bool addToQueue);
 	String getControllerConfig(unsigned int serialNumber);
 	String getModuleConfig(unsigned int serialNumber, byte address);
 	String getDeviceConfig(int deviceID);
@@ -60,8 +69,11 @@ private:
 	bool processWiFi(void);
 	void processUDP(void);
 	void checkNotificationList(void);
+	void checkMessageQueue(void);
 	String httpGet(const String &url);
 	void getAddress(int controllerID);
+	void addMessageToQueue(const UDPMessage &message, const IPAddress &address);
+	void handleAckMessage(const UDPMessage &message);
 
 	WiFiUDP m_udp;
 
@@ -73,6 +85,7 @@ private:
 	unsigned long m_lastCheckTimeout;
 	NotificationStruct *m_firstNotification;
 	NotificationStruct *m_currentStruct;
+	MessageQueueStruct *m_firstMessageQueue;
 
 	//Callbacks
 	TUDPMessageCallback m_udpMessageCallback;

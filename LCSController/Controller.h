@@ -34,6 +34,7 @@ private:
 	void downloadFirmwareUpdate(void);
 	void getServerAddress(IPAddress &address, int &port);
 	void resetConfiguration(void);
+	void sendControllerOnlineMessage(IPAddress &address);
 
 	ControllerClassEnum m_class;
 	TServerFoundCallback m_serverFoundCallback;

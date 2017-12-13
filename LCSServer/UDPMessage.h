@@ -11,7 +11,7 @@ struct MessageStruct
     quint8 startSig[2];
     quint8 messageID;
     long serialNumber;
-    quint8 version;
+    quint8 transactionNumber;
     quint8 payload[14];
     quint8 endSig[2];
 };
@@ -24,12 +24,12 @@ public:
 
     long getSerialNumber(void) const { return messageSructure.serialNumber; }
     quint8 getMessageID(void) const { return messageSructure.messageID; }
-    quint8 getVersion(void) const { return messageSructure.version; }
+    quint8 getTransactionNumber(void) const { return messageSructure.transactionNumber; }
 
     void setSerialNumber(int value) { messageSructure.serialNumber = value; }
     void setMessageID(quint8 value) { messageSructure.messageID = value; }
-    void setVersion(quint8 value) { messageSructure.version = value; }
     void setField(quint8 field, quint8 value) { messageSructure.payload[field] = value; }
+    void setTransactionNumber(quint8 value) { messageSructure.transactionNumber = value; }
 
     quint8 getField(int field) const { return messageSructure.payload[field]; }
 

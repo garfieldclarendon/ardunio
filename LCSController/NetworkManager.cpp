@@ -11,6 +11,8 @@ NetworkManager::NetworkManager(void)
 	: m_serverPort(-1), m_controllerID(0), m_serverAddress(0, 0, 0, 0), m_lastCheckTimeout(0), m_firstNotification(NULL), m_currentStruct(NULL)
 {
 	m_this = this;
+	m_firstMessageQueue = new MessageQueueStruct;
+	memset(m_firstMessageQueue, 0, sizeof(MessageQueueStruct));
 }
 
 NetworkManager::~NetworkManager(void)
@@ -49,6 +51,7 @@ bool NetworkManager::process(void)
 	bool ret = processWiFi();
 	processUDP();
 	checkNotificationList();
+	checkMessageQueue();
 	return ret;
 }
 
@@ -144,9 +147,24 @@ void NetworkManager::processUDP(void)
 				break;
 			}
 		}
+		if (message.getMessageID() == SYS_ACK)
+		{
+			handleAckMessage(message);
+		}
+		else
+		{
+			DEBUG_PRINT("INDEX 0 IS: %d\n", m_udp.destinationIP()[0]);
+			if (m_udp.destinationIP()[0] != 255) // Don't send ACK for broadcast messages
+			{
+				UDPMessage ack;
+				ack.setMessageID(SYS_ACK);
+				ack.setTransactionNumber(message.getTransactionNumber());
+				sendUdpMessage(ack, m_udp.destinationIP());
+			}
 
-		if (m_udpMessageCallback)
-			m_udpMessageCallback(message);
+			if (m_udpMessageCallback)
+				m_udpMessageCallback(message);
+		}
 	}
 }
 
@@ -154,18 +172,19 @@ void NetworkManager::sendUdpBroadcastMessage(const UDPMessage &message)
 {
 	IPAddress broadcastIp;
 	broadcastIp = ~WiFi.subnetMask() | WiFi.gatewayIP();
-	sendUdpMessage(message, broadcastIp);
+	sendUdpMessage(message, broadcastIp, false);
 }
 
-void NetworkManager::sendUdpMessage(const UDPMessage &message)
+void NetworkManager::sendUdpMessage(const UDPMessage &message, bool addToQueue)
 {
+//	DEBUG_PRINT("SENDUDPMESSAGE: MessageID: %d  Transaction: %d\n",message.getMessageID(), message.getTransactionNumber());
 	NotificationStruct *current = m_firstNotification;
 
 	while (current)
 	{
-		if (current->address[0] != 0)
+		if (current->address != (uint32_t)0)
 		{
-			if (sendUdpMessage(message, current->address) == false)
+			if (sendUdpMessage(message, current->address, addToQueue) == false)
 				current->address = IPAddress();
 		}
 		else
@@ -175,9 +194,9 @@ void NetworkManager::sendUdpMessage(const UDPMessage &message)
 		current = current->next;
 	}
 
-	if (m_serverAddress[0] != 0)
+	if (m_serverAddress != (uint32_t)0)
 	{
-		sendUdpMessage(message, m_serverAddress);
+		sendUdpMessage(message, m_serverAddress, false);
 	}
 
 	// Give other modules connected to this controller a chance to process the message too
@@ -185,22 +204,35 @@ void NetworkManager::sendUdpMessage(const UDPMessage &message)
 		m_udpMessageCallback(message);
 }
 
-bool NetworkManager::sendUdpMessage(const UDPMessage &message, IPAddress &address)
+bool NetworkManager::sendUdpMessage(const UDPMessage &message, IPAddress &address, bool addToQueue)
 {
+//	DEBUG_PRINT("SENDUDPMESSAGE WITH ADDRESS: %s  Transaction: %d\n", address.toString().c_str(), message.getTransactionNumber());
+	UDPMessage newMessage;
+	if (addToQueue)
+	{
+		newMessage.copyFrom(message);
+		addMessageToQueue(newMessage, address);
+	}
+	else
+	{
+		newMessage = message;
+	}
+//	DEBUG_PRINT("SENDUDPMESSAGE WITH ADDRESS: %s  NEW Transaction: %d\n", address.toString().c_str(), newMessage.getTransactionNumber());
+
 	bool ret = false;
 	DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 	DEBUG_PRINT("MessageSize: %d  MessageID: %d ID: %d TO %s\n", sizeof(UDPMessageStruct), message.getMessageID(), message.getID(), address.toString().c_str());
 
 	if (m_udp.beginPacket(address, UdpPort) == 0)
 	{
-		DEBUG_PRINT("sendUdpBroadcastMessage beginPacket failed!!!\n");
+		DEBUG_PRINT("sendUdpMessage beginPacket failed!!!\n");
 	}
 	else
 	{
-		m_udp.write(message.getRef(), sizeof(UDPMessageStruct));
+		m_udp.write(newMessage.getRef(), sizeof(UDPMessageStruct));
 		if (m_udp.endPacket() == 0)
 		{
-			DEBUG_PRINT("sendUdpBroadcastMessage beginPacket failed!!!\n");
+			DEBUG_PRINT("sendUdpMessage beginPacket failed!!!\n");
 		}
 		else
 		{
@@ -345,11 +377,11 @@ void NetworkManager::checkNotificationList(void)
 		unsigned long t = millis();
 		if (t - m_lastCheckTimeout > 15000)
 		{
-			if (m_currentStruct->address[0] == 0)
+			if (m_currentStruct->address == (uint32_t)0)
 			{
 				getAddress(m_currentStruct->controllerID);
-				m_currentStruct = m_currentStruct->next;
 			}
+			m_currentStruct = m_currentStruct->next;
 			m_lastCheckTimeout = t;
 		}
 	}
@@ -406,6 +438,124 @@ void NetworkManager::setNotificationList(const String &jsonText)
 
 	if (m_notificationListChangedCallback)
 		m_notificationListChangedCallback(json);
+}
+
+void NetworkManager::addMessageToQueue(const UDPMessage &message, const IPAddress &address)
+{
+	DEBUG_PRINT("addMessageToQueue: %d\n", message.getTransactionNumber());
+	byte count = 0;
+	MessageQueueStruct *current = m_firstMessageQueue;
+	bool done = false;
+
+	// first, see if this is an updated version of a message already in the queue.  If so, replace that message and return
+	while (current)
+	{
+		if (current->message.getMessageID() == message.getMessageID() && current->message.getID() == message.getID() && current->address == address)
+		{
+			DEBUG_PRINT("addMessageToQueue: REPLACING %d with %d\n", message.getTransactionNumber(), message.getTransactionNumber());
+			current->message = message;
+			current->count = 0;
+			return;
+		}
+		current = current->next;
+	}
+	current = m_firstMessageQueue;
+	while (current)
+	{
+		if (current->message.getMessageID() == 0)
+		{
+			current->count = 0;
+			current->message = message;
+			current->address = address;
+			current = NULL;
+			done = true;
+		}
+		else
+		{
+			count++;
+			if (current->next)
+				current = current->next;
+			else
+				break;
+		}
+	}
+	
+	if (done == false)
+	{
+		if (count < 32)
+		{
+			MessageQueueStruct *hold = current;
+			current = new MessageQueueStruct;
+			hold->next = current;
+		}
+		else
+		{
+			current = m_firstMessageQueue; //OVERFLOW!  Overwrite the oldest (first)
+		}
+
+		memset(current, 0, sizeof(MessageQueueStruct));
+		current->message = message;
+		current->address = address;
+	}
+}
+
+void NetworkManager::handleAckMessage(const UDPMessage &message)
+{
+//	DEBUG_PRINT("handleAckMessage: %d  Transaction %d\n", message.getMessageID(), message.getTransactionNumber());
+	MessageQueueStruct *current = m_firstMessageQueue;
+
+	while (current)
+	{
+		if (current->message.getTransactionNumber() == message.getTransactionNumber())
+		{
+			DEBUG_PRINT("FOUND ENTRY: %d\n", current->message.getTransactionNumber());
+			UDPMessage message;
+			current->message = message;
+			current->count = 0;
+			current = NULL;
+		}
+		else
+		{
+			current = current->next;
+		}
+	}
+}
+
+void NetworkManager::checkMessageQueue(void)
+{
+	static unsigned long timeout = 0;
+
+	unsigned long t = millis();
+	if (t - timeout > 1000)
+	{
+		timeout = t;
+		MessageQueueStruct *current = m_firstMessageQueue;
+
+		while (current)
+		{
+			current->count++;
+			if (current->message.getMessageID() > 0 && current->count > 2 && current->count < 6)
+			{
+				DEBUG_PRINT("MESSAGE RETRY: %d\n", current->message.getTransactionNumber());
+				sendUdpMessage(current->message, current->address, false);
+			}
+			else
+			{
+				if (current->message.getMessageID() > 0)
+				{
+					if (current->count >= 6) // give up
+					{
+						DEBUG_PRINT("GIVING UP ON MESSAGE RETRY: %d\n", current->message.getTransactionNumber());
+						UDPMessage message;
+						current->message = message;
+						current->address = (uint32_t)0;
+						current->count = 0;
+					}
+				}
+			}
+			current = current->next;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------------------------------------------------------//

@@ -409,7 +409,7 @@ void createModules(struct ControllerConfigStruct *controllerConfig)
 	for (byte x = 0; x < moduleCount; x++)
 	{
 		Module *module = NULL;
-		loadModuleConfiguration(x, &controllerConfig->modules[x]);
+		loadModuleConfiguration(controllerConfig->modules[x].address, &controllerConfig->modules[x]);
 		switch (controllerConfig->modules[x].moduleClass)
 		{
 			case ModuleSemaphore:
