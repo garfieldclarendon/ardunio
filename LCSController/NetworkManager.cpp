@@ -159,7 +159,8 @@ void NetworkManager::processUDP(void)
 				UDPMessage ack;
 				ack.setMessageID(SYS_ACK);
 				ack.setTransactionNumber(message.getTransactionNumber());
-				sendUdpMessage(ack, m_udp.destinationIP());
+				IPAddress a = m_udp.remoteIP();
+				sendUdpMessage(ack, a, false);
 			}
 
 			if (m_udpMessageCallback)
@@ -281,6 +282,8 @@ String NetworkManager::httpGet(const String &url)
 {
 	HTTPClient http;
 
+	m_udp.stop();
+	http.setReuse(false);
 	// Build the full url including the port number
 	String fullUrl("http://");
 	fullUrl += getServerAddress().toString();
@@ -293,14 +296,15 @@ String NetworkManager::httpGet(const String &url)
 
 	// start connection and send HTTP header
 	int httpCode = http.GET();
+	DEBUG_PRINT("[HTTP] GET... code: %d\n", httpCode);
 	String payload;
 	// httpCode will be negative on error
 	if (httpCode > 0) {
-		// HTTP header has been send and Server response header has been handled
-		DEBUG_PRINT("[HTTP] GET... code: %d\n", httpCode);
+		// HTTP header has been sent and Server response header has been handled
 
 		// file found at server
-		if (httpCode == HTTP_CODE_OK) {
+		if (httpCode == HTTP_CODE_OK) 
+		{
 			payload = http.getString();
 			DEBUG_PRINT("%s\n", payload.c_str());
 		}
@@ -311,6 +315,8 @@ String NetworkManager::httpGet(const String &url)
 	}
 
 	http.end();
+	yield();
+	m_udp.begin(UdpPort);
 	return payload;
 }
 
@@ -536,7 +542,7 @@ void NetworkManager::checkMessageQueue(void)
 			current->count++;
 			if (current->message.getMessageID() > 0 && current->count > 2 && current->count < 6)
 			{
-				DEBUG_PRINT("MESSAGE RETRY: %d\n", current->message.getTransactionNumber());
+				DEBUG_PRINT("MESSAGE RETRY: %d  MessageID %d\n", current->message.getTransactionNumber(), current->message.getMessageID());
 				sendUdpMessage(current->message, current->address, false);
 			}
 			else
