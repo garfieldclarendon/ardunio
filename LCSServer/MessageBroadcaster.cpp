@@ -72,19 +72,19 @@ QHostAddress MessageBroadcaster::getLocalAddress() const
 
 void MessageBroadcaster::sendUDPMessage(const UDPMessage &message)
 {
-    if(QDateTime::currentDateTime().toMSecsSinceEpoch() - lastMessageSentTime > sendTimeout)
-    {
-        lastMessageSentTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
+//    if(QDateTime::currentDateTime().toMSecsSinceEpoch() - lastMessageSentTime > sendTimeout)
+//    {
+//        lastMessageSentTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
         int sent = socket->writeDatagram(message.getMessageRef(), sizeof(MessageStruct),
                                  QHostAddress::Broadcast, m_udpPort);
         qDebug(QString("sendUDPMessage: Message Sent, size: %1").arg(sent).toLatin1());
-    }
-    else
-    {
-        qDebug(QString("sendUDPMessage: Buffering messages.  Adding message to send queue").toLatin1());
-        sendList << message;
-        QTimer::singleShot(sendTimeout, this, SLOT(sendMessageSlot()));
-    }
+//    }
+//    else
+//    {
+//        qDebug(QString("sendUDPMessage: Buffering messages.  Adding message to send queue").toLatin1());
+//        sendList << message;
+//        QTimer::singleShot(sendTimeout, this, SLOT(sendMessageSlot()));
+//    }
 }
 
 bool MessageBroadcaster::sendUDPMessage(const UDPMessage &message, const QString &address)
