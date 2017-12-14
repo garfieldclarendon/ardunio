@@ -220,7 +220,9 @@ void WebServerThread::handleSocket(QTcpSocket *socket, const QString &path, cons
             QString header = WebServer::createHeader("200 OK", returnPayload.length());
             pSocket->write(header.toLatin1());
             if(returnPayload.length() > 0)
+            {
                 pSocket->write(returnPayload.toLatin1());
+            }
         }
     }
     else
@@ -233,6 +235,7 @@ void WebServerThread::handleSocket(QTcpSocket *socket, const QString &path, cons
     }
     if(pSocket)
     {
+        pSocket->waitForBytesWritten();
         pSocket->flush();
         pSocket->close();
     }
