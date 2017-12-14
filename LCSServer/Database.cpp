@@ -327,20 +327,20 @@ QJsonArray Database::getNotificationList(quint32 serialNumber)
     QList<int> ids;
     int controllerID = getControllerID(serialNumber);
     ids << controllerID;
-    QJsonArray array1 = fetchItems(QString("SELECT DISTINCT controllerID as id FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id WHERE device.ID IN (SELECT deviceID FROM deviceProperty JOIN device ON deviceProperty.value = device.id JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE key = 'ITEMID' AND serialNumber = %1)").arg(serialNumber));
+    QJsonArray array1 = fetchItems(QString("SELECT DISTINCT controllerID FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id WHERE device.ID IN (SELECT deviceID FROM deviceProperty JOIN device ON deviceProperty.value = device.id JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE key = 'ITEMID' AND serialNumber = %1)").arg(serialNumber));
     for(int x = array1.size() - 1; x >= 0; x--)
     {
-        int id = array1[x].toObject()["id"].toVariant().toInt();
+        int id = array1[x].toObject()["controllerID"].toVariant().toInt();
         if(ids.contains(id) == false)
             ids << id;
         else
             array1.removeAt(x);
     }
-    QJsonArray array2 = fetchItems(QString("SELECT DISTINCT controllerID as id FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id WHERE controllerModule.controllerID IN (SELECT pc.controllerID FROM controllerModule AS pc JOIN device on pc.id = device.controllerModuleID JOIN signalAspect on device.id = signalAspect.deviceID JOIN signalCondition ON signalAspect.id = signalCondition.signalAspectID WHERE signalCondition.deviceID IN (SELECT device.id FROM controller JOIN controllerModule ON controller.id = controllerModule.controllerID JOIN device ON device.controllerModuleID = controllerModule.id WHERE serialNumber = %1))").arg(serialNumber));
+    QJsonArray array2 = fetchItems(QString("SELECT DISTINCT controllerID FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id WHERE controllerModule.controllerID IN (SELECT pc.controllerID FROM controllerModule AS pc JOIN device on pc.id = device.controllerModuleID JOIN signalAspect on device.id = signalAspect.deviceID JOIN signalCondition ON signalAspect.id = signalCondition.signalAspectID WHERE signalCondition.deviceID IN (SELECT device.id FROM controller JOIN controllerModule ON controller.id = controllerModule.controllerID JOIN device ON device.controllerModuleID = controllerModule.id WHERE serialNumber = %1))").arg(serialNumber));
     for(int x = array2.size() - 1; x >= 0; x--)
     {
         QJsonObject o = array2[x].toObject();
-        if(ids.contains(o["id"].toVariant().toInt()) == false)
+        if(ids.contains(o["controllerID"].toVariant().toInt()) == false)
         {
             array1 += array2[x];
             ids += array2[x].toVariant().toInt();
@@ -354,7 +354,7 @@ QJsonArray Database::getNotificationList(quint32 serialNumber)
     for(int x = array3.size() - 1; x >= 0; x--)
     {
         QJsonObject o = array3[x].toObject();
-        if(ids.contains(o["id"].toVariant().toInt()) == false)
+        if(ids.contains(o["controllerID"].toVariant().toInt()) == false)
         {
             array1 += array3[x];
         }

@@ -241,6 +241,7 @@ bool NetworkManager::sendUdpMessage(const UDPMessage &message, IPAddress &addres
 		}
 	}
 	DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	yield();
 	return ret;
 }
 
@@ -540,7 +541,7 @@ void NetworkManager::checkMessageQueue(void)
 		while (current)
 		{
 			current->count++;
-			if (current->message.getMessageID() > 0 && current->count > 2 && current->count < 6)
+			if (current->message.getMessageID() > 0 && current->count >= 2 && current->count < 6)
 			{
 				DEBUG_PRINT("MESSAGE RETRY: %d  MessageID %d\n", current->message.getTransactionNumber(), current->message.getMessageID());
 				sendUdpMessage(current->message, current->address, false);

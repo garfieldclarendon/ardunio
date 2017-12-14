@@ -15,13 +15,11 @@ public:
 	Controller(int localServerPort);
 	~Controller();
 
-	void setup(ControllerClassEnum controllerClass);
+	void setup(ControllerClassEnum controllerClass, int controllerID);
 
 	void setServerFoundCallback(TServerFoundCallback value) { m_serverFoundCallback = value; }
 	void setSendStatusCallback(TSendStatusCallback value) { m_sendStatusCallback = value;  }
 	ControllerClassEnum getClass(void) const { return m_class; }
-	void setClass(ControllerClassEnum value) { m_class = value; }
-	void setControllerID(int value) { m_controllerID = value; }
 
 	void process(void);
 	void processMessage(const UDPMessage &message);
@@ -37,9 +35,9 @@ private:
 	void sendControllerOnlineMessage(IPAddress &address);
 
 	ControllerClassEnum m_class;
+	int m_controllerID;
+
 	TServerFoundCallback m_serverFoundCallback;
 	TSendStatusCallback m_sendStatusCallback;
-	bool m_serverFound;
-	int m_controllerID;
 };
 

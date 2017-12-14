@@ -11,7 +11,7 @@
 #define blinkingTimeout 200
 
 Controller::Controller(int localServerPort)
-	: m_class(ControllerUnknown), m_serverFound(false), m_controllerID(-1)
+	: m_class(ControllerUnknown), m_controllerID(-1)
 {
 }
 
@@ -21,12 +21,14 @@ Controller::~Controller()
 
 // Be sure Controller::loadConfig() is called first!
 // DO NOT call loadConfig from this function!!
-void Controller::setup(ControllerClassEnum controllerClass)
+void Controller::setup(ControllerClassEnum controllerClass, int controllerID)
 {
 	m_class = controllerClass;
+	m_controllerID = controllerID;
 
 	DEBUG_PRINT("------------------------\n");
-	DEBUG_PRINT(" Serial #: %d\r\n", ESP.getChipId());
+	DEBUG_PRINT(" Serial #:     %d\r\n", ESP.getChipId());
+	DEBUG_PRINT(" ControllerID: %d\r\n", m_controllerID);
 	DEBUG_PRINT("------------------------\n");
 }
 
@@ -61,7 +63,6 @@ void Controller::processMessage(const UDPMessage &message)
 	else if (message.getMessageID() == SYS_SERVER_SHUTDOWN)
 	{
 		DEBUG_PRINT("SERVER SHUTDOWN MESSAGE!\n");
-		m_serverFound = false;
 		IPAddress address;
 		NetManager.setServerAddress(address);
 	}
@@ -85,7 +86,6 @@ void Controller::processMessage(const UDPMessage &message)
 	}
 	else if (message.getMessageID() == SYS_SERVER_HEARTBEAT)
 	{
-		m_serverFound = true;
 		IPAddress address(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
 //		DEBUG_PRINT("SYS_SERVER_HEARTBEAT: %s\n", address.toString().c_str());
 		// A 1 in field 4 indicates the server is just coming online
@@ -159,7 +159,6 @@ void Controller::restart(void)
 
 void Controller::networkOnline(void)
 {
-	m_serverFound = false;
 	DEBUG_PRINT("networkOnline\n");
 	IPAddress address;
 	sendControllerOnlineMessage(address);
@@ -188,5 +187,4 @@ void Controller::sendControllerOnlineMessage(IPAddress &address)
 
 void Controller::networkOffline(void)
 {
-	m_serverFound = false;
 }

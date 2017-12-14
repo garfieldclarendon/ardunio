@@ -37,10 +37,6 @@ void TurnoutModule::setupNoWire(void)
 	pinMap[motorBPin1] = motor1_pinB;
 	pinMap[motorAPin2] = motor2_pinA;
 	pinMap[motorBPin2] = motor2_pinB;
-//	pinMap[feedbackAPin1] = normal2_pin;
-//	pinMap[feedbackBPin1] = diverge2_pin;
-//	pinMap[feedbackAPin2] = normal1_pin;
-//	pinMap[feedbackBPin2] = diverge1_pin;
 
 	pinMap[feedbackAPin1] = normal1_pin;
 	pinMap[feedbackBPin1] = diverge1_pin;
