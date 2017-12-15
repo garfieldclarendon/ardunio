@@ -48,8 +48,11 @@ public:
 	PinStateEnum getGreenMode(void) const { return m_greenMode; }
 	PinStateEnum getYellowMode(void) const { return m_yellowMode; }
 
-private:
+protected:
 	bool parseConfig(String &jsonText, bool setVersion);
+	bool m_downloadConfig;
+
+private:
 	void setPin(byte &data, byte pin, PinStateEnum state);
 	void updateValues(void);
 	byte getCurrentState(int deviceID) const;
@@ -62,7 +65,6 @@ private:
 	PinStateEnum m_greenMode;
 	PinStateEnum m_yellowMode;
 
-	bool m_downloadConfig;
 	bool m_updateValues;
 	bool m_lockout;
 	unsigned long m_currentBlinkTimeout;

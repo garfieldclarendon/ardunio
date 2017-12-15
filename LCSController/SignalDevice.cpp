@@ -24,8 +24,10 @@ void SignalDevice::process(ModuleData &moduleData)
 	dataA = moduleData.getByteA();
 	dataB = moduleData.getByteB();
 
-	if (m_lockout == false &&  m_updateValues)
+	if (/* m_lockout == false && */ m_updateValues)
+	{
 		updateValues();
+	}
 
 	// Set RED pin
 	if (getPort() < 8)
@@ -129,6 +131,7 @@ void SignalDevice::updateValues(void)
 				}
 				else
 				{
+					valid = false;
 					setInvalidAspect();
 					done = true;
 				}

@@ -3,7 +3,7 @@
 
 const unsigned char MajorVersion = 3;
 const unsigned char MinorVersion = 0;
-const unsigned char ControllerVersion = 15;
+const unsigned char ControllerVersion = 16;
 
 #ifdef PROJECT_DEBUG
 #define DEBUG_PRINT(...) Serial.printf( __VA_ARGS__ )

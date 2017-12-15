@@ -11,10 +11,9 @@ public:
 	void setup(int deviceID, byte port) override;
 
 private:
-	bool parseConfig(String &jsonText, bool setVersion);
+//	bool parseConfig(String &jsonText, bool setVersion);
 	byte m_motorA;
 	byte m_motorB;
-	bool m_downloadConfig;
 	byte m_motorBA;
 };
 

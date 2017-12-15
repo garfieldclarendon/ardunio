@@ -34,6 +34,7 @@ void BlockDevice::process(ModuleData &moduleData)
 
 void BlockDevice::setup(int deviceID, byte port)
 {
+	DEBUG_PRINT("BlockDevice::setup: deviceID: %d  Port: %d", deviceID, port);
 	setID(deviceID);
 	setPort(port);
 
@@ -47,20 +48,27 @@ void BlockDevice::setup(int deviceID, byte port)
 
 void BlockDevice::processPin(byte pin, byte value)
 {
+	DEBUG_PRINT("PROCESS: pin: %d  DATA: %d\n", pin, value);
 	if (pin == getPort())
 	{
+		DEBUG_PRINT(" MY PORT!  PROCESS: pin: %d  DATA: %d\n", pin, value);
+		BlockState newState;
 		if (value == PinOff)
-			m_currentState = BlockOccupied;
+			newState = BlockOccupied;
 		else
-			m_currentState = BlockClear;
-		sendStatusMessage();
+			newState = BlockClear;
+		if (m_currentState == newState)
+		{
+			m_currentState = newState;
+			sendStatusMessage();
+		}
 	}
 }
 
 
 bool BlockDevice::parseConfig(String &jsonText, bool setVersion)
 {
-	DEBUG_PRINT("PanelInputDevice::parseConfig\n");
+	DEBUG_PRINT("BlockDevice::parseConfig\n");
 	StaticJsonBuffer<1024> jsonBuffer;
 	JsonObject &json = jsonBuffer.parseObject(jsonText);
 
@@ -84,6 +92,8 @@ bool BlockDevice::parseConfig(String &jsonText, bool setVersion)
 
 void BlockDevice::sendStatusMessage(void)
 {
+	DEBUG_PRINT("BlockDevice::sendStatusMessage: %d\n", m_currentState);
+
 	UDPMessage message;
 	message.setMessageID(BLK_STATUS);
 	message.setID(getID());
