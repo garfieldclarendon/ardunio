@@ -228,7 +228,7 @@ QString Database::getDeviceConfig(int deviceID)
 
     if(deviceClass == DeviceTurnout)
         getTurnoutConfig(deviceID, obj);
-    else if(deviceClass == DeviceSignal)
+    else if(deviceClass == DeviceSignal || deviceClass == DeviceSemaphore)
         getSignalConfig(deviceID, obj);
 
     doc.setObject(obj);

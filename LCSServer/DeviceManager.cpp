@@ -57,7 +57,7 @@ void DeviceManager::setDeviceStatus(int deviceID, int status)
 
 void DeviceManager::newUDPMessage(const UDPMessage &message)
 {
-    if(message.getMessageID() == TRN_STATUS)
+    if(message.getMessageID() == TRN_STATUS || message.getMessageID() == BLK_STATUS)
     {
         int deviceID = message.getSerialNumber();
         int state = message.getField(0);
