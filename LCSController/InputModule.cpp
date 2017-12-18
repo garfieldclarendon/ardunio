@@ -25,9 +25,10 @@ void InputModule::processWire(void)
 {
 	// Read and process Port A
 	byte input = m_expander.readA();
+
 	if (input != m_inputA)
 	{
-		DEBUG_PRINT("InputModule::processA  Module Address: %d\Pin values: %02x\n", getAddress(), input);
+		DEBUG_PRINT("InputModule::processA  Module Address: %d\nPin values: %02x\n", getAddress(), input);
 
 		for (byte index = 0; index < 8; index++)
 		{
@@ -45,7 +46,7 @@ void InputModule::processWire(void)
 	input = m_expander.readB();
 	if (input != m_inputB)
 	{
-		DEBUG_PRINT("InputModule::processB  Module Address: %d\Pin values: %02x\n", getAddress(), input);
+		DEBUG_PRINT("InputModule::processB  Module Address: %d\nPin values: %02x\n", getAddress(), input);
 
 		for (byte index = 0; index < 8; index++)
 		{
@@ -61,13 +62,33 @@ void InputModule::processWire(void)
 	}
 }
 
+void InputModule::finishSetupWire(void)
+{
+	DEBUG_PRINT("InputModule::finishSetupWire  Module Address: %d\n", getAddress());
+	for (byte x = 0; x < MAX_DEVICES; x++)
+	{
+		Device *device = getDevice(x);
+		if (device)
+		{
+			PinStateEnum pinState;
+			byte pin;
+			if (device->getPort() < 8)
+				pinState = (PinStateEnum)bitRead(m_inputA, device->getPort());
+			else
+				pinState = (PinStateEnum)bitRead(m_inputB, device->getPort() - 8);
+
+			device->processPin(device->getPort(), pinState);
+		}
+	}
+}
+
 void InputModule::handleInput(byte pin, byte pinState)
 {
 	DEBUG_PRINT("InputModule::handleInput  Module Address: %d\nPin index: %d\n", getAddress(), pin);
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
 		Device *device = getDevice(x);
-		if (device)
+		if (device && device->getPort() == pin)
 			device->processPin(pin, pinState);
 	}
 }

@@ -44,8 +44,7 @@ public slots:
 
 protected slots:
     void processPendingMessages(void);
-    void processUdpBuffer(void);
-    void sendMessageSlot(void);
+    void processUdpBuffer(const QHostAddress &address);
     void sendHeartbeatSlot(const UDPMessage &message);
     void heartbeatTimerSlot(void);
     void sendKeepAliveMessageSlot(void);

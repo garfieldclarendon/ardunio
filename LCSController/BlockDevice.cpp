@@ -34,9 +34,11 @@ void BlockDevice::process(ModuleData &moduleData)
 
 void BlockDevice::setup(int deviceID, byte port)
 {
-	DEBUG_PRINT("BlockDevice::setup: deviceID: %d  Port: %d", deviceID, port);
+	DEBUG_PRINT("BlockDevice::setup: deviceID: %d  Port: %d\n", deviceID, port);
 	setID(deviceID);
 	setPort(port);
+
+	m_currentState = BlockClear;
 
 	String json = loadConfig();
 	DEBUG_PRINT("%s\n", json.c_str());
@@ -48,16 +50,15 @@ void BlockDevice::setup(int deviceID, byte port)
 
 void BlockDevice::processPin(byte pin, byte value)
 {
-	DEBUG_PRINT("PROCESS: pin: %d  DATA: %d\n", pin, value);
 	if (pin == getPort())
 	{
-		DEBUG_PRINT(" MY PORT!  PROCESS: pin: %d  DATA: %d\n", pin, value);
+		DEBUG_PRINT("BlockDevice::processPin  DeviceID %d  Pin %d  value %d\n", getID(), pin, value);
 		BlockState newState;
 		if (value == PinOff)
 			newState = BlockOccupied;
 		else
 			newState = BlockClear;
-		if (m_currentState == newState)
+		if (m_currentState != newState)
 		{
 			m_currentState = newState;
 			sendStatusMessage();

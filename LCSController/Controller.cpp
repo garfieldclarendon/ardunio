@@ -177,7 +177,7 @@ void Controller::sendControllerOnlineMessage(IPAddress &address)
 	message.setField(3, ip[3]);
 	message.setField(5, MajorVersion);
 	message.setField(6, MinorVersion);
-	message.setField(7, ControllerVersion);
+	message.setField(7, BuildVersion);
 
 	if (address == (uint32_t)0)
 		NetManager.sendUdpBroadcastMessage(message);

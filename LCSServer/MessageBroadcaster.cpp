@@ -72,19 +72,9 @@ QHostAddress MessageBroadcaster::getLocalAddress() const
 
 void MessageBroadcaster::sendUDPMessage(const UDPMessage &message)
 {
-//    if(QDateTime::currentDateTime().toMSecsSinceEpoch() - lastMessageSentTime > sendTimeout)
-//    {
-//        lastMessageSentTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
-        int sent = socket->writeDatagram(message.getMessageRef(), sizeof(MessageStruct),
-                                 QHostAddress::Broadcast, m_udpPort);
-        qDebug(QString("sendUDPMessage: Message Sent, size: %1").arg(sent).toLatin1());
-//    }
-//    else
-//    {
-//        qDebug(QString("sendUDPMessage: Buffering messages.  Adding message to send queue").toLatin1());
-//        sendList << message;
-//        QTimer::singleShot(sendTimeout, this, SLOT(sendMessageSlot()));
-//    }
+    int sent = socket->writeDatagram(message.getMessageRef(), sizeof(MessageStruct),
+                             QHostAddress::Broadcast, m_udpPort);
+    qDebug(QString("sendUDPMessage: Message Sent, size: %1").arg(sent).toLatin1());
 }
 
 bool MessageBroadcaster::sendUDPMessage(const UDPMessage &message, const QString &address)
@@ -106,13 +96,14 @@ void MessageBroadcaster::processPendingMessages()
     int available = socket->pendingDatagramSize();
     QByteArray buffer;
     buffer.resize(available);
-    socket->readDatagram(buffer.data(), available);
+    QHostAddress address;
+    socket->readDatagram(buffer.data(), available, &address);
     m_udpBuffer.append(buffer);
 
-    processUdpBuffer();
+    processUdpBuffer(address);
 }
 
-void MessageBroadcaster::processUdpBuffer()
+void MessageBroadcaster::processUdpBuffer(const QHostAddress &address)
 {
     qDebug("processUdpBuffer");
     static bool signitureFound = false;
@@ -185,12 +176,14 @@ void MessageBroadcaster::processUdpBuffer()
             }
             else
             {
-                // socket->peerAddress() does not return anything so we can't send back ACKS
-//                UDPMessage ack;
-//                ack.setMessageID(SYS_ACK);
-//                ack.setTransactionNumber(message.getTransactionNumber());
-//                qDebug(QString("SEND ACK MESSAGE TO %1 Transaction %2").arg(socket->peerAddress().toString()).arg(ack.getTransactionNumber()).toLatin1());
-//                socket->writeDatagram(ack.getMessageRef(), sizeof(MessageStruct), QHostAddress::Broadcast, m_udpPort);
+                if(!address.isNull() && !address.isLoopback() && address != QHostAddress::Broadcast)
+                {
+                    UDPMessage ack;
+                    ack.setMessageID(SYS_ACK);
+                    ack.setTransactionNumber(message.getTransactionNumber());
+                    qDebug(QString("SEND ACK MESSAGE TO %1 Transaction %2").arg(address.toString()).arg(ack.getTransactionNumber()).toLatin1());
+                    socket->writeDatagram(ack.getMessageRef(), sizeof(MessageStruct), address, m_udpPort);
+                }
 
                 emit newMessage(message);
                 QString str(QString("Message: %1, Controller: %2 Transaction: %3 byteValue1 %4 byteValue2 %5").arg(datagram.messageID).arg(datagram.serialNumber).arg(datagram.transactionNumber).arg(datagram.payload[0]).arg(datagram.payload[1]));
@@ -204,17 +197,6 @@ void MessageBroadcaster::processUdpBuffer()
 
             signitureFound = false;
         }
-    }
-}
-
-void MessageBroadcaster::sendMessageSlot()
-{
-    if(sendList.count() > 0)
-    {
-        UDPMessage message = sendList.takeAt(0);
-        sendUDPMessage(message);
-        if(sendList.count() > 0)
-            QTimer::singleShot(sendTimeout, this, SLOT(sendMessageSlot()));
     }
 }
 

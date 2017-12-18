@@ -77,7 +77,7 @@ void setup()
 #ifdef PROJECT_DEBUG
 	Serial.begin(115200);
 	Serial.println("-------------------------------------------------");
-	Serial.printf("LCS Controller Version: %d.%d.%d\n\n", MajorVersion, MinorVersion, ControllerVersion);
+	Serial.printf("LCS Controller Version: %d.%d.%d\n\n", MajorVersion, MinorVersion, BuildVersion);
 	Serial.print("DEBUG BUILD STARTING.  Available RAM: ");
 	Serial.println(ESP.getFreeHeap());
 	Serial.println("-------------------------------------------------");
@@ -86,7 +86,7 @@ void setup()
 	Serial.println();
 	Serial.println();
 	Serial.println("-------------------------------------------------");
-	Serial.printf("LCS Controller Version: %d.%d.%d\n\n", MajorVersion, MinorVersion, ControllerVersion);
+	Serial.printf("LCS Controller Version: %d.%d.%d\n\n", MajorVersion, MinorVersion, BuildVersion);
 	Serial.print("Available RAM: ");
 	Serial.println(ESP.getFreeHeap());
 	Serial.printf("Serial Number: %d\n\n", ESP.getChipId());
@@ -107,6 +107,11 @@ void setup()
 	loadControllerConfiguration(&controllerConfig);
 
 	setupHardware();
+
+	NetManager.setUdpMessageCallback(udpMessageCallback);
+	NetManager.setWIFIConnectCallback(networkConnected);
+	NetManager.setNotificationListChangedCallback(notificationListChanged);
+	NetManager.init(8080, controllerID);
 
 	if (downloadConfigFlag == false)
 		createModules(&controllerConfig);
@@ -131,11 +136,6 @@ void setup()
 			}
 		}
 	}
-
-	NetManager.setUdpMessageCallback(udpMessageCallback);
-	NetManager.setWIFIConnectCallback(networkConnected);
-	NetManager.setNotificationListChangedCallback(notificationListChanged);
-	NetManager.init(8080, controllerID);
 
 	DEBUG_PRINT("setup complete\n");
 }

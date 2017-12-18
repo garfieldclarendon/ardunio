@@ -5,10 +5,9 @@
 #include "GlobalDefs.h"
 
 NetworkManager *NetworkManager::m_this = NULL;
-#define disconnectedTimeout 60000
 
 NetworkManager::NetworkManager(void)
-	: m_serverPort(-1), m_controllerID(0), m_serverAddress(0, 0, 0, 0), m_lastCheckTimeout(0), m_firstNotification(NULL), m_currentStruct(NULL)
+	: m_serverPort(-1), m_controllerID(0), m_serverAddress(0, 0, 0, 0), m_lastCheckTimeout(0), m_firstNotification(NULL), m_currentStruct(NULL), m_wifiStatus(WiFiDisconnected)
 {
 	m_this = this;
 	m_firstMessageQueue = new MessageQueueStruct;
@@ -41,7 +40,7 @@ void NetworkManager::init(int serverPort, int controllerID)
 	processWiFi();
 
 	if (m_udp.begin(UdpPort))
-		DEBUG_PRINT("Now listening on %s, UDP port %d\n", WiFi.localIP().toString().c_str(), UdpPort);
+		DEBUG_PRINT("Now listening UDP port %d\n", UdpPort);
 	else
 		DEBUG_PRINT("Error starting UDP!\n");
 }
@@ -60,24 +59,28 @@ bool NetworkManager::processWiFi(void)
 	bool wiFiReconnected = false;
 	wl_status_t status = WiFi.status();
 	//	DEBUG_PRINT("[WIFI] process::status %d\n", status);
-	if (status == WL_DISCONNECTED || status == WL_IDLE_STATUS || status == WL_CONNECT_FAILED)
+	if (m_wifiStatus == WiFiDisconnected && (status == WL_DISCONNECTED || status == WL_IDLE_STATUS || status == WL_CONNECT_FAILED))
 	{
 		WiFi.begin(ssid, password);
 		status = WiFi.status();
-
-		// wait for connection or fail
-		DEBUG_PRINT("[WIFI]connecting to %s.", ssid);
-		while (status != WL_CONNECTED && status != WL_NO_SSID_AVAIL && status != WL_CONNECT_FAILED)
-		{
-			DEBUG_PRINT(".");
-			delay(100);
-			status = WiFi.status();
-		}
-		DEBUG_PRINT("[WIFI] Status: %d.\n", status);
-
-		if (m_wifiConnectCallback)
-			m_wifiConnectCallback(status == WL_CONNECTED);
+		m_wifiStatus = WiFiConnecting;
+		DEBUG_PRINT("[WIFI] Connecting to %s.  Status: %d.\n", ssid, status);
 	}
+	else if (status == WL_CONNECTED)
+	{
+		if (m_wifiStatus == WiFiConnecting)
+		{
+			DEBUG_PRINT("--------------------------------------------------------\n");
+			DEBUG_PRINT("[WIFI] CONNECTED TO %s.\n", ssid);
+			DEBUG_PRINT("--------------------------------------------------------\n");
+			wiFiReconnected = true;
+			m_wifiStatus = WiFiConnected;
+
+			if (m_wifiConnectCallback)
+				m_wifiConnectCallback(status == WL_CONNECTED);
+		}
+	}
+
 	return wiFiReconnected;
 }
 
@@ -197,7 +200,7 @@ void NetworkManager::sendUdpMessage(const UDPMessage &message, bool addToQueue)
 
 	if (m_serverAddress != (uint32_t)0)
 	{
-		sendUdpMessage(message, m_serverAddress, false);
+		sendUdpMessage(message, m_serverAddress, true);
 	}
 
 	// Give other modules connected to this controller a chance to process the message too
@@ -323,8 +326,7 @@ String NetworkManager::httpGet(const String &url)
 
 bool NetworkManager::getWiFiConnected(void) const
 {
-	wl_status_t status = WiFi.status();
-	return (status == WL_CONNECTED);
+	return m_wifiStatus == WiFiConnected;
 }
 
 void NetworkManager::addNotificationController(int controllerID)
@@ -370,7 +372,7 @@ void NetworkManager::getAddress(int controllerID)
 	message.setField(3, ip[3]);
 	message.setField(5, MajorVersion);
 	message.setField(6, MinorVersion);
-	message.setField(7, ControllerVersion);
+	message.setField(7, BuildVersion);
 
 	sendUdpBroadcastMessage(message);
 }
@@ -382,7 +384,7 @@ void NetworkManager::checkNotificationList(void)
 	if (m_currentStruct)
 	{
 		unsigned long t = millis();
-		if (t - m_lastCheckTimeout > 15000)
+		if ((t - m_lastCheckTimeout) >= 3000)
 		{
 			if (m_currentStruct->address == (uint32_t)0)
 			{
@@ -533,7 +535,7 @@ void NetworkManager::checkMessageQueue(void)
 	static unsigned long timeout = 0;
 
 	unsigned long t = millis();
-	if (t - timeout > 1000)
+	if ((t - timeout) >= 1000)
 	{
 		timeout = t;
 		MessageQueueStruct *current = m_firstMessageQueue;

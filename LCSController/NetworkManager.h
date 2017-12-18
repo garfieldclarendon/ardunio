@@ -30,7 +30,12 @@ typedef struct MessageQueueStruct MessageQueueStruct;
 class NetworkManager
 {
 public:
-	
+	enum WifiStatus
+	{
+		WiFiDisconnected,
+		WiFiConnecting,
+		WiFiConnected
+	};
 	typedef std::function<void(const UDPMessage &message)> TUDPMessageCallback;
 	typedef std::function<void(bool connected)> TWIFIConnectionCallback;
 	typedef std::function<void(const JsonArray &array)> TNotificationListChangedCallback;
@@ -86,6 +91,7 @@ private:
 	NotificationStruct *m_firstNotification;
 	NotificationStruct *m_currentStruct;
 	MessageQueueStruct *m_firstMessageQueue;
+	WifiStatus m_wifiStatus;
 
 	//Callbacks
 	TUDPMessageCallback m_udpMessageCallback;
