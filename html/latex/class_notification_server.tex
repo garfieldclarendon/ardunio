@@ -1,0 +1,56 @@
+\hypertarget{class_notification_server}{}\section{Notification\+Server Class Reference}
+\label{class_notification_server}\index{Notification\+Server@{Notification\+Server}}
+Inheritance diagram for Notification\+Server\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_notification_server}
+\end{center}
+\end{figure}
+\subsection*{Public Slots}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_notification_server_a05d958280d812baf1e8a58c1be2f6537}\label{class_notification_server_a05d958280d812baf1e8a58c1be2f6537}} 
+void {\bfseries send\+Notification\+Message} (const Q\+String \&uri, const Q\+Json\+Object \&obj)
+\end{DoxyCompactItemize}
+\subsection*{Signals}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_notification_server_afd67abdb7fcb7a06878e85a3f9f203b2}\label{class_notification_server_afd67abdb7fcb7a06878e85a3f9f203b2}} 
+void {\bfseries broadcast\+Text\+Message} (const Q\+String \&message)
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_notification_server_a02f5762b8e41d1677163d13805d47906}\label{class_notification_server_a02f5762b8e41d1677163d13805d47906}} 
+{\bfseries Notification\+Server} (Q\+Object $\ast$parent=0)
+\item 
+\mbox{\Hypertarget{class_notification_server_a5e3a7df82c765939764c64a31339658e}\label{class_notification_server_a5e3a7df82c765939764c64a31339658e}} 
+void {\bfseries start\+Server} (quint16 port)
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_notification_server_a44b03b731cade32841e472283f264f51}\label{class_notification_server_a44b03b731cade32841e472283f264f51}} 
+static \hyperlink{class_notification_server}{Notification\+Server} $\ast$ {\bfseries instance} (void)
+\end{DoxyCompactItemize}
+\subsection*{Protected Slots}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_notification_server_a7bf3b28c919b178ad8749beb9be4822e}\label{class_notification_server_a7bf3b28c919b178ad8749beb9be4822e}} 
+void {\bfseries on\+New\+Connection} (void)
+\item 
+\mbox{\Hypertarget{class_notification_server_ab6cfeb3d264f611116162e30a15b16a5}\label{class_notification_server_ab6cfeb3d264f611116162e30a15b16a5}} 
+void {\bfseries process\+Text\+Message} (const Q\+String message)
+\item 
+\mbox{\Hypertarget{class_notification_server_a377b34fac98a48cf025d80421ef85036}\label{class_notification_server_a377b34fac98a48cf025d80421ef85036}} 
+void {\bfseries process\+Binary\+Message} (const Q\+Byte\+Array message)
+\item 
+\mbox{\Hypertarget{class_notification_server_a7088db19422ae675874a6e61cbfc52c0}\label{class_notification_server_a7088db19422ae675874a6e61cbfc52c0}} 
+void {\bfseries socket\+Disconnected} (void)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+L\+C\+S\+Server/Notification\+Server.\+h\item 
+L\+C\+S\+Server/Notification\+Server.\+cpp\end{DoxyCompactItemize}

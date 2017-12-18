@@ -1,0 +1,266 @@
+\hypertarget{class_n_c_e_message}{}\section{N\+C\+E\+Message Class Reference}
+\label{class_n_c_e_message}\index{N\+C\+E\+Message@{N\+C\+E\+Message}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ad46a18e4089cd3dd87e9de8a93f07e8e}\label{class_n_c_e_message_ad46a18e4089cd3dd87e9de8a93f07e8e}} 
+{\bfseries N\+C\+E\+Message} (int command)
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a8b2fbd7eeabd6a5e74d8ca93e2dfecee}\label{class_n_c_e_message_a8b2fbd7eeabd6a5e74d8ca93e2dfecee}} 
+{\bfseries N\+C\+E\+Message} (const \hyperlink{class_n_c_e_message}{N\+C\+E\+Message} \&other)
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a5c97e5f6738035fb7e5c98ad8624ac35}\label{class_n_c_e_message_a5c97e5f6738035fb7e5c98ad8624ac35}} 
+bool {\bfseries is\+Valid} (void) const
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ad79c0e32f821502c9e9a4343276913b3}\label{class_n_c_e_message_ad79c0e32f821502c9e9a4343276913b3}} 
+\hyperlink{class_n_c_e_message}{N\+C\+E\+Message} \& {\bfseries operator=} (const \hyperlink{class_n_c_e_message}{N\+C\+E\+Message} \&other)
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a5d39e79f97808b4b3657daa3dd848fa0}\label{class_n_c_e_message_a5d39e79f97808b4b3657daa3dd848fa0}} 
+int {\bfseries get\+Command} (void) const
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a083087542d3d9632098ba3c2e6ff5dde}\label{class_n_c_e_message_a083087542d3d9632098ba3c2e6ff5dde}} 
+Q\+Vector$<$ quint8 $>$ {\bfseries get\+Message\+Data} (void) const
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a73f4b0b13af1ee51c59c8b1fa90ca5c7}\label{class_n_c_e_message_a73f4b0b13af1ee51c59c8b1fa90ca5c7}} 
+Q\+Vector$<$ quint8 $>$ {\bfseries get\+Result\+Data} (void) const
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a67f3a24b65151906d4f6d17af1e0242d}\label{class_n_c_e_message_a67f3a24b65151906d4f6d17af1e0242d}} 
+void {\bfseries set\+Result\+Data} (const Q\+Vector$<$ quint8 $>$ \&value)
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_adf38a01edd96b44fa818e09d9b6edfde}\label{class_n_c_e_message_adf38a01edd96b44fa818e09d9b6edfde}} 
+void {\bfseries acc\+Decoder} (int number, bool normal)
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_aa613a72881563a11c990a38ea3c28f61}\label{class_n_c_e_message_aa613a72881563a11c990a38ea3c28f61}} 
+void {\bfseries acc\+Memory\+Read} (int address)
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ac0ef27fa39f603ba736e23d26802486f}\label{class_n_c_e_message_ac0ef27fa39f603ba736e23d26802486f}} 
+void {\bfseries get\+Version} (void)
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a67590c53183a7846bf641e3109243cd3}\label{class_n_c_e_message_a67590c53183a7846bf641e3109243cd3}} 
+int {\bfseries get\+Expected\+Size} (void) const
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a8ef313ccd6c59b55d14c466865999c81}\label{class_n_c_e_message_a8ef313ccd6c59b55d14c466865999c81}} 
+static const quint8 {\bfseries N\+O\+O\+P\+\_\+\+C\+MD} = 0x80
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a93a9ca65ec9f484274a92d589e9f688f}\label{class_n_c_e_message_a93a9ca65ec9f484274a92d589e9f688f}} 
+static const quint8 {\bfseries A\+S\+S\+I\+G\+N\+\_\+\+C\+A\+B\+\_\+\+C\+MD} = 0x81
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_af9bb9ad4db1b3623cbb346fd7e324991}\label{class_n_c_e_message_af9bb9ad4db1b3623cbb346fd7e324991}} 
+static const quint8 {\bfseries R\+E\+A\+D\+\_\+\+C\+L\+O\+C\+K\+\_\+\+C\+MD} = 0x82
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ab0f451e3bf5b078f9c26f55e468b2e67}\label{class_n_c_e_message_ab0f451e3bf5b078f9c26f55e468b2e67}} 
+static const quint8 {\bfseries S\+T\+O\+P\+\_\+\+C\+L\+O\+C\+K\+\_\+\+C\+MD} = 0x83
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a159c08d633927ac84282d09a41e1ad0d}\label{class_n_c_e_message_a159c08d633927ac84282d09a41e1ad0d}} 
+static const quint8 {\bfseries S\+T\+A\+R\+T\+\_\+\+C\+L\+O\+C\+K\+\_\+\+C\+MD} = 0x84
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a7a0fd35d38156eca70a6f98855eb1cbc}\label{class_n_c_e_message_a7a0fd35d38156eca70a6f98855eb1cbc}} 
+static const quint8 {\bfseries S\+E\+T\+\_\+\+C\+L\+O\+C\+K\+\_\+\+C\+MD} = 0x85
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a4d80eabc10732e8c027423fb7b58dddb}\label{class_n_c_e_message_a4d80eabc10732e8c027423fb7b58dddb}} 
+static const quint8 {\bfseries C\+L\+O\+C\+K\+\_\+1224\+\_\+\+C\+MD} = 0x86
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a5ed9e5ed3e0ab472612186948c4337c3}\label{class_n_c_e_message_a5ed9e5ed3e0ab472612186948c4337c3}} 
+static const quint8 {\bfseries C\+L\+O\+C\+K\+\_\+\+R\+A\+T\+I\+O\+\_\+\+C\+MD} = 0x87
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ae99776528295bc12b5183f9568b1bb63}\label{class_n_c_e_message_ae99776528295bc12b5183f9568b1bb63}} 
+static const quint8 {\bfseries D\+E\+Q\+U\+E\+U\+E\+\_\+\+C\+MD} = 0x88
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a930ba131bfd79c452836a3b256f979c4}\label{class_n_c_e_message_a930ba131bfd79c452836a3b256f979c4}} 
+static const quint8 {\bfseries E\+N\+A\+B\+L\+E\+\_\+\+T\+R\+A\+C\+K\+\_\+\+C\+MD} = 0x89
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_aac1564079746b0fdf703a6f29cc4ad33}\label{class_n_c_e_message_aac1564079746b0fdf703a6f29cc4ad33}} 
+static const quint8 {\bfseries R\+E\+A\+D\+\_\+\+A\+U\+I4\+\_\+\+C\+MD} = 0x8A
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ae38e9eb5b4ccf36a4004a0194a0f5bc0}\label{class_n_c_e_message_ae38e9eb5b4ccf36a4004a0194a0f5bc0}} 
+static const quint8 {\bfseries D\+I\+S\+A\+B\+L\+E\+\_\+\+T\+R\+A\+C\+K\+\_\+\+C\+MD} = 0x89
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ab0bc8e607d4d53ec2e9c08dc8d72b988}\label{class_n_c_e_message_ab0bc8e607d4d53ec2e9c08dc8d72b988}} 
+static const quint8 {\bfseries D\+U\+M\+M\+Y\+\_\+\+C\+MD} = 0x8C
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_aa1743907c9945e2efb7241b32639f67c}\label{class_n_c_e_message_aa1743907c9945e2efb7241b32639f67c}} 
+static const quint8 {\bfseries S\+P\+E\+E\+D\+\_\+\+M\+O\+D\+E\+\_\+\+C\+MD} = 0x8D
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ac3c325b65d98f36b5a90d592074aff45}\label{class_n_c_e_message_ac3c325b65d98f36b5a90d592074aff45}} 
+static const quint8 {\bfseries W\+R\+I\+T\+E\+\_\+\+N\+\_\+\+C\+MD} = 0x8E
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ad26e49bc959198a70f6cc3eeed97b585}\label{class_n_c_e_message_ad26e49bc959198a70f6cc3eeed97b585}} 
+static const quint8 {\bfseries R\+E\+A\+D16\+\_\+\+C\+MD} = 0x8F
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a3f1f3bf89bd95e37752c75987a12b86a}\label{class_n_c_e_message_a3f1f3bf89bd95e37752c75987a12b86a}} 
+static const quint8 {\bfseries D\+I\+S\+P\+L\+A\+Y3\+\_\+\+C\+MD} = 0x90
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ab6dac7fb6bd03c70fe7137c9676d3e87}\label{class_n_c_e_message_ab6dac7fb6bd03c70fe7137c9676d3e87}} 
+static const quint8 {\bfseries D\+I\+S\+P\+L\+A\+Y4\+\_\+\+C\+MD} = 0x91
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a6f6bf1dd8c806daeded6067daa98a7a5}\label{class_n_c_e_message_a6f6bf1dd8c806daeded6067daa98a7a5}} 
+static const quint8 {\bfseries D\+I\+S\+P\+L\+A\+Y2\+\_\+\+C\+MD} = 0x92
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a6c43dadbff52e1e3fb6479e61c66e4c9}\label{class_n_c_e_message_a6c43dadbff52e1e3fb6479e61c66e4c9}} 
+static const quint8 {\bfseries Q\+U\+E\+U\+E3\+\_\+\+T\+M\+P\+\_\+\+C\+MD} = 0x93
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a2ff53743ba857c2c553826c3957f6b5b}\label{class_n_c_e_message_a2ff53743ba857c2c553826c3957f6b5b}} 
+static const quint8 {\bfseries Q\+U\+E\+U\+E4\+\_\+\+T\+M\+P\+\_\+\+C\+MD} = 0x94
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ac0ea933cb703bcf2cecb6b27f1cc7cb1}\label{class_n_c_e_message_ac0ea933cb703bcf2cecb6b27f1cc7cb1}} 
+static const quint8 {\bfseries Q\+U\+E\+U\+E5\+\_\+\+T\+M\+P\+\_\+\+C\+MD} = 0x95
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a6999178dbc500063b49b8aaf73002463}\label{class_n_c_e_message_a6999178dbc500063b49b8aaf73002463}} 
+static const quint8 {\bfseries Q\+U\+E\+U\+E6\+\_\+\+T\+M\+P\+\_\+\+C\+MD} = 0x96
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a98b59cb78ec56c4364022fe48249d94d}\label{class_n_c_e_message_a98b59cb78ec56c4364022fe48249d94d}} 
+static const quint8 {\bfseries W\+R\+I\+T\+E1\+\_\+\+C\+MD} = 0x97
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a7445ba7da027255122119e7ebb37e555}\label{class_n_c_e_message_a7445ba7da027255122119e7ebb37e555}} 
+static const quint8 {\bfseries W\+R\+I\+T\+E2\+\_\+\+C\+MD} = 0x98
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_aa225fee33656d6aadb3b8433d6dc99b0}\label{class_n_c_e_message_aa225fee33656d6aadb3b8433d6dc99b0}} 
+static const quint8 {\bfseries W\+R\+I\+T\+E4\+\_\+\+C\+MD} = 0x99
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a695185072db8e9ffb5e3848797b95279}\label{class_n_c_e_message_a695185072db8e9ffb5e3848797b95279}} 
+static const quint8 {\bfseries W\+R\+I\+T\+E8\+\_\+\+C\+MD} = 0x9A
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a25796c4fe42b55087a5b140eb9c26072}\label{class_n_c_e_message_a25796c4fe42b55087a5b140eb9c26072}} 
+static const quint8 {\bfseries R\+E\+A\+D\+\_\+\+A\+U\+I2\+\_\+\+C\+MD} = 0x9B
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_aab64ec8de81639f0b67d1dae3ce8d420}\label{class_n_c_e_message_aab64ec8de81639f0b67d1dae3ce8d420}} 
+static const quint8 {\bfseries M\+A\+C\+R\+O\+\_\+\+C\+MD} = 0x9C
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a594998390008c1d5c80352855a7f8e56}\label{class_n_c_e_message_a594998390008c1d5c80352855a7f8e56}} 
+static const quint8 {\bfseries R\+E\+A\+D1\+\_\+\+C\+MD} = 0x9D
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ad2acc190cdafcb808efa5b2afa1bf8c2}\label{class_n_c_e_message_ad2acc190cdafcb808efa5b2afa1bf8c2}} 
+static const quint8 {\bfseries P\+G\+M\+\_\+\+T\+R\+K\+\_\+\+O\+N\+\_\+\+C\+MD} = 0x9E
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a990840e409d105e7fbbd78b7f8a248c9}\label{class_n_c_e_message_a990840e409d105e7fbbd78b7f8a248c9}} 
+static const quint8 {\bfseries P\+G\+M\+\_\+\+T\+R\+K\+\_\+\+O\+F\+F\+\_\+\+C\+MD} = 0x9F
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a2f8eaaf76bf8f3d78cbb2938c3dc6ed8}\label{class_n_c_e_message_a2f8eaaf76bf8f3d78cbb2938c3dc6ed8}} 
+static const quint8 {\bfseries P\+G\+M\+\_\+\+P\+A\+G\+E\+\_\+\+W\+R\+I\+T\+E\+\_\+\+C\+MD} = 0x\+A0
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a80622e5a4f69811d9a5c69e58bbafbe2}\label{class_n_c_e_message_a80622e5a4f69811d9a5c69e58bbafbe2}} 
+static const quint8 {\bfseries P\+G\+M\+\_\+\+P\+A\+G\+E\+\_\+\+R\+E\+A\+D\+\_\+\+C\+MD} = 0x\+A1
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a81400194ed1beabafeeb35d1943c1798}\label{class_n_c_e_message_a81400194ed1beabafeeb35d1943c1798}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+MD} = 0x\+A2
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a9950ee811a7d3230ce6364db2374503f}\label{class_n_c_e_message_a9950ee811a7d3230ce6364db2374503f}} 
+static const quint8 {\bfseries Q\+U\+E\+U\+E3\+\_\+\+T\+R\+K\+\_\+\+C\+MD} = 0x\+A3
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ae834a6cb12f4fece3af6cbddc7b22839}\label{class_n_c_e_message_ae834a6cb12f4fece3af6cbddc7b22839}} 
+static const quint8 {\bfseries Q\+U\+E\+U\+E4\+\_\+\+T\+R\+K\+\_\+\+C\+MD} = 0x\+A4
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ad949e543d8fe1d2aeb398933499546f6}\label{class_n_c_e_message_ad949e543d8fe1d2aeb398933499546f6}} 
+static const quint8 {\bfseries Q\+U\+E\+U\+E5\+\_\+\+T\+R\+K\+\_\+\+C\+MD} = 0x\+A5
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a5e4b6bc8e5d3f399ed87d0cf0c744d38}\label{class_n_c_e_message_a5e4b6bc8e5d3f399ed87d0cf0c744d38}} 
+static const quint8 {\bfseries P\+G\+M\+\_\+\+R\+E\+G\+\_\+\+W\+R\+I\+T\+E\+\_\+\+C\+MD} = 0x\+A6
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a52b03a0b475a58e4e2b93632cee45cf6}\label{class_n_c_e_message_a52b03a0b475a58e4e2b93632cee45cf6}} 
+static const quint8 {\bfseries P\+G\+M\+\_\+\+R\+E\+G\+\_\+\+R\+E\+A\+D\+\_\+\+C\+MD} = 0x\+A7
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_afb8794c356aef459e263c2bbc44ba58d}\label{class_n_c_e_message_afb8794c356aef459e263c2bbc44ba58d}} 
+static const quint8 {\bfseries P\+G\+M\+\_\+\+D\+I\+R\+\_\+\+W\+R\+I\+T\+E\+\_\+\+C\+MD} = 0x\+A8
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_aab21f0c057cfe98b4d1879b7a7e286bb}\label{class_n_c_e_message_aab21f0c057cfe98b4d1879b7a7e286bb}} 
+static const quint8 {\bfseries P\+G\+M\+\_\+\+D\+I\+R\+\_\+\+R\+E\+A\+D\+\_\+\+C\+MD} = 0x\+A9
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_af50c51c7592d83b8e2c4e19449b4ebf3}\label{class_n_c_e_message_af50c51c7592d83b8e2c4e19449b4ebf3}} 
+static const quint8 {\bfseries S\+W\+\_\+\+R\+E\+V\+\_\+\+C\+MD} = 0x\+AA
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a0c8f36e762ccfa9642c564a2df7d4dfd}\label{class_n_c_e_message_a0c8f36e762ccfa9642c564a2df7d4dfd}} 
+static const quint8 {\bfseries R\+E\+S\+E\+T\+\_\+\+S\+O\+F\+T\+\_\+\+C\+MD} = 0x\+AB
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ac8b7f7c524044cf3ad89fd93f7318a14}\label{class_n_c_e_message_ac8b7f7c524044cf3ad89fd93f7318a14}} 
+static const quint8 {\bfseries R\+E\+S\+E\+T\+\_\+\+H\+A\+R\+D\+\_\+\+C\+MD} = 0x\+AC
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a3babcd798c5a276e7154e087480af584}\label{class_n_c_e_message_a3babcd798c5a276e7154e087480af584}} 
+static const quint8 {\bfseries A\+C\+C\+\_\+\+C\+MD} = 0x\+AD
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_abb560a81f2bf0fa2810ffa4acb98d12c}\label{class_n_c_e_message_abb560a81f2bf0fa2810ffa4acb98d12c}} 
+static const quint8 {\bfseries O\+P\+S\+\_\+\+P\+R\+O\+G\+\_\+\+L\+O\+C\+O\+\_\+\+C\+MD} = 0x\+AE
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a67cd90c3490e7cf82de4333c7d195f94}\label{class_n_c_e_message_a67cd90c3490e7cf82de4333c7d195f94}} 
+static const quint8 {\bfseries O\+P\+S\+\_\+\+P\+R\+O\+G\+\_\+\+A\+C\+C\+Y\+\_\+\+C\+MD} = 0x\+AF
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_af412792e9f0d444c1132a569c899cd41}\label{class_n_c_e_message_af412792e9f0d444c1132a569c899cd41}} 
+static const quint8 {\bfseries F\+A\+C\+T\+O\+R\+Y\+\_\+\+T\+E\+S\+T\+\_\+\+C\+MD} = 0x\+B0
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a918dcc9275ac42f4c332b5daec3ade41}\label{class_n_c_e_message_a918dcc9275ac42f4c332b5daec3ade41}} 
+static const quint8 {\bfseries U\+S\+B\+\_\+\+S\+E\+T\+\_\+\+C\+A\+B\+\_\+\+C\+MD} = 0x\+B1
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a2973406210a824247d98bf54308d748c}\label{class_n_c_e_message_a2973406210a824247d98bf54308d748c}} 
+static const quint8 {\bfseries U\+S\+B\+\_\+\+M\+E\+M\+\_\+\+P\+O\+I\+N\+T\+E\+R\+\_\+\+C\+MD} = 0x\+B3
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a386295827d3e09e4a40b14b87663f730}\label{class_n_c_e_message_a386295827d3e09e4a40b14b87663f730}} 
+static const quint8 {\bfseries U\+S\+B\+\_\+\+M\+E\+M\+\_\+\+W\+R\+I\+T\+E\+\_\+\+C\+MD} = 0x\+B4
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ae29408a74fb88d81353e2053a2bb9190}\label{class_n_c_e_message_ae29408a74fb88d81353e2053a2bb9190}} 
+static const quint8 {\bfseries U\+S\+B\+\_\+\+M\+E\+M\+\_\+\+R\+E\+A\+D\+\_\+\+C\+MD} = 0x\+B5
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a5c49c45dca14707909b6bb57630e339c}\label{class_n_c_e_message_a5c49c45dca14707909b6bb57630e339c}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+R\+E\+V\+\_\+28\+S\+P\+E\+ED} = 0x01
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_aeee6d4d067650d1c768d5a07a27dd212}\label{class_n_c_e_message_aeee6d4d067650d1c768d5a07a27dd212}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+F\+W\+D\+\_\+28\+S\+P\+E\+ED} = 0x02
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a7dfc478217a861484383524fb5b0f780}\label{class_n_c_e_message_a7dfc478217a861484383524fb5b0f780}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+R\+E\+V\+\_\+128\+S\+P\+E\+ED} = 0x03
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a65931244e5e08eab994637b84ee5e3f7}\label{class_n_c_e_message_a65931244e5e08eab994637b84ee5e3f7}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+F\+W\+D\+\_\+128\+S\+P\+E\+ED} = 0x04
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_aa97de2743e72bfb35b7116fd6a481ebe}\label{class_n_c_e_message_aa97de2743e72bfb35b7116fd6a481ebe}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+R\+E\+V\+\_\+\+E\+S\+T\+OP} = 0x05
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a2b3510ece44ebd78e28ac145daabd12e}\label{class_n_c_e_message_a2b3510ece44ebd78e28ac145daabd12e}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+F\+W\+D\+\_\+\+E\+S\+T\+OP} = 0x06
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a4d8d329678f7d61c4c4192021209b593}\label{class_n_c_e_message_a4d8d329678f7d61c4c4192021209b593}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+F\+G1} = 0x07
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_ac2108206495b2f84392a3114cc517943}\label{class_n_c_e_message_ac2108206495b2f84392a3114cc517943}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+F\+G2} = 0x08
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_afad6eddcfce7784c1fa185f88ef551c3}\label{class_n_c_e_message_afad6eddcfce7784c1fa185f88ef551c3}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+F\+G3} = 0x09
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a193b6567f87e9b5f7418359b481d8703}\label{class_n_c_e_message_a193b6567f87e9b5f7418359b481d8703}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+F\+G4} = 0x15
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_adf1edd3a38457c80fa48d8db5caf59da}\label{class_n_c_e_message_adf1edd3a38457c80fa48d8db5caf59da}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+F\+G5} = 0x16
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a1d86984708df5f5a320bd75b7e92d6fa}\label{class_n_c_e_message_a1d86984708df5f5a320bd75b7e92d6fa}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+R\+E\+V\+\_\+\+C\+O\+N\+S\+I\+S\+T\+\_\+\+L\+E\+AD} = 0x0A
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_aacda7cc187a0b7e87623f83f74406904}\label{class_n_c_e_message_aacda7cc187a0b7e87623f83f74406904}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+F\+W\+D\+\_\+\+C\+O\+N\+S\+I\+S\+T\+\_\+\+L\+E\+AD} = 0x0B
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a3f36ec6795b300a2d0e32f9e43b23c2a}\label{class_n_c_e_message_a3f36ec6795b300a2d0e32f9e43b23c2a}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+R\+E\+V\+\_\+\+C\+O\+N\+S\+I\+S\+T\+\_\+\+R\+E\+AR} = 0x0C
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a01f488b90880e9432fab6400baed33d2}\label{class_n_c_e_message_a01f488b90880e9432fab6400baed33d2}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+F\+W\+D\+\_\+\+C\+O\+N\+S\+I\+S\+T\+\_\+\+R\+E\+AR} = 0x0D
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a55a0d0cf71838cbee94b9afcc6de9195}\label{class_n_c_e_message_a55a0d0cf71838cbee94b9afcc6de9195}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+R\+E\+V\+\_\+\+C\+O\+N\+S\+I\+S\+T\+\_\+\+M\+ID} = 0x0E
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_af9d3309874e55aeaed14a66e7e5a5386}\label{class_n_c_e_message_af9d3309874e55aeaed14a66e7e5a5386}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+F\+W\+D\+\_\+\+C\+O\+N\+S\+I\+S\+T\+\_\+\+M\+ID} = 0x0F
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a7ae479c7e0f82a7aff2ca7be083f4cc3}\label{class_n_c_e_message_a7ae479c7e0f82a7aff2ca7be083f4cc3}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+D\+E\+L\+E\+T\+E\+\_\+\+L\+O\+C\+O\+\_\+\+C\+O\+N\+S\+I\+ST} = 0x10
+\item 
+\mbox{\Hypertarget{class_n_c_e_message_a89a165925842aa1151f0c0f0a98e6b24}\label{class_n_c_e_message_a89a165925842aa1151f0c0f0a98e6b24}} 
+static const quint8 {\bfseries L\+O\+C\+O\+\_\+\+C\+M\+D\+\_\+\+K\+I\+L\+L\+\_\+\+C\+O\+N\+S\+I\+ST} = 0x11
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+L\+C\+S\+Server/N\+C\+E\+Message.\+h\item 
+L\+C\+S\+Server/N\+C\+E\+Message.\+cpp\end{DoxyCompactItemize}

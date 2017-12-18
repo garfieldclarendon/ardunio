@@ -1,5 +1,6 @@
 #pragma once
 #include "Local.h"
+/** @file */
 
 const unsigned char MajorVersion = 3;
 const unsigned char MinorVersion = 0;
@@ -21,6 +22,16 @@ const unsigned char BuildVersion = 16;
 #define TIMEOUT_INTERVAL 200 // Input de-bounce timeout interval
 #define HEARTBEAT_INTERVAL 60000 // One minute heatbeat broadcast message interval
 
+/*!
+    \enum ControllerStatusEnum
+    This enum describes the current status of a controller
+
+    \value ControllerStatusUnknown The controller's current status cannot be determined.
+    \value ControllerStatusOffline The controller is offline.
+    \value ControllerStatusOnline The controller is online (replaces ControllerStatusConnected).
+    \value ControllerStatusRestarting The controller is restarting.
+    \value ControllerStatusConected No longer used.  Kept for backward compatability.
+*/
 enum ControllerStatusEnum
 {
     ControllerStatusUnknown,

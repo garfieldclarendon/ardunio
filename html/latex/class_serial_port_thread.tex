@@ -1,0 +1,59 @@
+\hypertarget{class_serial_port_thread}{}\section{Serial\+Port\+Thread Class Reference}
+\label{class_serial_port_thread}\index{Serial\+Port\+Thread@{Serial\+Port\+Thread}}
+Inheritance diagram for Serial\+Port\+Thread\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_serial_port_thread}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_serial_port_thread_a2a5f36babceca39d2b8698c9a02d93e2}\label{class_serial_port_thread_a2a5f36babceca39d2b8698c9a02d93e2}} 
+enum {\bfseries Port\+Status\+Enum} \{ {\bfseries Disconnected}, 
+{\bfseries Connected}, 
+{\bfseries Running}
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Public Slots}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_serial_port_thread_ae69ad77b0a8efd9652ddc249a61565f4}\label{class_serial_port_thread_ae69ad77b0a8efd9652ddc249a61565f4}} 
+void {\bfseries send\+Message} (const \hyperlink{class_n_c_e_message}{N\+C\+E\+Message} \&message)
+\item 
+\mbox{\Hypertarget{class_serial_port_thread_a90726304c2d0fb01e1519b3ec606164c}\label{class_serial_port_thread_a90726304c2d0fb01e1519b3ec606164c}} 
+void {\bfseries poll\+Command\+Station} (void)
+\end{DoxyCompactItemize}
+\subsection*{Signals}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_serial_port_thread_afd82dc4692e9acd7b25444b357243688}\label{class_serial_port_thread_afd82dc4692e9acd7b25444b357243688}} 
+void {\bfseries new\+Message} (const \hyperlink{class_n_c_e_message}{N\+C\+E\+Message} \&message)
+\item 
+\mbox{\Hypertarget{class_serial_port_thread_a9915b851f045269a962a23a53cbd70ce}\label{class_serial_port_thread_a9915b851f045269a962a23a53cbd70ce}} 
+void {\bfseries buffer\+Initialized} (void)
+\item 
+\mbox{\Hypertarget{class_serial_port_thread_aa854a362aa5610ec12ccb9c670c09ee1}\label{class_serial_port_thread_aa854a362aa5610ec12ccb9c670c09ee1}} 
+void {\bfseries buffer\+Data\+Changed} (quint8 byte, int block\+Index, int byte\+Index)
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_serial_port_thread_a5dc5088f166705325cc4a4215410b48b}\label{class_serial_port_thread_a5dc5088f166705325cc4a4215410b48b}} 
+\hyperlink{class_serial_port_thread_a5dc5088f166705325cc4a4215410b48b}{Serial\+Port\+Thread} (Q\+Object $\ast$parent)
+\begin{DoxyCompactList}\small\item\em \hyperlink{class_serial_port_thread}{Serial\+Port\+Thread}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_serial_port_thread_a8cb6df223cc54a75e2f6f2f8a87ad1be}\label{class_serial_port_thread_a8cb6df223cc54a75e2f6f2f8a87ad1be}} 
+virtual void {\bfseries run} (void) Q\+\_\+\+D\+E\+C\+L\+\_\+\+O\+V\+E\+R\+R\+I\+DE
+\item 
+\mbox{\Hypertarget{class_serial_port_thread_af995d293c19c8b18e8bdb0e5b99dd6bb}\label{class_serial_port_thread_af995d293c19c8b18e8bdb0e5b99dd6bb}} 
+void {\bfseries set\+Quit} (void)
+\item 
+\mbox{\Hypertarget{class_serial_port_thread_a71b5db795c9ffb96071afc4a2a8c71ba}\label{class_serial_port_thread_a71b5db795c9ffb96071afc4a2a8c71ba}} 
+void {\bfseries open\+Port} (void)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+L\+C\+S\+Server/N\+C\+E\+Interface.\+h\item 
+L\+C\+S\+Server/N\+C\+E\+Interface.\+cpp\end{DoxyCompactItemize}

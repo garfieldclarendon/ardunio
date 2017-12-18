@@ -1,0 +1,91 @@
+\hypertarget{class_c_app_service}{}\section{C\+App\+Service Class Reference}
+\label{class_c_app_service}\index{C\+App\+Service@{C\+App\+Service}}
+Inheritance diagram for C\+App\+Service\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_c_app_service}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_c_app_service_a171ba461c80bca4e6680db9346a8a714}\label{class_c_app_service_a171ba461c80bca4e6680db9346a8a714}} 
+{\bfseries C\+App\+Service} (int argc, char $\ast$$\ast$argv, const Q\+String \&name, const Q\+String \&description)
+\item 
+\mbox{\Hypertarget{class_c_app_service_aacfe1e37a508cdd56f8d2eac067a47b1}\label{class_c_app_service_aacfe1e37a508cdd56f8d2eac067a47b1}} 
+void {\bfseries initiate\+Stop} (void)
+\item 
+\mbox{\Hypertarget{class_c_app_service_a874ab4caec71d84456c26ab8591b050c}\label{class_c_app_service_a874ab4caec71d84456c26ab8591b050c}} 
+void {\bfseries start\+Simulator} (void)
+\end{DoxyCompactItemize}
+\subsection*{Protected Slots}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_c_app_service_ace5b08ee3116b05088541e4a5eb16de8}\label{class_c_app_service_ace5b08ee3116b05088541e4a5eb16de8}} 
+void {\bfseries timer\+Proc} (void)
+\item 
+\mbox{\Hypertarget{class_c_app_service_a33eca01d991cd23abf0e262154121b53}\label{class_c_app_service_a33eca01d991cd23abf0e262154121b53}} 
+void {\bfseries stop\+Timer\+Proc} (void)
+\item 
+\mbox{\Hypertarget{class_c_app_service_a49df3bd8fbc756aed18389d356e8a0f3}\label{class_c_app_service_a49df3bd8fbc756aed18389d356e8a0f3}} 
+void {\bfseries shutdown\+Monitor} (int pin, int value)
+\item 
+\mbox{\Hypertarget{class_c_app_service_a0a775d5fefaab8570894bd229c834ed7}\label{class_c_app_service_a0a775d5fefaab8570894bd229c834ed7}} 
+void {\bfseries about\+To\+Quit} (void)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_c_app_service_af51cc29b9b59833aa5951a34c51ff1ca}\label{class_c_app_service_af51cc29b9b59833aa5951a34c51ff1ca}} 
+void {\bfseries start\+Web\+Server} (void)
+\item 
+void \hyperlink{class_c_app_service_a9a949fe52710476fa08f64fd6b146e6b}{start} (void)
+\item 
+void \hyperlink{class_c_app_service_a1090ba3b5428c97b01f7561c5e2bcb74}{stop} (void)
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_app_service_a9a949fe52710476fa08f64fd6b146e6b}\label{class_c_app_service_a9a949fe52710476fa08f64fd6b146e6b}} 
+\index{C\+App\+Service@{C\+App\+Service}!start@{start}}
+\index{start@{start}!C\+App\+Service@{C\+App\+Service}}
+\subsubsection{\texorpdfstring{start()}{start()}}
+{\footnotesize\ttfamily void C\+App\+Service\+::start (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+This function must be implemented in \hyperlink{class_qt_service_base}{Qt\+Service\+Base} subclasses in order to perform the service\textquotesingle{}s work. Usually you create some main object on the heap which is the heart of your service.
+
+The function is only called when no service specific arguments were passed to the service constructor, and is called by \hyperlink{class_qt_service_base_afae2e589de71c1ae3ae8db3dc9ab9c64}{exec()} after it has called the \hyperlink{class_qt_service_a84f5f60304117e1f11cc0ed16dc0b72e}{execute\+Application()} function.
+
+Note that you {\itshape don\textquotesingle{}t} need to create an application object or call its \hyperlink{class_qt_service_base_afae2e589de71c1ae3ae8db3dc9ab9c64}{exec()} function explicitly.
+
+\begin{DoxySeeAlso}{See also}
+\hyperlink{class_qt_service_base_afae2e589de71c1ae3ae8db3dc9ab9c64}{exec()}, \hyperlink{class_c_app_service_a1090ba3b5428c97b01f7561c5e2bcb74}{stop()}, \hyperlink{class_qt_service_controller_a5e9d6da5081d70f31611456d0ef0687e}{Qt\+Service\+Controller\+::start()} 
+\end{DoxySeeAlso}
+
+
+Implements \hyperlink{class_qt_service_base_adbc0cd621b41bd3a6a1f62fda432e9e4}{Qt\+Service\+Base}.
+
+\mbox{\Hypertarget{class_c_app_service_a1090ba3b5428c97b01f7561c5e2bcb74}\label{class_c_app_service_a1090ba3b5428c97b01f7561c5e2bcb74}} 
+\index{C\+App\+Service@{C\+App\+Service}!stop@{stop}}
+\index{stop@{stop}!C\+App\+Service@{C\+App\+Service}}
+\subsubsection{\texorpdfstring{stop()}{stop()}}
+{\footnotesize\ttfamily void C\+App\+Service\+::stop (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+Reimplement this function to perform additional cleanups before shutting down (for example deleting a main object if it was created in the \hyperlink{class_c_app_service_a9a949fe52710476fa08f64fd6b146e6b}{start()} function).
+
+This function is called in reply to controller requests. The default implementation does nothing.
+
+\begin{DoxySeeAlso}{See also}
+\hyperlink{class_c_app_service_a9a949fe52710476fa08f64fd6b146e6b}{start()}, \hyperlink{class_qt_service_controller_ad06afa647666769e309474b18bf7cf90}{Qt\+Service\+Controller\+::stop()} 
+\end{DoxySeeAlso}
+
+
+Reimplemented from \hyperlink{class_qt_service_base_a8d52c1b8fd06b50bdc0a0c6f9936a68e}{Qt\+Service\+Base}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+L\+C\+S\+Server/App\+Service.\+h\item 
+L\+C\+S\+Server/App\+Service.\+cpp\end{DoxyCompactItemize}

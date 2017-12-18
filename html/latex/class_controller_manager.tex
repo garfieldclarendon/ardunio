@@ -1,0 +1,98 @@
+\hypertarget{class_controller_manager}{}\section{Controller\+Manager Class Reference}
+\label{class_controller_manager}\index{Controller\+Manager@{Controller\+Manager}}
+Inheritance diagram for Controller\+Manager\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_controller_manager}
+\end{center}
+\end{figure}
+\subsection*{Public Slots}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_controller_manager_ae4af37bc85e3851255b952ae036e648a}\label{class_controller_manager_ae4af37bc85e3851255b952ae036e648a}} 
+void {\bfseries on\+New\+Connection} (void)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a8022af93a94506e0b476d724c555410c}\label{class_controller_manager_a8022af93a94506e0b476d724c555410c}} 
+void {\bfseries connection\+Closed} (void)
+\item 
+\mbox{\Hypertarget{class_controller_manager_ac9328a72332f695b76cb03330b19f5bf}\label{class_controller_manager_ac9328a72332f695b76cb03330b19f5bf}} 
+void {\bfseries process\+Text\+Message} (Q\+String message)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a1caa6812a0791abb323df7297e872009}\label{class_controller_manager_a1caa6812a0791abb323df7297e872009}} 
+void {\bfseries controller\+Resetting} (long serial\+Number)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a5b496ff2650f4048dc91de9cdeea43c8}\label{class_controller_manager_a5b496ff2650f4048dc91de9cdeea43c8}} 
+unsigned long {\bfseries get\+Serial\+Number} (int controller\+ID)
+\end{DoxyCompactItemize}
+\subsection*{Signals}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_controller_manager_a629cadb89ec8cade7b8643e5449dda3b}\label{class_controller_manager_a629cadb89ec8cade7b8643e5449dda3b}} 
+void {\bfseries new\+Message} (int serial\+Number, int address, Device\+Class\+Enum class\+Code, Net\+Action\+Type action\+Type, const Q\+String \&uri, const Q\+Json\+Object \&json)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a6fe23485207cf1876383035a75406472}\label{class_controller_manager_a6fe23485207cf1876383035a75406472}} 
+void {\bfseries ping\+Signal} (const Q\+Byte\+Array \&data)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a1392fb567beb3f56cfa785b0e22a3f66}\label{class_controller_manager_a1392fb567beb3f56cfa785b0e22a3f66}} 
+void {\bfseries controller\+Connected} (int index)
+\item 
+\mbox{\Hypertarget{class_controller_manager_ab8ba90b458fd9d908750780fbec96648}\label{class_controller_manager_ab8ba90b458fd9d908750780fbec96648}} 
+void {\bfseries controller\+Disconnected} (int index)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a9805e7ba56ec76fe4f6157c2efa84164}\label{class_controller_manager_a9805e7ba56ec76fe4f6157c2efa84164}} 
+void {\bfseries controller\+Added} (int serial\+Number)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a1c7c0a7ede1844ebddd7c3f215fe9377}\label{class_controller_manager_a1c7c0a7ede1844ebddd7c3f215fe9377}} 
+void {\bfseries controller\+Removed} (int serial\+Number)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a74826c977cd8ed4afeafb6da847e69bb}\label{class_controller_manager_a74826c977cd8ed4afeafb6da847e69bb}} 
+void {\bfseries controller\+Ping} (int serial\+Number, quint64 length)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a179fc638c42252b49c845d0d0e2add56}\label{class_controller_manager_a179fc638c42252b49c845d0d0e2add56}} 
+void {\bfseries send\+Notification\+Message} (const Q\+String \&uri, const Q\+Json\+Object \&obj)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a0985111d1a21bae456a3172769528f0a}\label{class_controller_manager_a0985111d1a21bae456a3172769528f0a}} 
+void {\bfseries message\+A\+C\+Ked} (const \hyperlink{class_controller_message}{Controller\+Message} \&message)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a7ce297aa4924004dbc5471874a17d6b9}\label{class_controller_manager_a7ce297aa4924004dbc5471874a17d6b9}} 
+void {\bfseries error\+Sending\+Message} (const \hyperlink{class_controller_message}{Controller\+Message} \&message)
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_controller_manager_a1067bf5f3c96c9fa1ec977f4405a9fa1}\label{class_controller_manager_a1067bf5f3c96c9fa1ec977f4405a9fa1}} 
+Q\+String {\bfseries get\+Controller\+I\+P\+Address} (int serial\+Number) const
+\item 
+\mbox{\Hypertarget{class_controller_manager_acf4065fd6115b3ee3bbb0ad4f57a64b9}\label{class_controller_manager_acf4065fd6115b3ee3bbb0ad4f57a64b9}} 
+bool {\bfseries send\+Message} (const \hyperlink{class_controller_message}{Controller\+Message} \&message)
+\item 
+\mbox{\Hypertarget{class_controller_manager_ae195bc494eb3d3afeabc4e71471497d3}\label{class_controller_manager_ae195bc494eb3d3afeabc4e71471497d3}} 
+int {\bfseries get\+Connection\+Count} (void) const
+\item 
+\mbox{\Hypertarget{class_controller_manager_a1cc2f2da0ea22cc2a19138c0cb91ada5}\label{class_controller_manager_a1cc2f2da0ea22cc2a19138c0cb91ada5}} 
+int {\bfseries get\+Connection\+Serial\+Number} (int index) const
+\item 
+\mbox{\Hypertarget{class_controller_manager_a4e076c28025a9601dd7617672567b0a7}\label{class_controller_manager_a4e076c28025a9601dd7617672567b0a7}} 
+void {\bfseries get\+Connected\+Info} (int serial\+Number, Q\+String \&version, \hyperlink{_global_defs_8h_a51207b6a49e0da6f9978a3019d93480a}{Controller\+Status\+Enum} \&status)
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_controller_manager_a3f4999812436ab587f8ec2ee11128c51}\label{class_controller_manager_a3f4999812436ab587f8ec2ee11128c51}} 
+static \hyperlink{class_controller_manager}{Controller\+Manager} $\ast$ {\bfseries instance} (void)
+\end{DoxyCompactItemize}
+\subsection*{Protected Slots}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_controller_manager_a0cd8a0eeb3356aa636f084e6aba8a22b}\label{class_controller_manager_a0cd8a0eeb3356aa636f084e6aba8a22b}} 
+void {\bfseries send\+Message\+Slot} (int transaction\+ID, int serial\+Number, const Q\+String \&data)
+\item 
+\mbox{\Hypertarget{class_controller_manager_a5e9480ad4b88ff536ab60dbc9cb6619f}\label{class_controller_manager_a5e9480ad4b88ff536ab60dbc9cb6619f}} 
+void {\bfseries new\+U\+D\+P\+Message} (const \hyperlink{class_u_d_p_message}{U\+D\+P\+Message} \&message)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+L\+C\+S\+Server/Controller\+Manager.\+h\item 
+L\+C\+S\+Server/Controller\+Manager.\+cpp\end{DoxyCompactItemize}

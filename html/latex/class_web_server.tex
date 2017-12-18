@@ -1,0 +1,50 @@
+\hypertarget{class_web_server}{}\section{Web\+Server Class Reference}
+\label{class_web_server}\index{Web\+Server@{Web\+Server}}
+Inheritance diagram for Web\+Server\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_web_server}
+\end{center}
+\end{figure}
+\subsection*{Public Slots}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_web_server_a991ba62e7d4044e2f85fe1457aa5bad4}\label{class_web_server_a991ba62e7d4044e2f85fe1457aa5bad4}} 
+\hyperlink{class_url_handler}{Url\+Handler} $\ast$ {\bfseries create\+Url\+Handler} (const Q\+String \&path)
+\item 
+\mbox{\Hypertarget{class_web_server_ac2d1d9d11eb504321fc4629b0e045ce3}\label{class_web_server_ac2d1d9d11eb504321fc4629b0e045ce3}} 
+\hyperlink{class_url_handler}{Url\+Handler} $\ast$ {\bfseries get\+Url\+Handler} (const Q\+String \&path)
+\item 
+\mbox{\Hypertarget{class_web_server_ae4a36571bfd26bdd42d75613cc990b1e}\label{class_web_server_ae4a36571bfd26bdd42d75613cc990b1e}} 
+bool {\bfseries send\+Message} (Net\+Action\+Type action\+Type, const Q\+String \&uri, const Q\+String \&payload, Q\+String \&return\+Payload)
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_web_server_a2902a8136514bc5a1217a87b7a99ab13}\label{class_web_server_a2902a8136514bc5a1217a87b7a99ab13}} 
+{\bfseries Web\+Server} (Q\+Object $\ast$parent=0)
+\item 
+\mbox{\Hypertarget{class_web_server_ac6a3155a785e42fec310e8457a12d73e}\label{class_web_server_ac6a3155a785e42fec310e8457a12d73e}} 
+void {\bfseries incoming\+Connection} (int socket)
+\item 
+\mbox{\Hypertarget{class_web_server_ad5f434853f45b795976afb32104c03b3}\label{class_web_server_ad5f434853f45b795976afb32104c03b3}} 
+void {\bfseries start\+Server} (quint16 port)
+\item 
+\mbox{\Hypertarget{class_web_server_afecc771fdf6bece4ba126ce5299b8b6a}\label{class_web_server_afecc771fdf6bece4ba126ce5299b8b6a}} 
+void {\bfseries handle\+Udp\+Message} (Net\+Action\+Type action, const Q\+String \&path, const Q\+String \&payload)
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_web_server_a6c77ab01f931f6fed751b2496eec8077}\label{class_web_server_a6c77ab01f931f6fed751b2496eec8077}} 
+static \hyperlink{class_web_server}{Web\+Server} $\ast$ {\bfseries instance} (void)
+\item 
+\mbox{\Hypertarget{class_web_server_a99f5239a06368b29ca8bfd6a24be1f98}\label{class_web_server_a99f5239a06368b29ca8bfd6a24be1f98}} 
+static Q\+String {\bfseries create\+Header} (const Q\+String \&http\+Code, int body\+Size, const Q\+String \&content\+Type=\char`\"{}text/html\char`\"{})
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+L\+C\+S\+Server/Web\+Server.\+h\item 
+L\+C\+S\+Server/Web\+Server.\+cpp\end{DoxyCompactItemize}

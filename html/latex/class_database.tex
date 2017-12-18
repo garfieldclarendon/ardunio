@@ -1,0 +1,107 @@
+\hypertarget{class_database}{}\section{Database Class Reference}
+\label{class_database}\index{Database@{Database}}
+Inheritance diagram for Database\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_database}
+\end{center}
+\end{figure}
+\subsection*{Signals}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_database_ab65267ed41ba9a21b7f1abd5e738d2a0}\label{class_database_ab65267ed41ba9a21b7f1abd5e738d2a0}} 
+void {\bfseries log\+Error} (int category, int code, const Q\+String \&error\+Text)
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_database_a1eb00cb7d192abcfa766f6228492ff23}\label{class_database_a1eb00cb7d192abcfa766f6228492ff23}} 
+{\bfseries Database} (Q\+Object $\ast$parent=0)
+\item 
+\mbox{\Hypertarget{class_database_aa2c92e707d102550af16c8dca42815ac}\label{class_database_aa2c92e707d102550af16c8dca42815ac}} 
+bool {\bfseries init} (const Q\+String \&path\+And\+File)
+\item 
+\mbox{\Hypertarget{class_database_a53105764e2c9c0992e0e95022046288f}\label{class_database_a53105764e2c9c0992e0e95022046288f}} 
+void {\bfseries remove\+Database} (void)
+\item 
+\mbox{\Hypertarget{class_database_aff7b80a2cf6743c0a57f63d9bfed641b}\label{class_database_aff7b80a2cf6743c0a57f63d9bfed641b}} 
+bool {\bfseries check\+Database} (void)
+\item 
+\mbox{\Hypertarget{class_database_ab916411c9403523dd709de378026754d}\label{class_database_ab916411c9403523dd709de378026754d}} 
+bool {\bfseries create\+Database} (void)
+\item 
+\mbox{\Hypertarget{class_database_a4eaffbc1571e91a8adb40cfe076069c5}\label{class_database_a4eaffbc1571e91a8adb40cfe076069c5}} 
+int {\bfseries get\+Controller\+ID} (long serial\+Number)
+\item 
+\mbox{\Hypertarget{class_database_a49c87a6a938b5b0027cb3d7e95a2fdd8}\label{class_database_a49c87a6a938b5b0027cb3d7e95a2fdd8}} 
+unsigned long {\bfseries get\+Serial\+Number} (int controller\+ID)
+\item 
+\mbox{\Hypertarget{class_database_aebd4c272f7a8331f46c57105aae3cf31}\label{class_database_aebd4c272f7a8331f46c57105aae3cf31}} 
+int {\bfseries add\+Controller} (int controller\+Class, const Q\+String \&controller\+Name, const Q\+String \&controller\+Description)
+\item 
+\mbox{\Hypertarget{class_database_ad022e230c02d99968e1b521c24548269}\label{class_database_ad022e230c02d99968e1b521c24548269}} 
+Q\+Sql\+Database {\bfseries get\+Database} (void) const
+\item 
+\mbox{\Hypertarget{class_database_a1c19214e960ef7e6e06cf8bc8a96dd13}\label{class_database_a1c19214e960ef7e6e06cf8bc8a96dd13}} 
+int {\bfseries get\+Next\+ID} (const Q\+String \&table\+Name)
+\item 
+\mbox{\Hypertarget{class_database_a40123ea0706f6bd80a66f4c03026aaae}\label{class_database_a40123ea0706f6bd80a66f4c03026aaae}} 
+int {\bfseries get\+D\+B\+Version} (void)
+\item 
+\mbox{\Hypertarget{class_database_ac661c2459b9a7ac22c882971be8ee3b8}\label{class_database_ac661c2459b9a7ac22c882971be8ee3b8}} 
+void {\bfseries set\+D\+B\+Version} (int new\+Version)
+\item 
+\mbox{\Hypertarget{class_database_ae92b8bfa260ee01d7e2bb411917f3049}\label{class_database_ae92b8bfa260ee01d7e2bb411917f3049}} 
+Q\+Byte\+Array {\bfseries get\+Multi\+Controller\+Config} (quint32 serial\+Number)
+\item 
+\mbox{\Hypertarget{class_database_aa458cd303347f4f10b74c2c9b3661084}\label{class_database_aa458cd303347f4f10b74c2c9b3661084}} 
+Q\+Json\+Array {\bfseries get\+Notification\+List} (quint32 serial\+Number)
+\item 
+\mbox{\Hypertarget{class_database_aaabd22c307d3bdb68148296d636758cf}\label{class_database_aaabd22c307d3bdb68148296d636758cf}} 
+Q\+Byte\+Array {\bfseries get\+Controller\+Module\+Config} (quint32 serial\+Number, quint32 address)
+\item 
+\mbox{\Hypertarget{class_database_a702c94a5d8c9796ad5e4e216ae9278fa}\label{class_database_a702c94a5d8c9796ad5e4e216ae9278fa}} 
+Q\+String {\bfseries get\+Device\+Config} (int device\+ID)
+\item 
+\mbox{\Hypertarget{class_database_a26943586c348a996d31c722cd10c8bc2}\label{class_database_a26943586c348a996d31c722cd10c8bc2}} 
+void {\bfseries get\+Device\+Properties} (int device\+ID, Q\+Json\+Object \&device)
+\item 
+\mbox{\Hypertarget{class_database_a26992f37246c3c2383716704398c3403}\label{class_database_a26992f37246c3c2383716704398c3403}} 
+void {\bfseries get\+Turnout\+Config} (int device\+ID, Q\+Json\+Object \&device)
+\item 
+\mbox{\Hypertarget{class_database_a14e593519bd9fe8c414083d633906786}\label{class_database_a14e593519bd9fe8c414083d633906786}} 
+void {\bfseries get\+Signal\+Config} (int device\+ID, Q\+Json\+Object \&device)
+\item 
+\mbox{\Hypertarget{class_database_a015c1d3e3c83c9c66fe4f86dbff656a6}\label{class_database_a015c1d3e3c83c9c66fe4f86dbff656a6}} 
+Q\+String {\bfseries get\+Turnout\+Name} (int device\+ID)
+\item 
+\mbox{\Hypertarget{class_database_aefd61c538939ce9b79c85c2df6914447}\label{class_database_aefd61c538939ce9b79c85c2df6914447}} 
+int {\bfseries getdevice\+ID} (const Q\+String \&name)
+\item 
+\mbox{\Hypertarget{class_database_a34aaa93240ff4b005b10e44ba1c6eaba}\label{class_database_a34aaa93240ff4b005b10e44ba1c6eaba}} 
+Q\+List$<$ int $>$ {\bfseries get\+Exclude\+Route\+List} (int route\+ID)
+\item 
+\mbox{\Hypertarget{class_database_a52a865e7e0e177dab5c0a451f37a1d1a}\label{class_database_a52a865e7e0e177dab5c0a451f37a1d1a}} 
+void {\bfseries get\+Controller\+I\+D\+And\+Name} (quint32 serial\+Number, int \&device\+ID, Q\+String \&controller\+Name)
+\item 
+\mbox{\Hypertarget{class_database_a1d17037c1dfaa2f67327ae0297d4567a}\label{class_database_a1d17037c1dfaa2f67327ae0297d4567a}} 
+Q\+Json\+Object {\bfseries fetch\+Item} (const Q\+String \&query\+String)
+\item 
+\mbox{\Hypertarget{class_database_a1b1bd2990fdc80d0f4ed51f571966272}\label{class_database_a1b1bd2990fdc80d0f4ed51f571966272}} 
+Q\+Json\+Array {\bfseries fetch\+Items} (const Q\+String \&query\+String)
+\item 
+\mbox{\Hypertarget{class_database_a82058cf13df09949bc4f6e28ce4931ba}\label{class_database_a82058cf13df09949bc4f6e28ce4931ba}} 
+Q\+Json\+Object {\bfseries create\+Json\+Object} (Q\+Sql\+Query \&query)
+\item 
+\mbox{\Hypertarget{class_database_a27d4e89a6c9e7bdd79a4548dcc0bafa7}\label{class_database_a27d4e89a6c9e7bdd79a4548dcc0bafa7}} 
+Q\+Json\+Array {\bfseries create\+Json\+Array} (Q\+Sql\+Query \&query)
+\item 
+\mbox{\Hypertarget{class_database_a153d5c808b5da86954ef73b164ece2bf}\label{class_database_a153d5c808b5da86954ef73b164ece2bf}} 
+Q\+Sql\+Query {\bfseries execute\+Query} (const Q\+String \&query\+String)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+L\+C\+S\+Server/Database.\+h\item 
+L\+C\+S\+Server/Database.\+cpp\end{DoxyCompactItemize}

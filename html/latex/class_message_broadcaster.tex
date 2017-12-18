@@ -1,0 +1,92 @@
+\hypertarget{class_message_broadcaster}{}\section{Message\+Broadcaster Class Reference}
+\label{class_message_broadcaster}\index{Message\+Broadcaster@{Message\+Broadcaster}}
+Inheritance diagram for Message\+Broadcaster\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_message_broadcaster}
+\end{center}
+\end{figure}
+\subsection*{Public Slots}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a32dd162386ef2cf4414b7002d71ab660}\label{class_message_broadcaster_a32dd162386ef2cf4414b7002d71ab660}} 
+void {\bfseries send\+Reset\+Notification\+List\+Command} (int serial\+Number)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a84f20dff37d73c00f739de7f9e73c178}\label{class_message_broadcaster_a84f20dff37d73c00f739de7f9e73c178}} 
+void {\bfseries send\+Reset\+Command} (int serial\+Number)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_ac18353484a67721b95ec1ea80f247549}\label{class_message_broadcaster_ac18353484a67721b95ec1ea80f247549}} 
+void {\bfseries send\+Reset\+Config\+Command} (int serial\+Number)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a2a6cfe9e14ba853d287b15d140ba31ce}\label{class_message_broadcaster_a2a6cfe9e14ba853d287b15d140ba31ce}} 
+void {\bfseries send\+Reset\+Device\+Config\+Command} (int device\+ID)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_ac58cc1d5b6bd1211079cb74154cd2f0a}\label{class_message_broadcaster_ac58cc1d5b6bd1211079cb74154cd2f0a}} 
+void {\bfseries send\+Lock\+Route\+Command} (int route\+ID, bool lock)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_ad5aaa609256cb4d94f966069d16ddcc0}\label{class_message_broadcaster_ad5aaa609256cb4d94f966069d16ddcc0}} 
+void {\bfseries send\+Download\+Firmware} (int serial\+Number)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a74aecd50e19ec44b1f594845675e4e68}\label{class_message_broadcaster_a74aecd50e19ec44b1f594845675e4e68}} 
+void {\bfseries send\+Message} (int message\+ID, int serial\+Number, quint8 byte1, quint8 byte2=0, quint8 byte3=0, quint8 byte4=0, quint8 byte5=0)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_ad34fa164afe43eea0a114677590d6f01}\label{class_message_broadcaster_ad34fa164afe43eea0a114677590d6f01}} 
+void {\bfseries send\+U\+D\+P\+Message} (const \hyperlink{class_u_d_p_message}{U\+D\+P\+Message} \&message)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_afe9d5032c449b68d33de82bd5b38d827}\label{class_message_broadcaster_afe9d5032c449b68d33de82bd5b38d827}} 
+bool {\bfseries send\+U\+D\+P\+Message} (const \hyperlink{class_u_d_p_message}{U\+D\+P\+Message} \&message, const Q\+String \&address)
+\end{DoxyCompactItemize}
+\subsection*{Signals}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a5fd9f33c5596dd29a34a280c828d5d69}\label{class_message_broadcaster_a5fd9f33c5596dd29a34a280c828d5d69}} 
+void {\bfseries new\+Message} (const \hyperlink{class_u_d_p_message}{U\+D\+P\+Message} \&message)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a7beb9f1957e0616a367a63af4515200b}\label{class_message_broadcaster_a7beb9f1957e0616a367a63af4515200b}} 
+void {\bfseries new\+Raw\+U\+D\+P\+Message} (const Q\+String \&message)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a7c20965394c805fbf3b4e9bcd26ea562}\label{class_message_broadcaster_a7c20965394c805fbf3b4e9bcd26ea562}} 
+void {\bfseries controller\+Resetting} (long serial\+Number)
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_aad0a58bca9ec48cb0b0b0bf4c724e7f8}\label{class_message_broadcaster_aad0a58bca9ec48cb0b0b0bf4c724e7f8}} 
+void {\bfseries broadcast\+Message} (const Q\+String \&data)
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_aff3184a82432cde75fcaa24b76c89904}\label{class_message_broadcaster_aff3184a82432cde75fcaa24b76c89904}} 
+static \hyperlink{class_message_broadcaster}{Message\+Broadcaster} $\ast$ {\bfseries instance} ()
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a5a0a4b1fb88a50dfeacb5a2e46c1013b}\label{class_message_broadcaster_a5a0a4b1fb88a50dfeacb5a2e46c1013b}} 
+static void {\bfseries set\+Run\+As\+Client} (bool value)
+\end{DoxyCompactItemize}
+\subsection*{Protected Slots}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a699e964a4d64025b5d31387a7e1e4db9}\label{class_message_broadcaster_a699e964a4d64025b5d31387a7e1e4db9}} 
+void {\bfseries process\+Pending\+Messages} (void)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a2e51c2d01ad3b6849f7ea653b2ab0d76}\label{class_message_broadcaster_a2e51c2d01ad3b6849f7ea653b2ab0d76}} 
+void {\bfseries process\+Udp\+Buffer} (const Q\+Host\+Address \&address)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_af4784fce7b71681f321bda9c953db63b}\label{class_message_broadcaster_af4784fce7b71681f321bda9c953db63b}} 
+void {\bfseries send\+Heartbeat\+Slot} (const \hyperlink{class_u_d_p_message}{U\+D\+P\+Message} \&message)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a9d7639d045a65534a99fcf7621681688}\label{class_message_broadcaster_a9d7639d045a65534a99fcf7621681688}} 
+void {\bfseries heartbeat\+Timer\+Slot} (void)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_ae138b05340d5f3536668a674cdca0d01}\label{class_message_broadcaster_ae138b05340d5f3536668a674cdca0d01}} 
+void {\bfseries send\+Keep\+Alive\+Message\+Slot} (void)
+\item 
+\mbox{\Hypertarget{class_message_broadcaster_a54843b46cff4ac2a53c5f25ecf428443}\label{class_message_broadcaster_a54843b46cff4ac2a53c5f25ecf428443}} 
+void {\bfseries controller\+Restarting} (const \hyperlink{class_u_d_p_message}{U\+D\+P\+Message} \&message)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+L\+C\+S\+Server/Message\+Broadcaster.\+h\item 
+L\+C\+S\+Server/Message\+Broadcaster.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,50 @@
+\hypertarget{class_turnout_handler}{}\section{Turnout\+Handler Class Reference}
+\label{class_turnout_handler}\index{Turnout\+Handler@{Turnout\+Handler}}
+Inheritance diagram for Turnout\+Handler\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_turnout_handler}
+\end{center}
+\end{figure}
+\subsection*{Public Slots}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_turnout_handler_aa6d1a7bce510b3d3bc092c83157ea9d7}\label{class_turnout_handler_aa6d1a7bce510b3d3bc092c83157ea9d7}} 
+void {\bfseries new\+Message} (int serial\+Number, int address, Device\+Class\+Enum class\+Code, Net\+Action\+Type action\+Type, const Q\+String \&uri, const Q\+Json\+Object \&json)
+\item 
+\mbox{\Hypertarget{class_turnout_handler_af98a879c6e94f86901597f2204aafac2}\label{class_turnout_handler_af98a879c6e94f86901597f2204aafac2}} 
+void {\bfseries activate\+Turnout} (int device\+ID, Turnout\+State new\+State)
+\item 
+\mbox{\Hypertarget{class_turnout_handler_ad250479f8c68d9195bbd6ae09bce2981}\label{class_turnout_handler_ad250479f8c68d9195bbd6ae09bce2981}} 
+void {\bfseries timer\+Proc} (void)
+\item 
+\mbox{\Hypertarget{class_turnout_handler_ae2954780d7cf786caa6915102ca90fac}\label{class_turnout_handler_ae2954780d7cf786caa6915102ca90fac}} 
+void {\bfseries send\+Config} (int serial\+Number, int address)
+\item 
+\mbox{\Hypertarget{class_turnout_handler_adfc83db04edca044530eb60d218df955}\label{class_turnout_handler_adfc83db04edca044530eb60d218df955}} 
+void {\bfseries controller\+Removed} (int serial\+Number)
+\item 
+\mbox{\Hypertarget{class_turnout_handler_af43378afbad7e068ad7e78dc4f1171bf}\label{class_turnout_handler_af43378afbad7e068ad7e78dc4f1171bf}} 
+void {\bfseries controller\+Connected} (int index)
+\item 
+\mbox{\Hypertarget{class_turnout_handler_adef14f53ff303fdb9ca4599a1a7479b9}\label{class_turnout_handler_adef14f53ff303fdb9ca4599a1a7479b9}} 
+void {\bfseries message\+A\+C\+Ked} (const \hyperlink{class_controller_message}{Controller\+Message} \&message)
+\end{DoxyCompactItemize}
+\subsection*{Signals}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_turnout_handler_a5c0222680069e799ba813bbe1f65af50}\label{class_turnout_handler_a5c0222680069e799ba813bbe1f65af50}} 
+void {\bfseries send\+Notification\+Message} (const Q\+String \&uri, const Q\+Json\+Object \&obj)
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_turnout_handler_a1606b58bfcdae2d43f5667a7f5623a1b}\label{class_turnout_handler_a1606b58bfcdae2d43f5667a7f5623a1b}} 
+{\bfseries Turnout\+Handler} (Q\+Object $\ast$parent=0)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+L\+C\+S\+Server/Turnout\+Handler.\+h\item 
+L\+C\+S\+Server/Turnout\+Handler.\+cpp\end{DoxyCompactItemize}
