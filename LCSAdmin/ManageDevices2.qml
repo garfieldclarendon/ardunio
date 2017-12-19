@@ -66,8 +66,8 @@ Item {
     {
         if(deviceClass === "1")
             return getTurnoutState(currentState);
-        else if(deviceClass === "1")
-            return getTurnoutState(currentState);
+        else if(deviceClass === "6")
+            return getBlockState(currentState);
 
         return "N/A";
     }
