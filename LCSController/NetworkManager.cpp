@@ -443,12 +443,12 @@ void NetworkManager::setNotificationList(const String &jsonText)
 {
 	DEBUG_PRINT("NetworkManager::setNotificationList:\n%s\n", jsonText.c_str());
 	clearNotificationList();
-	StaticJsonBuffer<256> jsonBuffer;
+	StaticJsonBuffer<1024> jsonBuffer;
 	JsonArray &json = jsonBuffer.parseArray(jsonText);
 
 	for (byte x = 0; x < json.size(); x++)
 	{
-		unsigned long id = json[x]["id"];
+		unsigned long id = json[x]["controllerID"];
 		if (id != m_controllerID)
 			addNotificationController(id);
 	}

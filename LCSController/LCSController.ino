@@ -642,7 +642,7 @@ void sendStatusMessage(void)
 
 void notificationListChanged(const JsonArray &jsonArray)
 {
-	StaticJsonBuffer<2048> jsonBuffer;
+	StaticJsonBuffer<1024> jsonBuffer;
 	JsonObject &json = jsonBuffer.parseObject(getConfiguration());
 
 	DEBUG_PRINT("notificationListChanged  New Count: %d\n", jsonArray.size());
