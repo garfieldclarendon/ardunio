@@ -6,7 +6,9 @@
 
 
 SignalDevice::SignalDevice()
-	: m_downloadConfig(false), m_lockout(false), m_updateValues(true), m_redMode(PinOn), m_greenMode(PinOff), m_yellowMode(PinOff), m_currentBlinkTimeout(0), m_blinkingTimeout(750), m_aspectCount(0)
+	: m_downloadConfig(false), m_lockout(false), m_updateValues(true), m_redMode(PinOn), 
+	m_greenMode(PinOff), m_yellowMode(PinOff), m_currentBlinkTimeout(0), m_blinkingTimeout(750), 
+	m_aspectCount(0), m_aspectIDArray(NULL)
 {
 	memset(m_deviceStates, 0, sizeof(DeviceStateStruct) * MAX_SIGNAL_DEVICES);
 }
@@ -19,6 +21,10 @@ SignalDevice::~SignalDevice()
 void SignalDevice::process(ModuleData &moduleData)
 {
 //	DEBUG_PRINT("SignalDevice::process: START\n");
+	if (m_aspectIDArray != NULL)
+	{
+		downloadAspects();
+	}
 	byte dataA;
 	byte dataB;
 	dataA = moduleData.getByteA();
@@ -91,7 +97,7 @@ void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
 
 void SignalDevice::updateValues(void)
 {
-//	DEBUG_PRINT("SignalDevice::updateValues: START\n");
+	DEBUG_PRINT("SignalDevice::updateValues: START\n");
 	SignalAspectStruct aspect;
 
 	m_redMode = PinOn;
@@ -104,12 +110,12 @@ void SignalDevice::updateValues(void)
 	{
 		if (loadAspect(x, &aspect))
 		{
-//			DEBUG_PRINT("SignalDevice::updateValues: ASPECT COUNT %d  %d %d %d\n", aspect.conditionCount, aspect.redMode, aspect.greenMode, aspect.yellowMode);
+			DEBUG_PRINT("SignalDevice::updateValues: ASPECT COUNT %d  %d %d %d\n", aspect.conditionCount, aspect.redMode, aspect.greenMode, aspect.yellowMode);
 			bool valid = aspect.conditionCount > 0;
 			for (int index = 0; index < aspect.conditionCount; index++)
 			{
 				byte state = getCurrentState(aspect.conditions[index].deviceID);
-//				DEBUG_PRINT("SignalDevice::updateValues: deviceID %d status %d == %d\n", aspect.conditions[index].deviceID, state, aspect.conditions[index].deviceState);
+				DEBUG_PRINT("SignalDevice::updateValues: deviceID %d status %d == %d\n", aspect.conditions[index].deviceID, state, aspect.conditions[index].deviceState);
 				if (state > 0)
 				{
 					if (aspect.conditions[index].operand == ConditionEquals)
@@ -143,7 +149,7 @@ void SignalDevice::updateValues(void)
 				m_greenMode = aspect.greenMode;
 				m_yellowMode = aspect.yellowMode;
 				done = true;
-//				DEBUG_PRINT("SignalDevice::updateValues: DONE PIN: %d NEW MODES: %d %d %d\n", getPort(), m_redMode, m_greenMode, m_yellowMode);
+				DEBUG_PRINT("SignalDevice::updateValues: DONE PIN: %d NEW MODES: %d %d %d\n", getPort(), m_redMode, m_greenMode, m_yellowMode);
 			}
 			x++;
 			if (x >= m_aspectCount)
@@ -272,6 +278,7 @@ void SignalDevice::serverFound(void)
 {
 	if (m_downloadConfig)
 	{
+		m_aspectIDArray = new int[m_aspectCount];
 		String json = NetManager.getDeviceConfig(getID());
 		if (json.length() > 0)
 		{
@@ -341,4 +348,39 @@ void SignalDevice::setInvalidAspect(void)
 	m_redMode = PinOn;
 	m_greenMode = PinOn;
 	m_yellowMode = PinOn;
+}
+
+void SignalDevice::downloadAspects(void)
+{
+	for (byte x = 0; x < m_aspectCount; x++)
+	{
+		downloadAspect(m_aspectIDArray[x], x);
+	}
+	delete[] m_aspectIDArray;
+	m_aspectIDArray = NULL;
+}
+
+void SignalDevice::downloadAspect(int aspectID, byte index)
+{
+	String json = NetManager.getSignalAspect(aspectID);
+	DEBUG_PRINT("SignalDevice::downloadAspect: %d\n", aspectID);
+	StaticJsonBuffer<1024> jsonBuffer;
+	JsonObject &aspectObj = jsonBuffer.parseObject(json);
+
+	SignalAspectStruct aspect;
+
+	memset(&aspect, 0, sizeof(SignalAspectStruct));
+	aspect.redMode = (PinStateEnum)(int)aspectObj["redMode"];
+	aspect.greenMode = (PinStateEnum)(int)aspectObj["greenMode"];
+	aspect.yellowMode = (PinStateEnum)(int)aspectObj["yellowMode"];
+	JsonArray &conditions = aspectObj["conditions"];
+	aspect.conditionCount = conditions.size();
+	for (byte index = 0; index < conditions.size(); index++)
+	{
+		DEBUG_PRINT("parseConfig  CONDITION %d.\n", index);
+		aspect.conditions[index].deviceID = conditions[index]["deviceID"];
+		aspect.conditions[index].operand = (ConditionEnum)(int)conditions[index]["conditionOperand"];
+		aspect.conditions[index].deviceState = conditions[index]["deviceState"];
+	}
+	saveAspect(index, &aspect);
 }

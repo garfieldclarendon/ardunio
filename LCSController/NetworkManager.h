@@ -57,6 +57,7 @@ public:
 	String getControllerConfig(unsigned int serialNumber);
 	String getModuleConfig(unsigned int serialNumber, byte address);
 	String getDeviceConfig(int deviceID);
+	String getSignalAspect(int aspectID);
 	String getNotificationList(void);
 
 	void setUdpMessageCallback(TUDPMessageCallback value) { m_udpMessageCallback = value;  }

@@ -60,6 +60,8 @@ private:
 	void saveAspect(byte index, const SignalAspectStruct *aspect);
 	String createFileName(byte index);
 	void setInvalidAspect(void);
+	void downloadAspects(void);
+	void downloadAspect(int aspectID, byte index);
 
 	PinStateEnum m_redMode;
 	PinStateEnum m_greenMode;
@@ -71,5 +73,6 @@ private:
 	int m_blinkingTimeout;
 	byte m_aspectCount;
 	DeviceStateStruct m_deviceStates[MAX_SIGNAL_DEVICES];
+	int *m_aspectIDArray;
 };
 

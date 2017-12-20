@@ -274,6 +274,14 @@ String NetworkManager::getDeviceConfig(int deviceID)
 	return json;
 }
 
+String NetworkManager::getSignalAspect(int aspectID)
+{
+	String url("/controller/device/config?aspectID=");
+	url += aspectID;
+	String json = httpGet(url);
+	return json;
+}
+
 String NetworkManager::getNotificationList(void)
 {
 	String url("/controller/notification_list?serialNumber=");
@@ -310,7 +318,7 @@ String NetworkManager::httpGet(const String &url)
 		if (httpCode == HTTP_CODE_OK) 
 		{
 			payload = http.getString();
-			DEBUG_PRINT("%s\n", payload.c_str());
+			DEBUG_PRINT("Size: %d\n%s\n", payload.length(), payload.c_str());
 		}
 	}
 	else 
