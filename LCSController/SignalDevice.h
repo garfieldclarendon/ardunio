@@ -3,6 +3,13 @@
 #include "Device.h"
 #include "GlobalDefs.h"
 
+struct AspectDownloadStruct
+{
+	int aspectID;
+	AspectDownloadStruct *next;
+};
+typedef struct AspectDownloadStruct AspectDownloadStruct;
+
 struct DeviceStateStruct
 {
 	int deviceID;
@@ -30,7 +37,7 @@ typedef struct SignalAspectStruct SignalAspectStruct;
 
 class SignalDevice : public Device
 {
-	const byte CONFIG_VERSION = 2;
+	const byte CONFIG_VERSION = 3;
 public:
 	SignalDevice();
 	virtual ~SignalDevice();
@@ -73,6 +80,6 @@ private:
 	int m_blinkingTimeout;
 	byte m_aspectCount;
 	DeviceStateStruct m_deviceStates[MAX_SIGNAL_DEVICES];
-	int *m_aspectIDArray;
+	AspectDownloadStruct *m_aspectDownload;
 };
 
