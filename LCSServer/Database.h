@@ -39,6 +39,7 @@ public:
     void getTurnoutConfig(int deviceID, QJsonObject &device);
     void getSignalConfig(int deviceID, QJsonObject &device);
 
+    QString getSignalAspectConfig(int aspectID);
     QString getTurnoutName(int deviceID);
     int getdeviceID(const QString &name);
     QList<int> getExcludeRouteList(int routeID);

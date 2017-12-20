@@ -79,11 +79,19 @@ void ControllerHandler::handleDeviceConfigUrl(NetActionType actionType, const QU
     if(actionType == NetActionGet)
     {
         QUrlQuery urlQuery(url);
-        int deviceID = urlQuery.queryItemValue("deviceID").toInt();
-
-        qDebug(QString("ControllerHandler::handleDeviceConfigUrl: deviceID %1").arg(deviceID).toLatin1());
-        Database db;
-        returnPayload = db.getDeviceConfig(deviceID);
+        if(urlQuery.hasQueryItem("aspectID"))
+        {
+            int aspectID = urlQuery.queryItemValue("aspectID").toInt();
+            Database db;
+            returnPayload = db.getSignalAspectConfig(aspectID);
+        }
+        else
+        {
+            int deviceID = urlQuery.queryItemValue("deviceID").toInt();
+            qDebug(QString("ControllerHandler::handleDeviceConfigUrl: deviceID %1").arg(deviceID).toLatin1());
+            Database db;
+            returnPayload = db.getDeviceConfig(deviceID);
+        }
         qDebug(returnPayload.toLatin1());
     }
 }
