@@ -21,6 +21,9 @@ SignalDevice::~SignalDevice()
 void SignalDevice::process(ModuleData &moduleData)
 {
 //	DEBUG_PRINT("SignalDevice::process: START\n");
+	if (m_aspectDownload != NULL)
+		downloadAspects();
+
 	byte dataA;
 	byte dataB;
 	dataA = moduleData.getByteA();
@@ -127,12 +130,14 @@ void SignalDevice::updateValues(void)
 					else
 					{
 						valid = false;
+						DEBUG_PRINT("INVALID ConditionOperand! %d\n", aspect.conditions[index].operand);
 						setInvalidAspect();
 						done = true;
 					}
 				}
 				else
 				{
+					DEBUG_PRINT("INVALID DEVICE STATE!\n");
 					valid = false;
 					setInvalidAspect();
 					done = true;
@@ -224,7 +229,7 @@ byte SignalDevice::getCurrentState(int deviceID) const
 bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 {
 	DEBUG_PRINT("SignalDevice::parseConfig\n");
-	StaticJsonBuffer<1024> jsonBuffer;
+	StaticJsonBuffer<2048> jsonBuffer;
 	JsonObject &json = jsonBuffer.parseObject(jsonText);
 
 	if (setVersion)
@@ -237,27 +242,26 @@ bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 		return false;
 	}
 
-	SignalAspectStruct aspect;
-
 	JsonArray &aspects = json["aspects"];
 	m_aspectCount = aspects.size();
 	byte deviceIndex = 0;
+	AspectDownloadStruct *current = m_aspectDownload;
 	for (byte x = 0; x < aspects.size(); x++)
 	{
-		memset(&aspect, 0, sizeof(SignalAspectStruct));
-		if (m_aspectDownload != NULL)
+		if (current != NULL)
 		{
-			if (m_aspectDownload->aspectID == 0)
+			if (current->aspectID == 0)
 			{
-				m_aspectDownload->aspectID = aspects[x]["aspectID"];
-				DEBUG_PRINT("ADDING ASPECT TO DOWNLOAD ARRAY: %d", m_aspectDownload->aspectID);
+				current->aspectID = aspects[x]["aspectID"];
+				DEBUG_PRINT("ADDING ASPECT TO DOWNLOAD ARRAY: %d\n", current->aspectID);
 			}
 			else
 			{
-				m_aspectDownload->next = new AspectDownloadStruct;
-				m_aspectDownload->next->aspectID = aspects[x]["aspectID"];
-				m_aspectDownload->next->next = NULL;
-				DEBUG_PRINT("ADDING ASPECT TO DOWNLOAD ARRAY: %d", m_aspectDownload->next->aspectID);
+				current->next = new AspectDownloadStruct;
+				current->next->aspectID = aspects[x]["aspectID"];
+				current->next->next = NULL;
+				DEBUG_PRINT("ADDING ASPECT TO DOWNLOAD ARRAY: %d\n", current->next->aspectID);
+				current = current->next;
 			}
 		}
 	}
@@ -293,7 +297,6 @@ void SignalDevice::serverFound(void)
 			saveConfig(json);
 			m_downloadConfig = false;
 			setup(getID(), getPort());
-			downloadAspects();
 		}
 	}
 }
@@ -304,16 +307,19 @@ void SignalDevice::saveAspect(byte index, const SignalAspectStruct *aspect)
 	DEBUG_PRINT("SAVE ASPECT %s\n", fileName.c_str());
 
 	File f = SPIFFS.open(fileName, "w");
+	DEBUG_PRINT("SAVE ASPECT FILE OPEN\n");
 
 	if (f)
 	{
 		f.write((uint8_t*)aspect, sizeof(SignalAspectStruct));
 		f.close();
+		DEBUG_PRINT("SAVE ASPECT FILE SAVED AND CLOSED\n");
 	}
 	else
 	{
 		DEBUG_PRINT("Error saving Signal Aspect file %s\n", fileName.c_str());
 	}
+	DEBUG_PRINT("SAVE ASPECT FILE DONE\n");
 }
 
 bool SignalDevice::loadAspect(byte index, SignalAspectStruct *aspect)
@@ -377,7 +383,7 @@ void SignalDevice::downloadAspect(int aspectID, byte index)
 {
 	String json = NetManager.getSignalAspect(aspectID);
 	DEBUG_PRINT("SignalDevice::downloadAspect: %d\n", aspectID);
-	StaticJsonBuffer<1024> jsonBuffer;
+	StaticJsonBuffer<2048> jsonBuffer;
 	JsonObject &aspectObj = jsonBuffer.parseObject(json);
 
 	SignalAspectStruct aspect;
@@ -388,12 +394,12 @@ void SignalDevice::downloadAspect(int aspectID, byte index)
 	aspect.yellowMode = (PinStateEnum)(int)aspectObj["yellowMode"];
 	JsonArray &conditions = aspectObj["conditions"];
 	aspect.conditionCount = conditions.size();
-	for (byte index = 0; index < conditions.size(); index++)
+	for (byte x = 0; x < conditions.size(); x++)
 	{
-		DEBUG_PRINT("parseConfig  CONDITION %d.\n", index);
-		aspect.conditions[index].deviceID = conditions[index]["deviceID"];
-		aspect.conditions[index].operand = (ConditionEnum)(int)conditions[index]["conditionOperand"];
-		aspect.conditions[index].deviceState = conditions[index]["deviceState"];
+		DEBUG_PRINT("parseConfig  CONDITION %d.\n", x);
+		aspect.conditions[x].deviceID = conditions[x]["deviceID"];
+		aspect.conditions[x].operand = (ConditionEnum)(int)conditions[x]["conditionOperand"];
+		aspect.conditions[x].deviceState = conditions[x]["deviceState"];
 	}
 	saveAspect(index, &aspect);
 }

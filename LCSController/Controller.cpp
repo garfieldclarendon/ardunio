@@ -80,6 +80,7 @@ void Controller::processMessage(const UDPMessage &message)
 	{
 		DEBUG_PRINT("FIND CONTROLLER MESSAGE.  LOOKING FOR ME!\n");
 		IPAddress to(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
+		DEBUG_PRINT("FIND CONTROLLER MESSAGE.  LOOKING FOR ME!  SENDING MESSAGE TO: %s\n", to.toString().c_str());
 		sendControllerOnlineMessage(to);
 		if (m_sendStatusCallback)
 			m_sendStatusCallback();
