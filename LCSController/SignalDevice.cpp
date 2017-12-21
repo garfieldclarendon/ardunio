@@ -210,7 +210,7 @@ void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &m
 		{
 			DEBUG_PRINT("processUDPMessage RESET DEVICE CONFIG\n", message.getID());
 			m_downloadConfig = true;
-			serverFound();
+			downloadConfig();
 		}
 	}
 }
@@ -293,19 +293,7 @@ void SignalDevice::serverFound(void)
 	DEBUG_PRINT("SignalDevice::serverFound\n");
 	if (m_downloadConfig)
 	{
-		DEBUG_PRINT("SignalDevice::serverFound DOWNLOADING!\n");
-		m_aspectDownload = new  AspectDownloadStruct;
-		m_aspectDownload->aspectID = 0;
-		m_aspectDownload->next = NULL;
-
-		String json = NetManager.getDeviceConfig(getID());
-		if (json.length() > 0)
-		{
-			parseConfig(json, true);
-			saveConfig(json);
-			m_downloadConfig = false;
-			setup(getID(), getPort());
-		}
+		downloadConfig();
 	}
 }
 
@@ -367,6 +355,23 @@ void SignalDevice::setInvalidAspect(void)
 	m_redMode = PinOn;
 	m_greenMode = PinOn;
 	m_yellowMode = PinOn;
+}
+
+void SignalDevice::downloadConfig(void)
+{
+	DEBUG_PRINT("SignalDevice::downloadConfig DOWNLOADING!\n");
+	m_aspectDownload = new  AspectDownloadStruct;
+	m_aspectDownload->aspectID = 0;
+	m_aspectDownload->next = NULL;
+
+	String json = NetManager.getDeviceConfig(getID());
+	if (json.length() > 0)
+	{
+		parseConfig(json, true);
+		saveConfig(json);
+		m_downloadConfig = false;
+		setup(getID(), getPort());
+	}
 }
 
 void SignalDevice::downloadAspects(void)
