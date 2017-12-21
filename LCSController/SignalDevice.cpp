@@ -209,10 +209,8 @@ void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &m
 		if (message.getID() == getID())
 		{
 			DEBUG_PRINT("processUDPMessage RESET DEVICE CONFIG\n", message.getID());
-			String json = NetManager.getDeviceConfig(getID());
-			parseConfig(json, true);
-			saveConfig(json);
-			setup(getID(), getPort());
+			m_downloadConfig = true;
+			serverFound();
 		}
 	}
 }
@@ -295,7 +293,7 @@ void SignalDevice::serverFound(void)
 	DEBUG_PRINT("SignalDevice::serverFound\n");
 	if (m_downloadConfig)
 	{
-		DEBUG_PRINT("SignalDevice::serverFound DOWNLOADING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+		DEBUG_PRINT("SignalDevice::serverFound DOWNLOADING!\n");
 		m_aspectDownload = new  AspectDownloadStruct;
 		m_aspectDownload->aspectID = 0;
 		m_aspectDownload->next = NULL;
@@ -317,19 +315,16 @@ void SignalDevice::saveAspect(byte index, const SignalAspectStruct *aspect)
 	DEBUG_PRINT("SAVE ASPECT %s\n", fileName.c_str());
 
 	File f = SPIFFS.open(fileName, "w");
-	DEBUG_PRINT("SAVE ASPECT FILE OPEN\n");
 
 	if (f)
 	{
 		f.write((uint8_t*)aspect, sizeof(SignalAspectStruct));
 		f.close();
-		DEBUG_PRINT("SAVE ASPECT FILE SAVED AND CLOSED\n");
 	}
 	else
 	{
 		DEBUG_PRINT("Error saving Signal Aspect file %s\n", fileName.c_str());
 	}
-	DEBUG_PRINT("SAVE ASPECT FILE DONE\n");
 }
 
 bool SignalDevice::loadAspect(byte index, SignalAspectStruct *aspect)
