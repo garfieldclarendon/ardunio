@@ -68,7 +68,7 @@ void PanelInputDevice::processPin(byte pin, byte value)
 		UDPMessage message;
 		message.setMessageID(TRN_ACTIVATE_ROUTE);
 		message.setID(m_routeID);
-		NetManager.sendUdpMessage(message);
+		NetManager.sendUdpMessage(message, true);
 	}
 }
 

@@ -78,7 +78,7 @@ void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
 	{
 		static bool flash = true;
 		unsigned long t = millis();
-		if (t - m_currentBlinkTimeout > m_blinkingTimeout)
+		if ((t - m_currentBlinkTimeout) > m_blinkingTimeout)
 		{
 			m_currentBlinkTimeout = t;
 			if (flash)
@@ -96,7 +96,7 @@ void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
 
 void SignalDevice::updateValues(void)
 {
-	DEBUG_PRINT("SignalDevice::updateValues: START\n");
+	DEBUG_PRINT("SignalDevice::updateValues(%d): START  TOTAL ASPECTS: %d\n", getID(), m_aspectCount);
 	SignalAspectStruct aspect;
 
 	m_redMode = PinOn;
@@ -109,23 +109,27 @@ void SignalDevice::updateValues(void)
 	{
 		if (loadAspect(x, &aspect))
 		{
-			DEBUG_PRINT("SignalDevice::updateValues: ASPECT COUNT %d  %d %d %d\n", aspect.conditionCount, aspect.redMode, aspect.greenMode, aspect.yellowMode);
+			DEBUG_PRINT("SignalDevice::updateValues(%d): ASPECT COUNT %d\n", getID(), aspect.conditionCount);
 			bool valid = aspect.conditionCount > 0;
 			for (int index = 0; index < aspect.conditionCount; index++)
 			{
 				byte state = getCurrentState(aspect.conditions[index].deviceID);
-				DEBUG_PRINT("SignalDevice::updateValues: deviceID %d status %d == %d\n", aspect.conditions[index].deviceID, state, aspect.conditions[index].deviceState);
+				DEBUG_PRINT("SignalDevice::updateValues(%d): deviceID %d status %d == %d\n", getID(), aspect.conditions[index].deviceID, state, aspect.conditions[index].deviceState);
 				if (state > 0)
 				{
 					if (aspect.conditions[index].operand == ConditionEquals)
 					{
 						if (state != aspect.conditions[index].deviceState)
+						{
 							valid = false;
+						}
 					}
 					else if (aspect.conditions[index].operand == ConditionNotEquals)
 					{
 						if (state == aspect.conditions[index].deviceState)
+						{
 							valid = false;
+						}
 					}
 					else
 					{
@@ -150,11 +154,13 @@ void SignalDevice::updateValues(void)
 				m_greenMode = aspect.greenMode;
 				m_yellowMode = aspect.yellowMode;
 				done = true;
-				DEBUG_PRINT("SignalDevice::updateValues: DONE PIN: %d NEW MODES: %d %d %d\n", getPort(), m_redMode, m_greenMode, m_yellowMode);
+				DEBUG_PRINT("SignalDevice::updateValues(%d): DONE PIN: %d NEW MODES: %d %d %d\n", getID(), getPort(), m_redMode, m_greenMode, m_yellowMode);
 			}
 			x++;
 			if (x >= m_aspectCount)
+			{
 				done = true;
+			}
 		}
 		else
 		{
@@ -163,6 +169,7 @@ void SignalDevice::updateValues(void)
 		}
 	}
 	m_updateValues = false;
+	DEBUG_PRINT("SignalDevice::updateValues(%d): END\n", getID());
 }
 
 void SignalDevice::setup(int deviceID, byte port)
@@ -245,23 +252,26 @@ bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 	JsonArray &aspects = json["aspects"];
 	m_aspectCount = aspects.size();
 	byte deviceIndex = 0;
-	AspectDownloadStruct *current = m_aspectDownload;
-	for (byte x = 0; x < aspects.size(); x++)
+	if (setVersion == false)
 	{
-		if (current != NULL)
+		AspectDownloadStruct *current = m_aspectDownload;
+		for (byte x = 0; x < aspects.size(); x++)
 		{
-			if (current->aspectID == 0)
+			if (current != NULL)
 			{
-				current->aspectID = aspects[x]["aspectID"];
-				DEBUG_PRINT("ADDING ASPECT TO DOWNLOAD ARRAY: %d\n", current->aspectID);
-			}
-			else
-			{
-				current->next = new AspectDownloadStruct;
-				current->next->aspectID = aspects[x]["aspectID"];
-				current->next->next = NULL;
-				DEBUG_PRINT("ADDING ASPECT TO DOWNLOAD ARRAY: %d\n", current->next->aspectID);
-				current = current->next;
+				if (current->aspectID == 0)
+				{
+					current->aspectID = aspects[x]["aspectID"];
+					DEBUG_PRINT("ADDING ASPECT TO DOWNLOAD ARRAY: %d\n", current->aspectID);
+				}
+				else
+				{
+					current->next = new AspectDownloadStruct;
+					current->next->aspectID = aspects[x]["aspectID"];
+					current->next->next = NULL;
+					DEBUG_PRINT("ADDING ASPECT TO DOWNLOAD ARRAY: %d\n", current->next->aspectID);
+					current = current->next;
+				}
 			}
 		}
 	}
@@ -327,7 +337,7 @@ bool SignalDevice::loadAspect(byte index, SignalAspectStruct *aspect)
 	memset(aspect, 0, sizeof(SignalAspectStruct));
 	bool ret = false;
 	String fileName(createFileName(index));
-//	DEBUG_PRINT("LOAD ASPECT %s\n", fileName.c_str());
+	DEBUG_PRINT("LOAD ASPECT %s\n", fileName.c_str());
 
 	File f = SPIFFS.open(fileName, "r");
 

@@ -183,7 +183,7 @@ void Controller::sendControllerOnlineMessage(IPAddress &address)
 	if (address == (uint32_t)0)
 		NetManager.sendUdpBroadcastMessage(message);
 	else
-		NetManager.sendUdpMessage(message, address);
+		NetManager.sendUdpMessage(message, address, true);
 }
 
 void Controller::networkOffline(void)

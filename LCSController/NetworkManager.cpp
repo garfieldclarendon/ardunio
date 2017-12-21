@@ -415,9 +415,9 @@ bool NetworkManager::updateNotificationList(int controllerID, const IPAddress &a
 		{
 			if (n->address != address)
 			{
-				updated = true;
 				n->address = address;
 			}
+			updated = true;
 			n = NULL;
 		}
 		else

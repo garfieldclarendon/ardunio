@@ -52,7 +52,7 @@ public:
 	bool getWiFiConnected(void) const;
 
 	void sendUdpBroadcastMessage(const UDPMessage &message);
-	void sendUdpMessage(const UDPMessage &message, bool addToQueue = true);
+	void sendUdpMessage(const UDPMessage &message, bool addToQueue);
 	bool sendUdpMessage(const UDPMessage &message, IPAddress &address, bool addToQueue);
 	String getControllerConfig(unsigned int serialNumber);
 	String getModuleConfig(unsigned int serialNumber, byte address);
