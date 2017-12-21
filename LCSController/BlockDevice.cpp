@@ -99,7 +99,7 @@ void BlockDevice::sendStatusMessage(void)
 	message.setMessageID(BLK_STATUS);
 	message.setID(getID());
 	message.setField(0, m_currentState);
-	NetManager.sendUdpMessage(message);
+	NetManager.sendUdpMessage(message, true);
 }
 
 void BlockDevice::serverFound(void)

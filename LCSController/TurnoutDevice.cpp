@@ -127,7 +127,7 @@ void TurnoutDevice::sendStatusMessage(TurnoutState newState)
 	message.setField(0, newState);
 
 //	DEBUG_PRINT("TurnoutDevice::sendStatusMessage:%d STATUS %d\n", getID(), newState);
-	NetManager.sendUdpMessage(message);
+	NetManager.sendUdpMessage(message, true);
 }
 
 void TurnoutDevice::processUDPMessage(ModuleData &data, const UDPMessage &message)

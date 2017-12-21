@@ -37,7 +37,7 @@ typedef struct SignalAspectStruct SignalAspectStruct;
 
 class SignalDevice : public Device
 {
-	const byte CONFIG_VERSION = 3;
+	const byte CONFIG_VERSION = 4;
 public:
 	SignalDevice();
 	virtual ~SignalDevice();
@@ -67,6 +67,7 @@ private:
 	void saveAspect(byte index, const SignalAspectStruct *aspect);
 	String createFileName(byte index);
 	void setInvalidAspect(void);
+	void downloadConfig(void);
 	void downloadAspects(void);
 	void downloadAspect(int aspectID, byte index);
 
