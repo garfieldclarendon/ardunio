@@ -10,6 +10,8 @@
 #include <WiFiUdp.h>
 #include <WiFiClient.h>
 
+#include "UDPMessage.h"
+
 // Main controller files
 #include "Controller.h"
 #include "GlobalDefs.h"

@@ -53,7 +53,7 @@ void RouteHandler::activateRoute(int routeID)
 //    }
     UDPMessage message;
     message.setMessageID(TRN_ACTIVATE_ROUTE);
-    message.setSerialNumber(routeID);
+    message.setID(routeID);
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 

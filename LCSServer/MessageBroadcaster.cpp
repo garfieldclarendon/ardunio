@@ -72,7 +72,7 @@ QHostAddress MessageBroadcaster::getLocalAddress() const
 
 void MessageBroadcaster::sendUDPMessage(const UDPMessage &message)
 {
-    int sent = socket->writeDatagram(message.getMessageRef(), sizeof(MessageStruct),
+    int sent = socket->writeDatagram(message.getRef(), sizeof(UDPMessageStruct),
                              QHostAddress::Broadcast, m_udpPort);
     qDebug(QString("sendUDPMessage: Message Sent, size: %1").arg(sent).toLatin1());
 }
@@ -81,7 +81,7 @@ bool MessageBroadcaster::sendUDPMessage(const UDPMessage &message, const QString
 {
     bool ret = true;
     int count;
-    if((count = socket->writeDatagram(message.getMessageRef(), sizeof(MessageStruct), QHostAddress(address), m_udpPort)) < 0)
+    if((count = socket->writeDatagram(message.getRef(), sizeof(UDPMessageStruct), QHostAddress(address), m_udpPort)) < 0)
         ret = false;
     else
         ret = true;
@@ -107,7 +107,7 @@ void MessageBroadcaster::processUdpBuffer(const QHostAddress &address)
 {
     qDebug("processUdpBuffer");
     static bool signitureFound = false;
-    int structSize = sizeof(MessageStruct);
+    int structSize = sizeof(UDPMessageStruct);
 
     while(m_udpBuffer.size() >= structSize)
     {
@@ -132,9 +132,9 @@ void MessageBroadcaster::processUdpBuffer(const QHostAddress &address)
         }
         if(signitureFound)
         {
-            unsigned int size = sizeof(MessageStruct);
-            MessageStruct datagram;
-            memset(&datagram, 0, sizeof(MessageStruct));
+            unsigned int size = sizeof(UDPMessageStruct);
+            UDPMessageStruct datagram;
+            memset(&datagram, 0, sizeof(UDPMessageStruct));
             char *buffer = (char *)&datagram;
             *buffer = byte1;
             buffer++;
@@ -145,7 +145,7 @@ void MessageBroadcaster::processUdpBuffer(const QHostAddress &address)
             {
                 data = m_udpBuffer[startIndex];
                 nextByte = m_udpBuffer[++startIndex];
-                if(size <= sizeof(MessageStruct))
+                if(size <= sizeof(UDPMessageStruct))
                 {
                     *buffer = data;
                     size--;
@@ -171,7 +171,7 @@ void MessageBroadcaster::processUdpBuffer(const QHostAddress &address)
             if(message.getMessageID() == SYS_ACK)
             {
                 // ignore the ack for now
-                QString str(QString("GOT ACK MESSAGE FROM %1 FOR: %2").arg(datagram.serialNumber).arg(datagram.transactionNumber));
+                QString str(QString("GOT ACK MESSAGE FROM %1 FOR: %2").arg(datagram.id).arg(datagram.transactionNumber));
                 qDebug(str.toLatin1());
             }
             else
@@ -182,11 +182,11 @@ void MessageBroadcaster::processUdpBuffer(const QHostAddress &address)
                     ack.setMessageID(SYS_ACK);
                     ack.setTransactionNumber(message.getTransactionNumber());
                     qDebug(QString("SEND ACK MESSAGE TO %1 Transaction %2").arg(address.toString()).arg(ack.getTransactionNumber()).toLatin1());
-                    socket->writeDatagram(ack.getMessageRef(), sizeof(MessageStruct), address, m_udpPort);
+                    socket->writeDatagram(ack.getRef(), sizeof(UDPMessageStruct), address, m_udpPort);
                 }
 
                 emit newMessage(message);
-                QString str(QString("Message: %1, Controller: %2 Transaction: %3 byteValue1 %4 byteValue2 %5").arg(datagram.messageID).arg(datagram.serialNumber).arg(datagram.transactionNumber).arg(datagram.payload[0]).arg(datagram.payload[1]));
+                QString str(QString("Message: %1, Controller: %2 Transaction: %3 byteValue1 %4 byteValue2 %5").arg(datagram.messageID).arg(datagram.id).arg(datagram.transactionNumber).arg(datagram.payload[0]).arg(datagram.payload[1]));
                 qDebug(str.toLatin1());
                 emit newRawUDPMessage(str);
                 if(message.getMessageID() == SYS_CONTROLLER_ONLINE && !m_runAsClient)
@@ -222,7 +222,7 @@ void MessageBroadcaster::sendResetNotificationListCommand(int serialNumber)
 {
     UDPMessage outMessage;
     outMessage.setMessageID(SYS_RESET_NOTIFICATION_LIST);
-    outMessage.setSerialNumber(serialNumber);
+    outMessage.setID(serialNumber);
 
     sendUDPMessage(outMessage);
 }
@@ -245,14 +245,14 @@ void MessageBroadcaster::sendKeepAliveMessageSlot()
 
 void MessageBroadcaster::controllerRestarting(const UDPMessage &message)
 {
-    emit controllerResetting(message.getSerialNumber());
+    emit controllerResetting(message.getID());
 }
 
 void MessageBroadcaster::sendResetCommand(int serialNumber)
 {
     UDPMessage message;
     message.setMessageID(SYS_REBOOT_CONTROLLER);
-    message.setSerialNumber(serialNumber);
+    message.setID(serialNumber);
 
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }
@@ -261,7 +261,7 @@ void MessageBroadcaster::sendResetConfigCommand(int serialNumber)
 {
     UDPMessage message;
     message.setMessageID(SYS_RESET_CONFIG);
-    message.setSerialNumber(serialNumber);
+    message.setID(serialNumber);
 
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }
@@ -270,7 +270,7 @@ void MessageBroadcaster::sendResetDeviceConfigCommand(int deviceID)
 {
     UDPMessage message;
     message.setMessageID(SYS_RESET_DEVICE_CONFIG);
-    message.setSerialNumber(deviceID);
+    message.setID(deviceID);
 
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }
@@ -279,7 +279,7 @@ void MessageBroadcaster::sendLockRouteCommand(int routeID, bool lock)
 {
     UDPMessage message;
     message.setMessageID(SYS_LOCK_ROUTE);
-    message.setSerialNumber(routeID);
+    message.setID(routeID);
     message.setField(0, lock);
 
     MessageBroadcaster::instance()->sendUDPMessage(message);
@@ -289,7 +289,7 @@ void MessageBroadcaster::sendDownloadFirmware(int serialNumber)
 {
     UDPMessage message;
     message.setMessageID(SYS_DOWNLOAD_FIRMWARE);
-    message.setSerialNumber(serialNumber);
+    message.setID(serialNumber);
 
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }
@@ -298,7 +298,7 @@ void MessageBroadcaster::sendMessage(int messageID, int serialNumber, quint8 byt
 {
     UDPMessage message;
     message.setMessageID(messageID);
-    message.setSerialNumber(serialNumber);
+    message.setID(serialNumber);
     message.setField(0, byte1);
     message.setField(1, byte2);
     message.setField(2, byte3);

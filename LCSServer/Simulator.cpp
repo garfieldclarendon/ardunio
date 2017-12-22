@@ -15,7 +15,7 @@ void Simulator::newMessage(const UDPMessage &message)
 {
     if(message.getMessageID() == TRN_ACTIVATE)
     {
-        int deviceID = message.getSerialNumber();
+        int deviceID = message.getID();
         TurnoutState newState = (TurnoutState)message.getField(0);
         activateTurnout(deviceID, newState);
     }
@@ -85,7 +85,7 @@ void Simulator::loadData()
 
 void Simulator::handleActivateRouteMessage(const UDPMessage &message)
 {
-    int routeID = message.getSerialNumber();
+    int routeID = message.getID();
 
     QString sql = QString("SELECT id, deviceID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID);
     Database db;
@@ -134,7 +134,7 @@ void Simulator::sendStatus(int deviceID, TurnoutState currentState)
 {
     UDPMessage message;
     message.setMessageID(TRN_STATUS);
-    message.setSerialNumber(deviceID);
+    message.setID(deviceID);
     message.setField(0, currentState);
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }

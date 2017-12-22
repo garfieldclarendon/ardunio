@@ -96,17 +96,17 @@ bool ControllerManager::sendMessage(const ControllerMessage &message)
     QJsonDocument doc;
     bool ret = true;
     QJsonObject obj(message.getObject());
-    obj["transactionID"] = message.getTransactionID();
+    obj["transactionID"] = message.getTransactionNumber();
     doc.setObject(obj);
-    m_messageMap[message.getTransactionID()] = message;
+    m_messageMap[message.getTransactionNumber()] = message;
 
     QByteArray normalizedSignature = QMetaObject::normalizedSignature("sendMessageSlot(int, int, QString)");
     int methodIndex = this->metaObject()->indexOfMethod(normalizedSignature);
     QMetaMethod method = this->metaObject()->method(methodIndex);
     method.invoke(this,
                   Qt::QueuedConnection,
-                  Q_ARG(int, message.getTransactionID()),
-                  Q_ARG(int, message.getSerialNumber()),
+                  Q_ARG(int, message.getTransactionNumber()),
+                  Q_ARG(int, message.getID()),
                   Q_ARG(QString, QString(doc.toJson())));
     return ret;
 }
@@ -364,7 +364,7 @@ void ControllerManager::newUDPMessage(const UDPMessage &message)
 {
     if(message.getMessageID() == SYS_CONTROLLER_ONLINE)
     {
-        int controllerID = message.getSerialNumber();
+        int controllerID = message.getID();
         int majorVersion = message.getField(5);
         int minorVersion = message.getField(6);
         int build = message.getField(7);
@@ -382,7 +382,7 @@ void ControllerManager::newUDPMessage(const UDPMessage &message)
         emit controllerAdded(serialNumber);
         createAndSendNotificationMessage(serialNumber, ControllerStatusConected);
     }
-    int serialNumber = message.getSerialNumber();
+    int serialNumber = message.getID();
     QList<ControllerEntry *> list = m_controllerMap.values();
     for(int x = 0; x < list.count(); x++)
     {

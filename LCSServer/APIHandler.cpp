@@ -576,7 +576,7 @@ void APIHandler::handleSendDeviceConfig(QTcpSocket *socket, const QUrl &url)
 
     UDPMessage message;
     message.setMessageID(SYS_RESET_DEVICE_CONFIG);
-    message.setSerialNumber(deviceID);
+    message.setID(deviceID);
 
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }
