@@ -1,5 +1,6 @@
 #include "BlockDevice.h"
 #include "NetworkManager.h"
+#include "UDPMessage.h"
 
 BlockDevice::BlockDevice()
 	: m_downloadConfig(false), m_currentState(BlockUnknown)

@@ -18,9 +18,10 @@ public:
         return *this;
     }
 
-    int getTransactionID(void) const { return m_transactionID; }
+    int getID(void) const { return m_transactionID; }
     int getSerialNumber(void) const { return m_serialNumber; }
     QJsonObject getObject(void) const { return m_jsonObject; }
+    int getTransactionNumber(void) const { return m_transactionID; }
 
 signals:
 

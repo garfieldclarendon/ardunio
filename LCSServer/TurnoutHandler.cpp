@@ -62,7 +62,7 @@ void TurnoutHandler::activateTurnout(int deviceID, TurnoutState newState)
     }
     UDPMessage message;
     message.setMessageID(TRN_ACTIVATE);
-    message.setSerialNumber(deviceID);
+    message.setID(deviceID);
     message.setField(0, newState);
 
     MessageBroadcaster::instance()->sendUDPMessage(message);

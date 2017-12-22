@@ -1,4 +1,4 @@
-# ardunio
+# Layout Control System (LCS)
 
 A project that uses ESP8266 WiFi modules that communicate with a Raspberry Pi server to control accessories on the Garfield-Clarendon Model Railroad Club.
 
@@ -6,7 +6,7 @@ A project that uses ESP8266 WiFi modules that communicate with a Raspberry Pi se
 
 The code running on the ESP8266 is developed using the Arduino IDE
 
-The ControlServer application running on the Raspberry Pi makes use of the Qt framework.  The ESP8266 uses WebSockets to communicate with the ControlServer application.  A separate RESTful API provides access to commands to activate routes, set turnouts and update data in the configuration database.
+The LCSServer application running on the Raspberry Pi makes use of the Qt framework.  The ESP8266 uses http calls to communicate with the LCSServer application  and UDP unicast messages to communicate with other ESP8266 controllers on the layout.  A separate RESTful API provides access to commands to activate routes, set turnouts and update data in the configuration database.
 
 [API Reference](https://github.com/garfieldclarendon/ardunio/api/index.html)
 

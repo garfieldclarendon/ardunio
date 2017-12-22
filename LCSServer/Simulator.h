@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QJsonArray>
 
+#include "GlobalDefs.h"
 #include "UDPMessage.h"
 
 class Simulator : public QObject
