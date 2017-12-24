@@ -5,6 +5,7 @@
 #include "ControllerManager.h"
 #include "DeviceManager.h"
 #include "PanelHandler.h"
+#include "MessageBroadcaster.h"
 
 StatusDialog::StatusDialog(QWidget *parent) :
     QDialog(parent),
@@ -171,6 +172,7 @@ void StatusDialog::onNCEDataChanged(quint8 data, int blockIndex, int byteIndex)
 
 void StatusDialog::setupControllerList()
 {
+    connect(ui->heartbeatCheckBox, SIGNAL(clicked(bool)), MessageBroadcaster::instance(), SLOT(enableHeartbeatMessages(bool)));
     QStringList header;
     header << "Serial Number" << "Address" << "Ping";
     ui->controllerTable->setColumnCount(header.count());

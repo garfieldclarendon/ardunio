@@ -4088,7 +4088,6 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <part name="I2C4" library="con-amp-quick" deviceset="M05" device=""/>
 <part name="I2C5" library="con-amp-quick" deviceset="M05" device=""/>
 <part name="I2C6" library="con-amp-quick" deviceset="M05" device=""/>
-<part name="I2C7" library="con-amp-quick" deviceset="M05" device=""/>
 <part name="GND2" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="+3V2" library="supply1" deviceset="+3V3" device=""/>
 <part name="R1" library="SparkFun-Resistors" deviceset="RESISTOR" device="PTH-1/4W" value="220"/>
@@ -4131,7 +4130,6 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <instance part="I2C4" gate="G$1" x="137.16" y="104.14" rot="R270"/>
 <instance part="I2C5" gate="G$1" x="137.16" y="116.84" rot="R270"/>
 <instance part="I2C6" gate="G$1" x="137.16" y="129.54" rot="R270"/>
-<instance part="I2C7" gate="G$1" x="137.16" y="139.7" rot="R270"/>
 <instance part="GND2" gate="1" x="17.78" y="78.74" rot="R270"/>
 <instance part="+3V2" gate="G$1" x="17.78" y="73.66" rot="R90"/>
 <instance part="R1" gate="G$1" x="2.54" y="53.34" rot="R90"/>
@@ -4205,7 +4203,6 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <pinref part="I2C6" gate="G$1" pin="1"/>
 <wire x1="132.08" y1="109.22" x2="132.08" y2="121.92" width="0.1524" layer="91"/>
 <junction x="132.08" y="109.22"/>
-<pinref part="I2C7" gate="G$1" pin="1"/>
 <wire x1="132.08" y1="121.92" x2="132.08" y2="132.08" width="0.1524" layer="91"/>
 <junction x="132.08" y="121.92"/>
 </segment>
@@ -4301,7 +4298,6 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <pinref part="I2C6" gate="G$1" pin="2"/>
 <wire x1="134.62" y1="109.22" x2="134.62" y2="121.92" width="0.1524" layer="91"/>
 <junction x="134.62" y="109.22"/>
-<pinref part="I2C7" gate="G$1" pin="2"/>
 <wire x1="134.62" y1="121.92" x2="134.62" y2="132.08" width="0.1524" layer="91"/>
 <junction x="134.62" y="121.92"/>
 </segment>
@@ -4348,7 +4344,6 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <pinref part="I2C6" gate="G$1" pin="3"/>
 <wire x1="137.16" y1="109.22" x2="137.16" y2="121.92" width="0.1524" layer="91"/>
 <junction x="137.16" y="109.22"/>
-<pinref part="I2C7" gate="G$1" pin="3"/>
 <wire x1="137.16" y1="121.92" x2="137.16" y2="132.08" width="0.1524" layer="91"/>
 <junction x="137.16" y="121.92"/>
 </segment>
@@ -4381,7 +4376,6 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <pinref part="I2C6" gate="G$1" pin="5"/>
 <wire x1="142.24" y1="109.22" x2="142.24" y2="121.92" width="0.1524" layer="91"/>
 <junction x="142.24" y="109.22"/>
-<pinref part="I2C7" gate="G$1" pin="5"/>
 <wire x1="142.24" y1="121.92" x2="142.24" y2="132.08" width="0.1524" layer="91"/>
 <junction x="142.24" y="121.92"/>
 <label x="45.72" y="48.26" size="1.778" layer="95"/>
@@ -4415,7 +4409,6 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <pinref part="I2C6" gate="G$1" pin="4"/>
 <wire x1="139.7" y1="109.22" x2="139.7" y2="121.92" width="0.1524" layer="91"/>
 <junction x="139.7" y="109.22"/>
-<pinref part="I2C7" gate="G$1" pin="4"/>
 <wire x1="139.7" y1="121.92" x2="139.7" y2="132.08" width="0.1524" layer="91"/>
 <junction x="139.7" y="121.92"/>
 <label x="45.72" y="50.8" size="1.778" layer="95"/>

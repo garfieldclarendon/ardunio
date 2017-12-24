@@ -41,6 +41,7 @@ public slots:
     void sendMessage(int messageID, int serialNumber, quint8 byte1, quint8 byte2 = 0, quint8 byte3 = 0, quint8 byte4 = 0, quint8 byte5= 0);
     void sendUDPMessage(const UDPMessage &message);
     bool sendUDPMessage(const UDPMessage &message, const QString &address);
+    void enableHeartbeatMessages(bool value);
 
 protected slots:
     void processPendingMessages(void);

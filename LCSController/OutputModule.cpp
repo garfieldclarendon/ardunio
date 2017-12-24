@@ -3,7 +3,7 @@
 #include "Device.h"
 
 OutputModule::OutputModule(void)
-	: m_outputA(0), m_outputB(0)
+	: m_outputA(0), m_outputB(0), m_currentTimeout(0), m_blinkingTimeout(250), m_flash(true)
 {
 }
 
@@ -28,18 +28,21 @@ void OutputModule::processWire(void)
 {
 	byte previousOutputA = m_outputA;
 	byte previousOutputB = m_outputB;
+	ModuleData data(m_outputA, m_outputB);
 
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
 		Device *device = getDevice(x);
 		if (device)
 		{
-			ModuleData data(m_outputA, m_outputB);
 			device->process(data);
-			m_outputA = data.getByteA();
-			m_outputB = data.getByteB();
 		}
 	}
+
+	setFlashingPins(data);
+
+	m_outputA = data.getByteA();
+	m_outputB = data.getByteB();
 
 	if (m_outputA != previousOutputA)
 	{
@@ -53,34 +56,33 @@ void OutputModule::processWire(void)
 	}
 }
 
+void OutputModule::setFlashingPins(ModuleData &data)
+{
+	unsigned long t = millis();
+	if ((t - m_currentTimeout) > m_blinkingTimeout)
+	{
+		m_currentTimeout = t;
+		m_flash = !m_flash;
+
+		for (byte x = 0; x < MAX_DEVICES; x++)
+		{
+			if (data.isFlashSet(x))
+			{
+				data.writeBit(x, m_flash);
+			}
+		}
+	}
+}
+
 void OutputModule::processUDPMessageWire(const UDPMessage &message)
 {
-	byte dataA(m_outputA);
-	byte dataB(m_outputB);
-	dataA = m_expander.readA();
-	dataB = m_expander.readB();
-
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
 		Device *device = getDevice(x);
 		if (device)
 		{
 			ModuleData moduleData;
-			moduleData.setByteA(dataA);
-			moduleData.setByteB(dataB);
-
 			device->processUDPMessage(moduleData, message);
-			dataA = moduleData.getByteA();
-			dataB = moduleData.getByteB();
 		}
-	}
-
-	if (m_outputA != dataA || m_outputB != dataB)
-	{
-//		DEBUG_PRINT("processUDPMessageWire:  CURRENT_STATE %d != %d\n", m_outputA, dataA);
-		m_outputA = dataA;
-		m_outputB = dataB;
-		m_expander.writeA(m_outputA);
-		m_expander.writeB(m_outputB);
 	}
 }

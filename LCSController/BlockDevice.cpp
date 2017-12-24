@@ -3,7 +3,7 @@
 #include "UDPMessage.h"
 
 BlockDevice::BlockDevice()
-	: m_downloadConfig(false), m_currentState(BlockUnknown)
+	: m_downloadConfig(false), m_last(0), m_current(0), m_currentState(BlockUnknown), m_currentTimeout(false)
 {
 }
 
@@ -12,25 +12,8 @@ BlockDevice::~BlockDevice()
 {
 }
 
-void BlockDevice::process(ModuleData &moduleData)
+void BlockDevice::process(ModuleData &)
 {
-	byte data;
-	byte pin;
-	if (getPort() < 8)
-	{
-		data = moduleData.getByteA();
-		pin = getPort();
-	}
-	else
-	{
-		data = moduleData.getByteB();
-		pin = getPort() - 8;
-	}
-
-	if (getPort() < 8)
-		moduleData.setByteA(data);
-	else
-		moduleData.setByteB(data);
 }
 
 void BlockDevice::setup(int deviceID, byte port)
@@ -55,15 +38,23 @@ void BlockDevice::processPin(byte pin, byte value)
 	{
 		DEBUG_PRINT("BlockDevice::processPin  DeviceID %d  Pin %d  value %d\n", getID(), pin, value);
 		BlockState newState;
-		if (value == PinOff)
-			newState = BlockOccupied;
-		else
-			newState = BlockClear;
-		if (m_currentState != newState)
+		long t = millis();
+		if (value == m_last && m_last != m_current && (t - m_currentTimeout) > TIMEOUT_INTERVAL)
 		{
-			m_currentState = newState;
-			sendStatusMessage();
+			m_currentTimeout = t;
+			m_current = value;
+
+			if (value == PinOff)
+				newState = BlockOccupied;
+			else
+				newState = BlockClear;
+			if (m_currentState != newState)
+			{
+				m_currentState = newState;
+				sendStatusMessage();
+			}
 		}
+		m_last = value;
 	}
 }
 

@@ -2,7 +2,7 @@
 #include "NetworkManager.h"
 
 PanelOutputDevice::PanelOutputDevice()
-	: m_downloadConfig(false), m_itemID(-1), m_onValue(0), m_flashValue(0), m_currentValue(0), m_currentBlinkTimeout(0), m_blinkingTimeout(250)
+	: m_downloadConfig(false), m_itemID(-1), m_onValue(0), m_flashValue(0), m_currentValue(0)
 {
 }
 
@@ -12,45 +12,19 @@ PanelOutputDevice::~PanelOutputDevice()
 
 void PanelOutputDevice::process(ModuleData &moduleData)
 {
-	byte data;
-	byte pin;
-	if (getPort() < 8)
-	{
-		data = moduleData.getByteA();
-		pin = getPort();
-	}
-	else
-	{
-		data = moduleData.getByteB();
-		pin = getPort() - 8;
-	}
-//	DEBUG_PRINT("PanelOutputDevice::process: BEFORE %d\n", data);
-
 	if (m_currentValue == m_onValue)
 	{
-		bitWrite(data, pin, HIGH);
+		moduleData.writeBit(getPort(), HIGH);
 	}
 	else if (m_currentValue == m_flashValue)
 	{
-		static bool flash = true;
-		unsigned long t = millis();
-		if (t - m_currentBlinkTimeout > m_blinkingTimeout)
-		{
-			m_currentBlinkTimeout = t;
-			bitWrite(data, pin, flash);
-			flash = !flash;
-		}
+		moduleData.setFlashOn(getPort());
 	}
 	else
 	{
-		bitWrite(data, pin, LOW);
+		moduleData.writeBit(getPort(), LOW);
 	}
-
 //	DEBUG_PRINT("PanelOutputDevice::process: AFTER %d\n", data);
-	if (getPort() < 8)
-		moduleData.setByteA(data);
-	else
-		moduleData.setByteB(data);
 }
 
 void PanelOutputDevice::setup(int deviceID, byte port)
@@ -66,14 +40,13 @@ void PanelOutputDevice::setup(int deviceID, byte port)
 		m_downloadConfig = (parseConfig(json, false) == false);
 }
 
-void PanelOutputDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message)
+void PanelOutputDevice::processUDPMessage(ModuleData &, const UDPMessage &message)
 {
 	if (message.getMessageID() == TRN_STATUS || message.getMessageID() == BLK_STATUS)
 	{
 		if (m_itemID == message.getID())
 		{
 			m_currentValue = message.getField(0);
-			process(moduleData);
 		}
 	}
 	else if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG)

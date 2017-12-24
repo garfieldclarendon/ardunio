@@ -4,6 +4,7 @@
 #include "Module.h"
 #include "Expander16Bit.h"
 #include "GlobalDefs.h"
+#include "ModuleData.h"
 
 class OutputModule : public Module
 {
@@ -23,11 +24,14 @@ class OutputModule : public Module
 	void processNoWire(void) override { }
 
 private:
+	void setFlashingPins(ModuleData &data);
 
 	Expander16Bit m_expander;
 	byte m_outputA;
 	byte m_outputB;
-
+	unsigned long m_currentTimeout;
+	int m_blinkingTimeout;
+	bool m_flash;
 };
 
 

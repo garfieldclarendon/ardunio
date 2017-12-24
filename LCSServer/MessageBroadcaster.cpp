@@ -91,6 +91,16 @@ bool MessageBroadcaster::sendUDPMessage(const UDPMessage &message, const QString
     return ret;
 }
 
+void MessageBroadcaster::enableHeartbeatMessages(bool value)
+{
+    setRunAsClient(value);
+    if(value)
+    {
+        sendHeartbeatSlot(UDPMessage());
+        QTimer::singleShot(HEARTBEAT_INTERVAL, this, SLOT(heartbeatTimerSlot()));
+    }
+}
+
 void MessageBroadcaster::processPendingMessages()
 {
     int available = socket->pendingDatagramSize();
@@ -231,7 +241,8 @@ void MessageBroadcaster::heartbeatTimerSlot()
 {
     UDPMessage message;
     sendHeartbeatSlot(message);
-    QTimer::singleShot(HEARTBEAT_INTERVAL, this, SLOT(heartbeatTimerSlot()));
+    if(m_runAsClient)
+        QTimer::singleShot(HEARTBEAT_INTERVAL, this, SLOT(heartbeatTimerSlot()));
 }
 
 void MessageBroadcaster::sendKeepAliveMessageSlot()

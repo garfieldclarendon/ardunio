@@ -22,6 +22,9 @@ public:
 private:
 	bool parseConfig(String &jsonText, bool setVersion);
 	bool m_downloadConfig;
+	byte m_last;
+	byte m_current;
 	BlockState m_currentState;
+	unsigned long m_currentTimeout;
 };
 

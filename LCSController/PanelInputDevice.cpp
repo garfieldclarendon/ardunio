@@ -13,23 +13,6 @@ PanelInputDevice::~PanelInputDevice()
 
 void PanelInputDevice::process(ModuleData &moduleData)
 {
-	byte data;
-	byte pin;
-	if (getPort() < 8)
-	{
-		data = moduleData.getByteA();
-		pin = getPort();
-	}
-	else
-	{
-		data = moduleData.getByteB();
-		pin = getPort() - 8;
-	}
-
-	if (getPort() < 8)
-		moduleData.setByteA(data);
-	else
-		moduleData.setByteB(data);
 }
 
 void PanelInputDevice::setup(int deviceID, byte port)

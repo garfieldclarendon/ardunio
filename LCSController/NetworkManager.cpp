@@ -94,10 +94,10 @@ void NetworkManager::processUDP(void)
 	else
 		packetSize = m_udp.parsePacket();
 
-	if (packetSize > 0)
-	{
-		DEBUG_PRINT("processUDP:  PACKET SIZE: %d\n", packetSize);
-	}
+	//if (packetSize > 0)
+	//{
+	//	DEBUG_PRINT("processUDP:  PACKET SIZE: %d\n", packetSize);
+	//}
 
 	// Find the start of a valid message.
 	// ...ignore everything else
@@ -156,7 +156,7 @@ void NetworkManager::processUDP(void)
 		}
 		else
 		{
-			DEBUG_PRINT("INDEX 0 IS: %d\n", m_udp.destinationIP()[0]);
+//			DEBUG_PRINT("INDEX 0 IS: %d\n", m_udp.destinationIP()[0]);
 			if (m_udp.destinationIP()[0] != 255) // Don't send ACK for broadcast messages
 			{
 				UDPMessage ack;
@@ -225,7 +225,7 @@ bool NetworkManager::sendUdpMessage(const UDPMessage &message, IPAddress &addres
 
 	bool ret = false;
 	DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	DEBUG_PRINT("MessageSize: %d  MessageID: %d ID: %d TO %s\n", sizeof(UDPMessageStruct), message.getMessageID(), message.getID(), address.toString().c_str());
+	DEBUG_PRINT("MessageSize: %d  MessageID: %d ID: %d  Field0: %d TO %s\n", sizeof(UDPMessageStruct), message.getMessageID(), message.getID(), message.getField(0), address.toString().c_str());
 
 	if (m_udp.beginPacket(address, UdpPort) == 0)
 	{
@@ -240,6 +240,7 @@ bool NetworkManager::sendUdpMessage(const UDPMessage &message, IPAddress &addres
 		}
 		else
 		{
+			m_udp.flush();
 			ret = true;
 		}
 	}
@@ -459,7 +460,6 @@ void NetworkManager::setNotificationList(const String &jsonText)
 
 void NetworkManager::addMessageToQueue(const UDPMessage &message, const IPAddress &address)
 {
-	DEBUG_PRINT("addMessageToQueue: %d\n", message.getTransactionNumber());
 	byte count = 0;
 	MessageQueueStruct *current = m_firstMessageQueue;
 	bool done = false;
@@ -481,6 +481,7 @@ void NetworkManager::addMessageToQueue(const UDPMessage &message, const IPAddres
 	{
 		if (current->message.getMessageID() == 0)
 		{
+//			DEBUG_PRINT("addMessageToQueue: %d\n", message.getTransactionNumber());
 			current->count = 0;
 			current->message = message;
 			current->address = address;
@@ -501,12 +502,14 @@ void NetworkManager::addMessageToQueue(const UDPMessage &message, const IPAddres
 	{
 		if (count < 32)
 		{
+//			DEBUG_PRINT("addMessageToQueue(2): %d\n", message.getTransactionNumber());
 			MessageQueueStruct *hold = current;
 			current = new MessageQueueStruct;
 			hold->next = current;
 		}
 		else
 		{
+//			DEBUG_PRINT("addMessageToQueue: OVERFLOW %d\n", message.getTransactionNumber());
 			current = m_firstMessageQueue; //OVERFLOW!  Overwrite the oldest (first)
 		}
 

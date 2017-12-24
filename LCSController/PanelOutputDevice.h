@@ -26,7 +26,5 @@ private:
 	byte m_onValue;
 	byte m_flashValue;
 	byte m_currentValue;
-	unsigned long m_currentBlinkTimeout;
-	int m_blinkingTimeout;
 };
 

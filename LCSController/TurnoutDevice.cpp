@@ -3,7 +3,8 @@
 #include "NetworkManager.h"
 
 TurnoutDevice::TurnoutDevice()
-	: m_lastState(TrnUnknown), m_currentState(TrnUnknown), m_currentTimeout(0), m_currentData(0), m_lockedRoute(0), m_downloadConfig(false), m_motorBA(0), m_inputBA(false)
+	: m_lastState(TrnUnknown), m_currentState(TrnUnknown), m_currentTimeout(0), m_currentData(0),
+	m_lockedRoute(0), m_downloadConfig(false), m_motorBA(0), m_inputBA(false)
 {
 	memset(m_routeMap, 0, sizeof(TurnoutRouteStruct) * MAX_ROUTE_ENTRIES);
 }
@@ -21,6 +22,7 @@ void TurnoutDevice::process(ModuleData &data)
 	{
 		if (current == m_lastState && m_lastState != m_currentState)
 		{
+			m_currentTimeout = current;
 //			DEBUG_PRINT("TURNOUTDEVICE::process ID: %d  LAST STATE: %d  CURRENT STATE: %d\n", getID(), m_lastState, m_currentState);
 			if (m_currentState == TrnToDiverging && current == TrnNormal)
 			{
