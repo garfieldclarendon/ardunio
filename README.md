@@ -10,7 +10,7 @@ The LCSServer application running on the Raspberry Pi makes use of the Qt framew
 
 [Source Code Documentation](https://garfieldclarendon.github.io/html/index.html)
 
-[API Documentation](https://garfieldclarendon.github.io/html/apidoc/index.html)
+[API Documentation](https://garfieldclarendon.github.io/apidoc/index.html)
 
 
 ## Built With
