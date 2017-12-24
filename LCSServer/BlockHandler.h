@@ -16,7 +16,7 @@
  * @apiGroup Block
  *
  * @apiParam {Number} serialNumber The controller's serial number (chip ID).
- * @apiParam {Number,0-8} address The sending module's address.
+ * @apiParam {Number=0-8} address The sending module's address.
  * @apiParam {Number} classCode The sending module's classification.
  * @apiParam {Number} action The action requested.  0=Get,1=Add,2=Update,3=Delete
  * @apiDescription Sent by a controller's BlockModule indicating the state of the block it's monitoring has changed.
