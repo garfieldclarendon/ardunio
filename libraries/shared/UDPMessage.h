@@ -6,60 +6,92 @@ struct UDPMessageStruct
 	unsigned char startSig[2]; ///< 2 byte start-of-message signature set to 0XEE 0XEF.
 	unsigned char messageID;  ///< The ID of the message.
 	long id; ///<  The ID of either the sender or the target of the message.  Could be the deviceID, controllerID, serialNumber or routeID.
-	unsigned char transactionNumber; ///<  The message transaction number.
+    unsigned char transactionNumber; ///<  The message transaction number.  A unique number auto-generated for each message.
     unsigned char payload[14];  ///< 14 byte payload accessable as Field[0] to Field[13] through the getField() member.
 	unsigned char endSig[2]; ///< 2 byte end-of-message signalture set to 0XEF 0XEE.
 };
-typedef struct MessageStruct MessageStruct;
+typedef struct UDPMessageStruct UDPMessageStruct;
 /// UDPMessage
-/// \Brief Class for handling UDP messages sent between controllers and the application server.
+/// \brief  A class for handling UDP messages sent between controllers and the application server.
 /// This class along with the \ref UDPMessageStruct "Message Structure" contains the data layout of a UDP message.  Messages are sent
 /// from controller-to-controller in a peer-to-peer fasion using UDP uni-cast.  Each controller contains a list of "controllers to notify" in its configuration
 /// data.  Each time a device needs to send a command or status message, the controller's \ref NetworkManager "Network Manager" sends the message to all controllers
 /// contained in the notification list.  Each controller listens for the #SYS_CONTROLLER_ONLINE broadcast message which is sent
-/// by each controller upon startup.  Upon resceiving this message, the controller checks to see if the controller's ID is contained in its notification list and, if so, responds
-/// by sending device status messages to the sending controller.  If the controller misses this message, the controller sends a #SYS_FIND_CONTROLLER broadcast message
+/// by each controller upon startup.  Upon resceiving this message, the controller checks to see if the controller's ID is contained in its notification list and, if so,
+/// stores the address of the sending controller which is stored in field[0] - field[3] and then responds by sending device status messages.
+/// If the controller misses this message, the controller sends a #SYS_FIND_CONTROLLER broadcast message
 /// every 3 seconds for each controller in its notification list until it recieves a corresponding #SYS_CONTROLLER_ONLINE message from each controller.
 class UDPMessage
 {
   public:
-	  UDPMessage(void);
+    /// Contstructor
+    /// Creates a blank, invalid contsturctor auto-generating the transaction number by incrementing the static
+    UDPMessage(void);
+    /// Copy constructor
+    /// Creates a new UDPMessage copying the information from other creating an exact copy (including the transaction number)
+    /// @param other A UDPMessage to use as the soruce
 	UDPMessage(const UDPMessage &other)
 	{
-		messageStruct = other.messageStruct;
+        m_messageStruct = other.m_messageStruct;
 	}
+    /// Convenience constructor
+    /// Creates a new UDPMessage using the data supplied in the supplied UDPMessageStruct
+    /// @param other A UDPMessageStruct to use as the soruce
     UDPMessage(const UDPMessageStruct &other)
     {
-        messageStruct = other;
+        m_messageStruct = other;
     }
-	UDPMessage& operator=(const UDPMessage &other) { messageStruct = other.messageStruct; return *this; }
+    /// Assignment
+    /// Replaces the message data; copying the information from other creating an exact copy (including the transaction number)
+    /// @param other A UDPMessage to use as the soruce
+    UDPMessage& operator=(const UDPMessage &other) { m_messageStruct = other.m_messageStruct; return *this; }
 
-	bool isValid(void) const { return (messageStruct.messageID > 0);  }
-	void setMessageID(unsigned char value) { messageStruct.messageID = value;  }
-	void setID(long value) { messageStruct.id = value; }
-	void setField(unsigned char fieldIndex, unsigned char value) { messageStruct.payload[fieldIndex] = value; }
+    /// Returns true if the message is considered valid.  At minimum, a valid message has its message ID set to a value greater than zero.
+    bool isValid(void) const { return (m_messageStruct.messageID > 0);  }
+    /// Setter function.  Sets the message ID.
+    /// @param value \ref UDPMessageID "Message ID"
+    void setMessageID(unsigned char value) { m_messageStruct.messageID = value;  }
+    /// Setter function.  Sets the ID.
+    /// @param value an long integer value that represents the controller's ID, serial number or a route ID depending on the \ref UDPMessageID "message".
+    void setID(long value) { m_messageStruct.id = value; }
+    /// Setter function.  Sets one of the bytes in the 14 byte payload.
+    /// @param fieldIndex index of the field to set
+    /// @param value a byte containing the new value.
+    void setField(unsigned char fieldIndex, unsigned char value) { m_messageStruct.payload[fieldIndex] = value; }
 
-	char *getRef(void) const { return (char *)&messageStruct;  }
+    /// returns a reference to the internal \ref UDPMessageStruct
+    char *getRef(void) const { return (char *)&m_messageStruct;  }
 
-	unsigned char getMessageID(void) const { return messageStruct.messageID; }
-	long getID(void) const { return messageStruct.id; }
-	unsigned char getTransactionNumber(void) const { return messageStruct.transactionNumber; }
-	void setTransactionNumber(unsigned char value) { messageStruct.transactionNumber = value; }
-	unsigned char getField(unsigned char fieldIndex) const
+    /// returns the messageID.
+    unsigned char getMessageID(void) const { return m_messageStruct.messageID; }
+    /// returns the ID
+    long getID(void) const { return m_messageStruct.id; }
+    /// returns the transaction number
+    unsigned char getTransactionNumber(void) const { return m_messageStruct.transactionNumber; }
+    /// Setter function.  Sets the transaction number overwriting the auto-generated number;
+    /// @param value the new trasaction number.
+    void setTransactionNumber(unsigned char value) { m_messageStruct.transactionNumber = value; }
+    /// Returns one of the bytes in the 14 byte payload.
+    /// @param fieldIndex index of the field to retrieve.
+    unsigned char getField(unsigned char fieldIndex) const
 	{
-		return messageStruct.payload[fieldIndex];
+        return m_messageStruct.payload[fieldIndex];
 	}
-	void copyFrom(const UDPMessage &other)
+    /// replaces the data of the message creating a copy
+    /// Replaces the message data; copying the information from other.  This function does NOT copy the transaction number, rather, a new
+    /// transaction number is created.
+    /// @param other A UDPMessage to use as the soruce
+    void copyFrom(const UDPMessage &other)
 	{
-		messageStruct = other.messageStruct;
-		if (nextTransactionNumber < 255)
-			nextTransactionNumber++;
+        m_messageStruct = other.m_messageStruct;
+        if (m_nextTransactionNumber < 255)
+            m_nextTransactionNumber++;
 		else
-			nextTransactionNumber++;
-		messageStruct.transactionNumber = nextTransactionNumber;
+            m_nextTransactionNumber++;
+        m_messageStruct.transactionNumber = m_nextTransactionNumber;
 	}
 
 private:
-	UDPMessageStruct messageStruct;
-	static unsigned char nextTransactionNumber;
+    UDPMessageStruct m_messageStruct; ///< Message structure which stores the actual message data
+    static unsigned char m_nextTransactionNumber; ///< A static byte containing the transaction number.  This value is auto-incremented; rolling over when the value reaches 255
 };
