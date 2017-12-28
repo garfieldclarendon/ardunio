@@ -1,6 +1,7 @@
 #ifndef DEVICEMODEL_H
 #define DEVICEMODEL_H
-#include "../LCSServer/UDPMessage.h"
+#include "UDPMessage.h"
+#include "GlobalDefs.h"
 #include "EntityModel.h"
 
 class JSonModel;

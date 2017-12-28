@@ -79,7 +79,7 @@ void ControllerModuleModel::apiReady()
     if(m_jsonModel && API::instance()->getApiReady())
     {
         QJsonDocument jsonDoc;
-        QString json = API::instance()->getSignalAspectList(m_controllerID);
+        QString json = API::instance()->getControllerModuleListByControllerID(m_controllerID);
         jsonDoc = QJsonDocument::fromJson(json.toLatin1());
         beginResetModel();
         m_jsonModel->setJson(jsonDoc, false);

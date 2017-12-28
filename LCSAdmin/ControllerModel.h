@@ -1,6 +1,7 @@
 #ifndef CONTROLLERMODEL_H
 #define CONTROLLERMODEL_H
-#include "../LCSServer/UDPMessage.h"
+#include "UDPMessage.h"
+#include "GlobalDefs.h"
 #include "EntityModel.h"
 
 class JSonModel;

@@ -17,6 +17,7 @@ GroupBox {
 
     ListView {
         anchors.fill: parent
+        clip: true
 
         Component {
             id: detialDelegate

@@ -25,6 +25,10 @@ Item {
         text: "CLASS>MULTI-CONTROLLER"
     }
 
+    ControllerModuleModel {
+        id: moduleModel
+    }
+
     DeviceModel {
         id: deviceModel
         onClassChanged: {
@@ -107,22 +111,23 @@ Item {
         TrackSingle {
             isActive: false
             model: deviceModel
-            deviceID: 1
+            blockStatus: 12
+            deviceID: 12
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignBottom
         }
         TrackTurnout {
             isActive: true
             model: deviceModel
-            deviceID: 4
+            deviceID: 18
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignBottom
         }
         TrackSingle {
             isActive: true
-            blockStatus: 2
+            blockStatus: 14
             model: deviceModel
-            deviceID: 5
+            deviceID: 13
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignBottom
         }
@@ -153,30 +158,13 @@ Item {
             font.bold: true
             Layout.fillWidth: true
         }
-/*
-    DeviceUnknown,
-    DeviceTurnout,
-    DevicePanelInput,
-    DevicePanelOutput,
-    DeviceSignal = 4,
-    DeviceSemaphore = 5,
-    DeviceBlock = 6,
-    DevicePanel = 7 // For old versions--no longer used
-  */
         ComboBox {
             id: deviceTypeCombo
             Layout.fillWidth: true
-            model: ListModel {
-                id: classModel
-                ListElement { text: "All"; classID: 0 }
-                ListElement { text: "Turnout"; classID: 1 }
-                ListElement { text: "Panel Input"; classID: 2 }
-                ListElement { text: "Panel Output"; classID: 3 }
-                ListElement { text: "Signal"; classID: 4 }
-                ListElement { text: "Semaphore"; classID: 5 }
-                ListElement { text: "Block"; classID: 6 }
-            }
-            onCurrentIndexChanged: deviceModel.deviceClass =  classModel.get(currentIndex).classID
+            model: moduleModel
+            currentIndex: -1
+            textRole: "moduleName"
+            onCurrentIndexChanged: deviceModel.controllerModuleID =  moduleModel.data(currentIndex, "controllerModuleID")
         }
 
         CRUDButtons {

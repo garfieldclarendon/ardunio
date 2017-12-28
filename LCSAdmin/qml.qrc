@@ -25,5 +25,7 @@
         <file>NewController.qml</file>
         <file>Images/printer.png</file>
         <file>DeviceProperties.qml</file>
+        <file>DeviceList.qml</file>
+        <file>DeviceListPage.qml</file>
     </qresource>
 </RCC>

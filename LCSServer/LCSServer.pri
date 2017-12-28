@@ -21,7 +21,8 @@ HEADERS += $$PWD/AppService.h \
     $$PWD/controllermessage.h \
     $$PWD/EntityMetadata.h \
     $$PWD/Simulator.h \
-    $$PWD/../libraries/shared/UDPMessage.h
+    $$PWD/../libraries/shared/UDPMessage.h \
+    $$PWD/APIEntity.h
 
 #Source files
 SOURCES += $$PWD/main.cpp \
@@ -47,7 +48,8 @@ SOURCES += $$PWD/main.cpp \
     $$PWD/controllermessage.cpp \
     $$PWD/EntityMetadata.cpp \
     $$PWD/Simulator.cpp \
-    $$PWD/../libraries/shared/UDPMessage.cpp
+    $$PWD/../libraries/shared/UDPMessage.cpp \
+    $$PWD/APIEntity.cpp
 
 win32 {
 HEADERS += $$PWD/StatusDialog.h

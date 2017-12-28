@@ -18,7 +18,7 @@ HEADERS += API.h \
            DeviceModel.h \
            JSonModel.h \
            UI.h \
-    ../LCSServer/UDPMessage.h \
+    ../libraries/shared/UDPMessage.h \
     ../LCSServer/MessageBroadcaster.h \
     Entity.h \
     SignalAspectModel.h \
@@ -44,7 +44,7 @@ SOURCES += main.cpp \
            API.cpp \
            JSonModel.cpp \
            UI.cpp \
-            ../LCSServer/UDPMessage.cpp \
+    ../libraries/shared/UDPMessage.cpp \
             ../LCSServer/MessageBroadcaster.cpp \
     Entity.cpp \
     SignalAspectModel.cpp \

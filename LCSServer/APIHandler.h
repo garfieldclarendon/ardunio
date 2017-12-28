@@ -127,14 +127,11 @@ private:
     void handleControllerResetConfig(QTcpSocket *socket, const QUrl &url);
     void handleResetNotificationList(QTcpSocket *socket, const QUrl &url);
     void handleLockRoute(QTcpSocket *socket, const QUrl &url);
-
-    void handleEntity(QTcpSocket *socket, const QUrl &, const QString &actionText, const QString &jsonText);
-    QString fetchEntity(const QString &name);
-    QString saveEntity(const QString &name, const QString &jsonText);
-    QString addEntity(const QString &name, const QString &jsonText);
-    void deleteEntity(const QString &name, const QString &jsonText);
+    void handleCopyDevice(QTcpSocket *socket, const QUrl &url);
 
 private:
+    QJsonArray getDeviceList(long serialNumber, int controllerID, int moduleID, int classCode, int deviceID);
+    void copyDeviceProperties(int fromID, int toID);
 };
 
 #endif // APIHANDLER_H

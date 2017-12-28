@@ -54,8 +54,9 @@ ApplicationWindow {
                     Layout.fillWidth: true
 
                     onCurrentItemChanged: {
-                        if(depth == 1)
-                            navigationBar.titleText = "";
+                        navigationBar.titleText = deviceStackView.currentItem.title
+//                        if(depth == 1)
+//                            navigationBar.titleText = "";
                     }
 
                     onWidthChanged: {
@@ -69,17 +70,21 @@ ApplicationWindow {
 
                     Component {
                         id: list
-                        ManageDevices2 {
+                        DeviceListPage {
                             id: devices
-                            onAddClicked: {
-                                var deviceEntity;
-                                deviceEntity = list.model.getEntity(-1);
-                                createDetailPanel(deviceClass, deviceEntity);
-                            }
-                            onEditClicked: {
-                                 createDetailPanel(deviceClass, entity);
-                            }
                         }
+
+//                        ManageDevices2 {
+//                            id: devices
+//                            onAddClicked: {
+//                                var deviceEntity;
+//                                deviceEntity = list.model.getEntity(-1);
+//                                createDetailPanel(deviceClass, deviceEntity);
+//                            }
+//                            onEditClicked: {
+//                                 createDetailPanel(deviceClass, entity);
+//                            }
+//                        }
                     }
 
                     Component.onCompleted: {

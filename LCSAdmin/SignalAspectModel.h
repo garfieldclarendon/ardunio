@@ -1,7 +1,7 @@
 #ifndef SIGNALASPECTMODEL_H
 #define SIGNALASPECTMODEL_H
 
-#include "../LCSServer/UDPMessage.h"
+#include "UDPMessage.h"
 #include "EntityModel.h"
 
 class JSonModel;

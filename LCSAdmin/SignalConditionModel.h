@@ -1,7 +1,7 @@
 #ifndef SIGNALCONDITIONMODEL_H
 #define SIGNALCONDITIONMODEL_H
 
-#include "../LCSServer/UDPMessage.h"
+#include "UDPMessage.h"
 #include "EntityModel.h"
 
 class JSonModel;

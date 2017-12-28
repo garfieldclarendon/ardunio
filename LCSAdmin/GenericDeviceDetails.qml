@@ -156,8 +156,24 @@ Rectangle {
         Label {
             text: "Controller Module:"
             font.bold: true
+            font.underline: true
+            color: "blue"
             horizontalAlignment: Qt.AlignRight
             Layout.fillWidth: true
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: {
+                    cursorShape = Qt.OpenHandCursor;
+                }
+                onExited: {
+                    cursorShape = Qt.ArrowCursor;
+                }
+
+                onDoubleClicked: {
+                    console.debug("CONTROLLER MODULE DOUBL-CLICKED!!!");
+                }
+            }
         }
         TextField {
             id: moduleEdit
@@ -209,8 +225,24 @@ Rectangle {
         Label {
             text: "Serial Number (controller):"
             font.bold: true
+            font.underline: true
+            color: "blue"
             horizontalAlignment: Qt.AlignRight
             Layout.fillWidth: true
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: {
+                    cursorShape = Qt.OpenHandCursor;
+                }
+                onExited: {
+                    cursorShape = Qt.ArrowCursor;
+                }
+
+                onDoubleClicked: {
+                    console.debug("SERIAL NUMBER DOUBL-CLICKED!!!");
+                }
+            }
         }
         Label {
             id: serialNumber
