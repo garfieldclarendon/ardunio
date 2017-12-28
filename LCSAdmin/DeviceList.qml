@@ -59,7 +59,7 @@ Rectangle {
                     font.bold: true
                     color: "blue"
                     horizontalAlignment: Text.AlignHCenter
-                    Layout.minimumWidth: parent.width * .20
+                    Layout.minimumWidth: parent.width * .15
                     text: qsTr("Name")
                 }
                 Text {
