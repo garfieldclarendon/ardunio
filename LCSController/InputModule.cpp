@@ -25,6 +25,16 @@ void InputModule::processWire(void)
 {
 	// Read and process Port A
 	byte input = m_expander.readA();
+	byte inputb = m_expander.readB();
+
+	ModuleData moduleData(input, inputb);
+
+	for (byte x = 0; x < MAX_DEVICES; x++)
+	{
+		Device *device = getDevice(x);
+		if (device)
+			device->process(moduleData);
+	}
 
 	if (input != m_inputA)
 	{
@@ -43,7 +53,7 @@ void InputModule::processWire(void)
 		m_inputA = input;
 	}
 	// Read and process Port B
-	input = m_expander.readB();
+	input = inputb;
 	if (input != m_inputB)
 	{
 		DEBUG_PRINT("InputModule::processB  Module Address: %d\nPin values: %02x\n", getAddress(), input);

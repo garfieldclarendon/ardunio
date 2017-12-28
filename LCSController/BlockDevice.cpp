@@ -12,8 +12,39 @@ BlockDevice::~BlockDevice()
 {
 }
 
-void BlockDevice::process(ModuleData &)
+void BlockDevice::process(ModuleData &data)
 {
+	BlockState newState;
+	byte value;
+	byte pin;
+	if (getPort() < 8)
+	{
+		value = data.getByteA();
+		pin = getPort();
+	}
+	else
+	{
+		value = data.getByteB();
+		pin = getPort() - 8;
+	}
+
+	long t = millis();
+	if (value == m_last && m_last != m_current && (t - m_currentTimeout) > TIMEOUT_INTERVAL)
+	{
+		m_currentTimeout = t;
+		m_current = value;
+
+		if (bitRead(value, pin) == LOW)
+			newState = BlockOccupied;
+		else
+			newState = BlockClear;
+		if (m_currentState != newState)
+		{
+			m_currentState = newState;
+			sendStatusMessage();
+		}
+	}
+	m_last = value;
 }
 
 void BlockDevice::setup(int deviceID, byte port)
@@ -38,10 +69,11 @@ void BlockDevice::processPin(byte pin, byte value)
 	{
 		DEBUG_PRINT("BlockDevice::processPin  DeviceID %d  Pin %d  value %d\n", getID(), pin, value);
 		BlockState newState;
-		long t = millis();
-		if (value == m_last && m_last != m_current && (t - m_currentTimeout) > TIMEOUT_INTERVAL)
+//		long t = millis();
+//		if (value == m_last && m_last != m_current && (t - m_currentTimeout) > TIMEOUT_INTERVAL)
+		if (value != m_current)
 		{
-			m_currentTimeout = t;
+//			m_currentTimeout = t;
 			m_current = value;
 
 			if (value == PinOff)
@@ -54,7 +86,7 @@ void BlockDevice::processPin(byte pin, byte value)
 				sendStatusMessage();
 			}
 		}
-		m_last = value;
+//		m_last = value;
 	}
 }
 
