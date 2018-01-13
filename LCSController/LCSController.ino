@@ -117,11 +117,6 @@ void setup()
 	controller.setSendStatusCallback(sendStatusMessage);
 	controller.setup((ControllerClassEnum)controllerClass, controllerID);
 
-	NetManager.setUdpMessageCallback(udpMessageCallback);
-	NetManager.setWIFIConnectCallback(networkConnected);
-	NetManager.setNotificationListChangedCallback(notificationListChanged);
-	NetManager.init(8080, controllerID);
-
 	for (byte x = 0; x <moduleCount; x++)
 	{
 		Module *module = modules[x];
@@ -138,6 +133,11 @@ void setup()
 			}
 		}
 	}
+
+	NetManager.setUdpMessageCallback(udpMessageCallback);
+	NetManager.setWIFIConnectCallback(networkConnected);
+	NetManager.setNotificationListChangedCallback(notificationListChanged);
+	NetManager.init(8080, controllerID);
 
 	DEBUG_PRINT("setup complete\n");
 }
