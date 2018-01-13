@@ -101,6 +101,7 @@ void JSonModel::setEntity(int row, const Entity entity, bool emitSignal)
             QModelIndex start = index(row, 0);
             QModelIndex end = index(row, columnCount() - 1);
             emit dataChanged(start, end);
+            emit modelChanged();
         }
     }
 }
@@ -153,6 +154,7 @@ bool JSonModel::setData(const QModelIndex &index, const QVariant &value, int rol
             emit dataChanged(index, index);
             if(m_modifiedRows.contains(index.row()) == false)
                 m_modifiedRows << index.row();
+            emit modelChanged();
             return true;
         }
     }
@@ -172,6 +174,7 @@ bool JSonModel::setData(int row, const QString &key, const QVariant &value, int 
             emit dataChanged(index, index);
             if(m_modifiedRows.contains(index.row()) == false)
                 m_modifiedRows << index.row();
+            emit modelChanged();
             return true;
         }
     }
@@ -226,4 +229,16 @@ bool JSonModel::removeColumns(int column, int count, const QModelIndex &parent)
     // FIXME: Implement me!
     endRemoveColumns();
     return true;
+}
+
+bool JSonModel::getModelChanged()
+{
+    bool ret = m_modifiedRows.count() > 0;
+
+    if(ret == false)
+        ret = m_deletedRows.count() > 0;
+    else if(ret == false)
+        ret = m_addedRows.count()  > 0;
+
+    return ret;
 }

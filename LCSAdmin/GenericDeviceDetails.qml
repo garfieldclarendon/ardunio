@@ -7,6 +7,7 @@ Rectangle {
 
     signal saveClicked();
     signal cancelClicked();
+    signal copyDevice(int deviceID);
 
     implicitHeight: saveButton.height * 8
     width: 400
@@ -180,9 +181,12 @@ Rectangle {
             text: deviceEntity.data.controllerModuleID
             Layout.fillWidth: true
         }
-        Item {
-            width: 10
-            height: 10
+        Button {
+            id: copyDeviceButton
+            text: "Copy"
+            onClicked: {
+                copyDevice(deviceEntity.data.deviceID);
+            }
         }
 // Fourth Row
         Label {

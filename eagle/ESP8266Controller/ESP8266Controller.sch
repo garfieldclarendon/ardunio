@@ -4069,7 +4069,7 @@ Source: http://www.st.com/stonline/products/literature/ds/7194/ld1117axx.pdf</de
 <part name="GND9" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="GND11" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="U$1" library="esp8266modules" deviceset="ESP12" device=""/>
-<part name="SERIAL" library="con-amp-quick" deviceset="M05" device="" value="PIN1"/>
+<part name="SERIAL" library="con-amp-quick" deviceset="M05" device="" value="PIN0"/>
 <part name="GND3" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="GND7" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="R20" library="SparkFun-Resistors" deviceset="RESISTOR" device="PTH-1/4W" value="3.3K"/>

@@ -51,6 +51,7 @@ public slots:
     QString getRouteList(void);
     QString getRouteEntryList(int routeID);
     QString getDevicePropertyList(int deviceID);
+    QString copyDevice(int deviceID);
 
     Entity saveEntity(const Entity &entity, bool isNew = false);
     Entity deleteEntity(const Entity &entity);

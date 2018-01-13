@@ -27,6 +27,7 @@ signals:
     void classChanged(void);
 
 public slots:
+    void createProperties(DeviceClassEnum deviceClass);
 
     // QAbstractItemModel interface
 public:

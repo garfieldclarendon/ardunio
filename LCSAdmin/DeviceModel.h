@@ -39,6 +39,7 @@ public slots:
     void deviceChanged(int deviceID, int status);
     int getDeviceRow(int deviceID);
     int getDeviceClass(int deviceID);
+    Entity copyDevice(int deviceID);
 
     // QAbstractItemModel interface
 public:
