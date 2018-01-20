@@ -34,10 +34,6 @@ void StatusDialog::onControllerConnected(int index)
         ui->controllerTable->insertRow(ui->controllerTable->rowCount());
         item = new QTableWidgetItem(serialNumberText);
         ui->controllerTable->setItem(ui->controllerTable->rowCount() - 1, 0, item);
-        item = new QTableWidgetItem(ControllerManager::instance()->getControllerIPAddress(serialNumberText.toInt()));
-        ui->controllerTable->setItem(ui->controllerTable->rowCount() - 1, 1, item);
-        item = new QTableWidgetItem("00:00:00");
-        ui->controllerTable->setItem(ui->controllerTable->rowCount() - 1, 2, item);
     }
 }
 
@@ -182,7 +178,6 @@ void StatusDialog::setupControllerList()
 
     connect(ControllerManager::instance(), &ControllerManager::controllerConnected, this, &StatusDialog::onControllerConnected);
     connect(ControllerManager::instance(), &ControllerManager::controllerDisconnected, this, &StatusDialog::onControllerDisconnected);
-    connect(ControllerManager::instance(), &ControllerManager::controllerPing, this, &StatusDialog::onControllerPing);
 
     for(int x = 0; x < ControllerManager::instance()->getConnectionCount(); x++)
         onControllerConnected(ControllerManager::instance()->getConnectionSerialNumber(x));
@@ -214,9 +209,6 @@ void StatusDialog::setupPanelList()
     ui->panelTable->setHorizontalHeaderLabels(header);
     ui->panelTable->horizontalHeader()->setStyleSheet("color: blue");
     ui->panelTable->verticalHeader()->setStyleSheet("color: blue");
-
-    PanelHandler *handler = qobject_cast<PanelHandler *>(DeviceManager::instance()->getHandler(DevicePanel));
-    connect(handler, &PanelHandler::pinStateChanged, this, &StatusDialog::onPinStateChanged);
 }
 
 void StatusDialog::setupNCEStatusList()

@@ -58,7 +58,7 @@ void TurnoutHandler::activateTurnout(int deviceID, TurnoutState newState)
         obj["motorPinSetting"] = newState == TrnNormal ? motorPinSetting : !motorPinSetting;
 
         ControllerMessage message(serialNumber, obj);
-        ControllerManager::instance()->sendMessage(message);
+//        ControllerManager::instance()->sendMessage(message);
     }
     UDPMessage message;
     message.setMessageID(TRN_ACTIVATE);
@@ -132,7 +132,7 @@ void TurnoutHandler::sendConfig(int serialNumber, int address)
     obj["motorPinSettings"] = array;
 
     ControllerMessage message(serialNumber, obj);
-    ControllerManager::instance()->sendMessage(message);
+//    ControllerManager::instance()->sendMessage(message);
 }
 
 void TurnoutHandler::controllerRemoved(int serialNumber)
@@ -195,7 +195,7 @@ void TurnoutHandler::getIPAddressAndaddressForDevice(int deviceID, QString &ipAd
         port = query.value("port").toInt();
     }
 
-    ipAddress = ControllerManager::instance()->getControllerIPAddress(serialNumber);
+//    ipAddress = ControllerManager::instance()->getControllerIPAddress(serialNumber);
 }
 
 void TurnoutHandler::updateTurnoutState(const QJsonObject &json, int serialNumber, int address)

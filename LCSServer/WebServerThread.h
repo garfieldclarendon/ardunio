@@ -5,6 +5,7 @@
 
 #include "GlobalDefs.h"
 #include "APIHandler.h"
+#include "APIResponse.h"
 
 class WebServerThread : public QThread
 {
@@ -15,12 +16,8 @@ public:
 
     void run();
 
-public slots:
-    void readClient(void);
-
 private:
-    void handleDownloadFirmware(QTcpSocket* socket, const QUrl &url);
-    void handleSocket(QTcpSocket *socket, const QString &path, const QString &actionText, const QString &payload);
+    void handleSocket(const QString &path, const QString &actionText, const QString &payload, APIResponse &response);
     QByteArray getFile(const QString &fileName);
 
     int socketDescriptor;

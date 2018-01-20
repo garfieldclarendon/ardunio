@@ -6,6 +6,8 @@
 #include "AppService.h"
 #include "GlobalDefs.h"
 #include "EntityMetadata.h"
+#include "APIRequest.h"
+#include "APIResponse.h"
 
 void messageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 bool enableDebugMessages = false;
@@ -21,6 +23,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<ModuleClassEnum>("ModuleClassEnum");
     qRegisterMetaType<NetActionType>("NetActionType");
     qRegisterMetaType<QJsonObject>();
+    qRegisterMetaType<APIRequest>();
 
     QString name(QObject::tr("LCSServer"));
     QString description(QObject::tr("GCMRR Layout Control System (LCS)"));

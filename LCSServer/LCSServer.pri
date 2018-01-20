@@ -3,7 +3,6 @@ HEADERS += $$PWD/AppService.h \
             $$PWD/Database.h \
             $$PWD/WebServer.h \
             $$PWD/MessageBroadcaster.h \
-    $$PWD/ControllerHandler.h \
     $$PWD/TurnoutHandler.h \
     $$PWD/DeviceManager.h \
     $$PWD/ControllerManager.h \
@@ -22,7 +21,10 @@ HEADERS += $$PWD/AppService.h \
     $$PWD/EntityMetadata.h \
     $$PWD/Simulator.h \
     $$PWD/../libraries/shared/UDPMessage.h \
-    $$PWD/APIEntity.h
+    $$PWD/APIEntity.h \
+    $$PWD/APIController.h \
+    $$PWD/APIRequest.h \
+    $$PWD/APIResponse.h
 
 #Source files
 SOURCES += $$PWD/main.cpp \
@@ -30,7 +32,6 @@ SOURCES += $$PWD/main.cpp \
            $$PWD/Database.cpp \
            $$PWD/WebServer.cpp \
            $$PWD/MessageBroadcaster.cpp \
-    $$PWD/ControllerHandler.cpp \
     $$PWD/TurnoutHandler.cpp \
     $$PWD/DeviceManager.cpp \
     $$PWD/ControllerManager.cpp \
@@ -49,7 +50,11 @@ SOURCES += $$PWD/main.cpp \
     $$PWD/EntityMetadata.cpp \
     $$PWD/Simulator.cpp \
     $$PWD/../libraries/shared/UDPMessage.cpp \
-    $$PWD/APIEntity.cpp
+    $$PWD/APIEntity.cpp \
+    $$PWD/APIController.cpp \
+    $$PWD/APIRequest.cpp \
+    $$PWD/APIResponse.cpp
+
 
 win32 {
 HEADERS += $$PWD/StatusDialog.h

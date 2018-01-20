@@ -45,7 +45,10 @@ void WebServer::handleUdpMessage(NetActionType action, const QString &path, cons
     {
         qDebug("FOUND HANDLER!");
 
-        handler->handleRequest(action, path, payload);
+        APIRequest request(action, QUrl(path));
+        request.setPayload(payload.toLatin1());
+
+        handler->handleRequest(request);
     }
 }
 

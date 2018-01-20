@@ -93,7 +93,7 @@ void PanelHandler::deviceStatusChanged(int deviceID, int status)
         for(int x = 0; x < jsons.count(); x++)
         {
             ControllerMessage message(serialNumbers.value(x), jsons.value(x));
-            ControllerManager::instance()->sendMessage(message);
+            //ControllerManager::instance()->sendMessage(message);
         }
     }
 }
@@ -134,7 +134,7 @@ void PanelHandler::routeChanged(int routeID, bool isActive)
             currentSerialNumber = serialNumber;
             currentaddress = address;
         }
-        ipAddress = ControllerManager::instance()->getControllerIPAddress(serialNumber);
+        //ipAddress = ControllerManager::instance()->getControllerIPAddress(serialNumber);
         if(ipAddress.length() > 0)
         {
             QJsonObject obj;
@@ -181,7 +181,7 @@ void PanelHandler::routeChanged(int routeID, bool isActive)
     for(int x = 0; x < urls.count(); x++)
     {
         ControllerMessage message(serialNumbers.value(x), jsons.value(x));
-        ControllerManager::instance()->sendMessage(message);
+        //ControllerManager::instance()->sendMessage(message);
         QJsonDocument doc;
         doc.setObject(jsons.value(x));
         qDebug(doc.toJson());
@@ -242,7 +242,7 @@ void PanelHandler::newMessage(int serialNumber, int address, DeviceClassEnum cla
             }
             obj["pins"] = jsonArray;
             ControllerMessage message(serialNumber, obj);
-            ControllerManager::instance()->sendMessage(message);
+            //ControllerManager::instance()->sendMessage(message);
         }
     }
 }

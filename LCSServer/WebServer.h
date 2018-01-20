@@ -6,6 +6,8 @@
 #include <QSslError>
 
 #include "GlobalDefs.h"
+#include "APIRequest.h"
+#include "APIResponse.h"
 
 class QUrl;
 class QNetworkReply;
@@ -22,20 +24,16 @@ public:
 
     }
 
-    QString handleRequest(NetActionType actionType, const QUrl &url, const QString &payload)
+    APIResponse handleRequest(const APIRequest &request)
     {
-        QString returnPayload;
-        emit handleUrl(actionType, url, payload, returnPayload);
+        APIResponse response;
+        emit handleUrl(request, &response);
 
-        return returnPayload;
+        return response;
     }
 
 signals:
-    void handleUrl(NetActionType actionType, const QUrl &url, const QString &payload, QString &returnPayload);
-
-public slots:
-
-private:
+    void handleUrl(const APIRequest &request, APIResponse *response);
 };
 
 class WebServer : public QTcpServer

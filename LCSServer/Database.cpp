@@ -315,7 +315,6 @@ QByteArray Database::getMultiControllerConfig(quint32 serialNumber)
     QJsonArray array = getNotificationList(serialNumber);
     QJsonDocument jsonDoc;
     QJsonObject obj;
-    obj["messageUri"] = "/controllerConfig";
     obj["controllerClass"] = controllerClass;
     obj["controllerID"] = controllerID;
     obj["modules"] = moduleArray;
@@ -387,7 +386,6 @@ QByteArray Database::getControllerModuleConfig(quint32 serialNumber, quint32 add
 
     QJsonDocument jsonDoc;
     QJsonObject obj;
-    obj["messageUri"] = "/controllerModuleConfig";
     obj["devices"] = deviceArray;
     jsonDoc.setObject(obj);
 

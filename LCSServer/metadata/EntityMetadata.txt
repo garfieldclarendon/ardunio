@@ -34,5 +34,17 @@
             "keyField": "signalConditionID",
             "tableKeyField": "id",
             "tableName": "signalCondition"
+        },
+        {
+            "name": "route",
+            "keyField": "routeID",
+            "tableKeyField": "id",
+            "tableName": "route"
+        },
+        {
+            "name": "routeEntry",
+            "keyField": "id",
+            "tableKeyField": "id",
+            "tableName": "routeEntry"
         }
     ]

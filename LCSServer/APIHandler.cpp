@@ -95,8 +95,6 @@ void APIHandler::handleClient(QTcpSocket *socket, const QString &path, const QSt
     else if(url.path().contains("entity/"))
     {
 //        handleEntity(socket, url, actionText, payload);
-        APIEntity entity;
-        entity.handleClient(socket, path, actionText, payload);
     }
     else if(url.path().contains("signal_aspect_list"))
     {

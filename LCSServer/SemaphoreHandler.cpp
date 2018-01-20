@@ -159,6 +159,6 @@ void SemaphoreHandler::sendSignalUpdateMessage(int serialNumber, int address, in
     obj["motorPinSetting"] = motorPinSetting;
 
     ControllerMessage message(serialNumber, obj);
-    ControllerManager::instance()->sendMessage(message);
+    //ControllerManager::instance()->sendMessage(message);
 }
 

@@ -21,11 +21,12 @@
 
 #include "TurnoutHandler.h"
 #include "BlockHandler.h"
-#include "ControllerHandler.h"
 #include "RouteHandler.h"
 #include "PanelHandler.h"
 #include "SemaphoreHandler.h"
 #include "SignalHandler.h"
+
+#include "APIController.h"
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -109,8 +110,6 @@ void CAppService::start(void)
         QDir dir;
         dir.mkdir(path);
         db.init(path +"/lcs.db");
-
-        connect(MessageBroadcaster::instance(), SIGNAL(controllerResetting(long)), ControllerManager::instance(), SLOT(controllerResetting(long)));
 
         startWebServer();
 
@@ -223,36 +222,8 @@ void CAppService::startWebServer()
     int notificationPort = httpPort + 1;
     if(httpPort > 0)
     {
-        UrlHandler *handler;
-
-        ControllerHandler *controllerHandler = new ControllerHandler(this);
-        handler = webServer->createUrlHandler("/controller");
-        connect(handler, SIGNAL(handleUrl(NetActionType,QUrl,QString,QString&)), controllerHandler, SLOT(handleUrl(NetActionType,QUrl,QString,QString&)), Qt::DirectConnection);
-        handler = webServer->createUrlHandler("/controller/config");
-        connect(handler, SIGNAL(handleUrl(NetActionType,QUrl,QString,QString&)), controllerHandler, SLOT(handleConfigUrl(NetActionType,QUrl,QString,QString&)), Qt::DirectConnection);
-        handler = webServer->createUrlHandler("/controller/module/config");
-        connect(handler, SIGNAL(handleUrl(NetActionType,QUrl,QString,QString&)), controllerHandler, SLOT(handleModuleConfigUrl(NetActionType,QUrl,QString,QString&)), Qt::DirectConnection);
-        handler = webServer->createUrlHandler("/controller/device/config");
-        connect(handler, SIGNAL(handleUrl(NetActionType,QUrl,QString,QString&)), controllerHandler, SLOT(handleDeviceConfigUrl(NetActionType,QUrl,QString,QString&)), Qt::DirectConnection);
-        handler = webServer->createUrlHandler("/controller/notification_list");
-        connect(handler, SIGNAL(handleUrl(NetActionType,QUrl,QString,QString&)), controllerHandler, SLOT(handleGetNotificationListUrl(NetActionType,QUrl,QString,QString&)), Qt::DirectConnection);
-
-        TurnoutHandler *turnoutHandler = new TurnoutHandler(this);
-        connect(ControllerManager::instance(), &ControllerManager::newMessage, turnoutHandler, &TurnoutHandler::newMessage, Qt::QueuedConnection);
-        connect(turnoutHandler, &TurnoutHandler::sendNotificationMessage, notificationServer, &NotificationServer::sendNotificationMessage);
-
-        BlockHandler *blockHandler = new BlockHandler(this);
-        connect(ControllerManager::instance(), &ControllerManager::newMessage, blockHandler, &BlockHandler::newMessage, Qt::QueuedConnection);
-        connect(blockHandler, &BlockHandler::sendNotificationMessage, notificationServer, &NotificationServer::sendNotificationMessage);
-
-        PanelHandler *panelHandler = new PanelHandler(this);
-        connect(ControllerManager::instance(), &ControllerManager::newMessage, panelHandler, &PanelHandler::newMessage, Qt::QueuedConnection);
-
-        SemaphoreHandler *semaphoreHandler = new SemaphoreHandler(this);
-        connect(ControllerManager::instance(), &ControllerManager::newMessage, semaphoreHandler, &SemaphoreHandler::newMessage, Qt::QueuedConnection);
-
-        SignalHandler *signalHandler = new SignalHandler(this);
-        connect(ControllerManager::instance(), &ControllerManager::newMessage, signalHandler, &SignalHandler::newMessage, Qt::QueuedConnection);
+        APIController *controllerHandler = new APIController(this);
+        Q_UNUSED(controllerHandler);
 
         qDebug(QObject::tr("ready to start HTTP server").toLatin1());
         webServer->startServer(httpPort);

@@ -179,6 +179,6 @@ void SignalHandler::sendSignalUpdateMessage(int serialNumber, int address, int p
     obj["pins"] = pins;
 
     ControllerMessage message(serialNumber, obj);
-    ControllerManager::instance()->sendMessage(message);
+    //ControllerManager::instance()->sendMessage(message);
 }
 
