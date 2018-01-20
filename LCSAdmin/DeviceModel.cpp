@@ -153,6 +153,16 @@ int DeviceModel::getDeviceClass(int deviceID)
     return retClass;
 }
 
+Entity DeviceModel::copyDevice(int deviceID)
+{
+    QString jsonText = API::instance()->copyDevice(deviceID);
+    QJsonDocument doc = QJsonDocument::fromJson(jsonText.toLatin1());
+    QJsonObject newDevice = doc.object();
+
+    Entity entity(newDevice);
+    return entity;
+}
+
 void DeviceModel::setFilterText(const QString &filterText)
 {
     if(filterText != m_filterText)

@@ -158,7 +158,7 @@ Version 2.2</text>
 <text x="52.07" y="12.7" size="1.27" layer="21" rot="R90">+3.3v</text>
 <text x="54.61" y="13.97" size="1.27" layer="21" rot="R90">VCC</text>
 <text x="57.15" y="13.97" size="1.27" layer="21" rot="R90">SCL</text>
-<text x="59.69" y="13.97" size="1.27" layer="21" rot="R90">SCA</text>
+<text x="59.69" y="13.97" size="1.27" layer="21" rot="R90">SDA</text>
 <text x="19.05" y="29.21" size="1.27" layer="21" rot="R180">10uF</text>
 <text x="19.05" y="19.05" size="1.27" layer="21" rot="R180">.1uF</text>
 </plain>
@@ -840,7 +840,7 @@ design rules under a new name.</description>
 <element name="R2" library="SparkFun-Resistors" package="AXIAL-0.4" value="220" x="15.24" y="33.02"/>
 <element name="R20" library="SparkFun-Resistors" package="AXIAL-0.4" value="3.3K" x="33.02" y="29.21"/>
 <element name="R21" library="SparkFun-Resistors" package="AXIAL-0.4" value="3.3K" x="33.02" y="33.02"/>
-<element name="SERIAL" library="con-amp-quick" package="05P" value="PIN1" x="24.13" y="21.59" rot="R90">
+<element name="SERIAL" library="con-amp-quick" package="05P" value="PIN0" x="24.13" y="21.59" rot="R90">
 <attribute name="MPN" value="" x="24.13" y="21.59" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MF" value="" x="24.13" y="21.59" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="OC_NEWARK" value="unknown" x="24.13" y="21.59" size="1.778" layer="27" rot="R90" display="off"/>
@@ -1136,6 +1136,14 @@ design rules under a new name.</description>
 <wire x1="38.1" y1="25.4" x2="40.64" y2="27.94" width="0.254" layer="1"/>
 <wire x1="40.64" y1="27.94" x2="40.64" y2="31.75" width="0.254" layer="1"/>
 <wire x1="40.64" y1="31.75" x2="43.18" y2="33.02" width="0.254" layer="1"/>
+</signal>
+<signal name="N$5">
+<polygon width="0.254" layer="16" isolate="0.3048">
+<vertex x="0" y="0"/>
+<vertex x="0" y="48.26"/>
+<vertex x="60.96" y="48.26"/>
+<vertex x="60.96" y="0"/>
+</polygon>
 </signal>
 </signals>
 </board>

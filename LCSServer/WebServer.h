@@ -14,18 +14,14 @@ class UDPMessage;
 class UrlHandler : public QObject
 {
     Q_OBJECT
+
+public:
     explicit UrlHandler(QObject *parent)
         : QObject(parent)
     {
 
     }
 
-signals:
-    void handleUrl(NetActionType actionType, const QUrl &url, const QString &payload, QString &returnPayload);
-
-public slots:
-
-private:
     QString handleRequest(NetActionType actionType, const QUrl &url, const QString &payload)
     {
         QString returnPayload;
@@ -34,8 +30,12 @@ private:
         return returnPayload;
     }
 
-    friend class WebServerThread;
-    friend class WebServer;
+signals:
+    void handleUrl(NetActionType actionType, const QUrl &url, const QString &payload, QString &returnPayload);
+
+public slots:
+
+private:
 };
 
 class WebServer : public QTcpServer

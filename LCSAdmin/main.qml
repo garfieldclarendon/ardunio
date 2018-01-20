@@ -270,6 +270,7 @@ ApplicationWindow {
 
     function createDetailPanel(deviceClass, entity)
     {
+        console.debug("createDetailPanel");
         var component;
         var panel
         if(deviceClass === 4 || deviceClass === 5)
@@ -280,6 +281,7 @@ ApplicationWindow {
             panel.saveClicked.connect(detailSaveClicked);
             panel.cancelClicked.connect(detailCancelClicked);
             panel.aspectDoubleClicked.connect(showAspectConditions);
+            panel.copyDevice.connect(copyDeviceClicked);
             panel.width = deviceStackView.width - 10;
             panel.height = deviceStackView.height - 10;
             deviceStackView.push(panel);
@@ -291,6 +293,7 @@ ApplicationWindow {
             panel = component.createObject(deviceStackView, {"deviceEntity": entity});
             panel.saveClicked.connect(detailSaveClicked);
             panel.cancelClicked.connect(detailCancelClicked);
+            panel.copyDevice.connect(copyDeviceClicked);
             panel.width = deviceStackView.width - 10;
             panel.height = deviceStackView.height - 10;
             deviceStackView.push(panel);
@@ -361,6 +364,18 @@ ApplicationWindow {
     {
         controllerStackView.pop();
     }
+
+    function copyDeviceClicked(deviceID)
+    {
+        console.debug("copyDetailClicked: " + deviceID);
+        var entity;
+        var model;
+        deviceStackView.pop();
+        model = deviceStackView.get(deviceStackView.index, false).model;
+        entity = model.copyDevice(deviceID);
+        model.setEntity(-1, entity);
+    }
+
     function detailSaveClicked()
     {
         console.debug("detailSaveClicked()");

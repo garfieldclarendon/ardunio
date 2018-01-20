@@ -190,6 +190,19 @@ QString API::getDevicePropertyList(int deviceID)
     return json;
 }
 
+QString API::copyDevice(int deviceID)
+{
+    QString json;
+    QString s("copy_device");
+    if(deviceID > 0)
+        s.append(QString("?deviceID=%1").arg(deviceID));
+    QUrl url(buildUrl(s));
+
+    json = sendToServer(url, QString(), NetActionGet);
+
+    return json;
+}
+
 Entity API::deleteEntity(const Entity &entity)
 {
     QJsonObject obj = entity.getObject();

@@ -9,11 +9,14 @@
 class JSonModel : public QAbstractTableModel
 {
     Q_OBJECT
+    Q_PROPERTY(bool modelChanged READ getModelChanged NOTIFY modelChanged)
 
 public:
     explicit JSonModel(const QJsonDocument &jsonDoc = QJsonDocument(), QObject *parent = nullptr);
 
     void setJson(const QJsonDocument &jsonDoc, bool emitReset);
+
+    bool getModelChanged(void);
 
     // Header:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -46,6 +49,9 @@ public:
     // Remove data:
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
     bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex()) override;
+
+signals:
+    void modelChanged(void);
 
 private:
     QJsonArray m_jsonArray;

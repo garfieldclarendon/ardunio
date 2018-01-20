@@ -53,6 +53,12 @@ void DevicePropertyModel::setClass(int value)
     }
 }
 
+void DevicePropertyModel::createProperties(DeviceClassEnum deviceClass)
+{
+    m_class = deviceClass;
+    checkKeys();
+}
+
 void DevicePropertyModel::apiReady()
 {
     if(m_jsonModel && API::instance()->getApiReady() && m_deviceID > 0)
