@@ -86,6 +86,12 @@ void UI::printControllerLabel(int controllerID)
     QPrinter printer(QPrinter::HighResolution);
     QPageSize pageSize(QSizeF(50.0, 100.0), QPageSize::Millimeter, QString(), QPageSize::ExactMatch);
     printer.setPageSize(pageSize);
+    QPageLayout layout = printer.pageLayout();
+    QMarginsF min = layout.minimumMargins();
+    min.setTop(min.top()/2);
+    layout.setMinimumMargins(min);
+    layout.setMargins(min);
+    bool ret = printer.setPageLayout(layout);
 
     QPrintPreviewDialog dlg(&printer, QApplication::focusWidget());
     LabelController *painter = new LabelController(&model, &dlg);
