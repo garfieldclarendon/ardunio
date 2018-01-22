@@ -17,7 +17,7 @@ The LCSServer application running on the Raspberry Pi makes use of the Qt framew
 
 * [Arduino](https://www.arduino.cc/en/Main/Software) - Arduino Tools
 * [Qt](https://www.qt.io/) - Qt Framework
-* [Eagle] (https://www.autodesk.com/products/eagle/overview) - Eagle Printed Circuit Board (PCB) design software
+* [Eagle](https://www.autodesk.com/products/eagle/overview) - Eagle Printed Circuit Board (PCB) design software
 
 ## Contributing
 
