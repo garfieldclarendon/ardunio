@@ -102,6 +102,7 @@
 
 /// APIEntity
 /// \brief  API handler class for LCS database entities.
+///
 /// This class handles basic database fetch and CRUD operations (Create, Update and Delete).  See the API documentation for more information.
 class APIEntity : public QObject
 {

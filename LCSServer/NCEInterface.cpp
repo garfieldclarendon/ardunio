@@ -3,7 +3,7 @@
 #include <QTimer>
 
 #include "NCEInterface.h"
-#include "RouteHandler.h"
+#include "APIRoute.h"
 
 NCEInterface * NCEInterface::m_instance = NULL;
 
@@ -233,9 +233,9 @@ void SerialPortThread::processRouteBlock(const quint8 data, int blockIndex, int 
         int routeID = 1 + bit + (byteIndex * 8) + (blockIndex * 128);
         if(((data >> bit) & 0x01) == 0)
         {
-            if(RouteHandler::instance()->isRouteActive(routeID) == false)
+            if(APIRoute::instance()->isRouteActive(routeID) == false)
             {
-                RouteHandler::instance()->activateRoute(routeID);
+                APIRoute::instance()->activateRoute(routeID);
             }
             // Reset the accessory entry back to normal
             NCEMessage message;

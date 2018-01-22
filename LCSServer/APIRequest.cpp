@@ -1,8 +1,4 @@
-#include <QTcpSocket>
-
 #include "APIRequest.h"
-#include "WebServer.h"
-#include "APIResponse.h"
 
 APIRequest::APIRequest()
     : m_actionType(NetActionGet)

@@ -381,6 +381,7 @@ ApplicationWindow {
         console.debug("detailSaveClicked()");
         var entity;
         var model;
+        deviceStackView.pop();
         entity = deviceStackView.currentItem.deviceEntity;
 
         model = deviceStackView.get(deviceStackView.index, false).model;

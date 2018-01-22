@@ -10,9 +10,13 @@
 #include "Database.h"
 #include "ControllerManager.h"
 #include "MessageBroadcaster.h"
+#include "NotificationServer.h"
 
 APIController::APIController(QObject *parent) : QObject(parent)
 {
+    connect(this, &APIController::sendNotificationMessage, NotificationServer::instance(), &NotificationServer::sendNotificationMessage);
+    connect(ControllerManager::instance(), SIGNAL(controllerStatusChanged(long,ControllerStatusEnum)), this, SLOT(onControllerStatusChanged(long,ControllerStatusEnum)));
+
     WebServer *webServer = WebServer::instance();
 
     UrlHandler *handler;
@@ -38,6 +42,11 @@ APIController::APIController(QObject *parent) : QObject(parent)
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleControllerResetConfig(APIRequest,APIResponse*)), Qt::DirectConnection);
     handler = webServer->createUrlHandler("/api/send_controller_reset_notification_list");
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleResetNotificationList(APIRequest,APIResponse*)), Qt::DirectConnection);
+}
+
+void APIController::onControllerStatusChanged(long serialNumber, ControllerStatusEnum newStatus)
+{
+    createAndSendNotificationMessage(serialNumber, newStatus);
 }
 
 void APIController::handleConfigUrl(const APIRequest &request, APIResponse *response)
@@ -227,4 +236,14 @@ QByteArray APIController::getFile(const QString &fileName)
     }
 
     return fileData;
+}
+
+void APIController::createAndSendNotificationMessage(long serialNumber, ControllerStatusEnum status)
+{
+    QString uri("/api/notification/controller");
+    QJsonObject obj;
+    obj["serialNumber"] = QString("%1").arg(serialNumber);
+    obj["status"] = QString("%1").arg(status);
+
+    emit sendNotificationMessage(uri, obj);
 }

@@ -10,7 +10,6 @@
 
 #include "ControllerManager.h"
 #include "Database.h"
-#include "NotificationServer.h"
 #include "MessageBroadcaster.h"
 
 class ControllerEntry
@@ -19,8 +18,8 @@ public:
     ControllerEntry(void) : m_serialNumber(-1), m_controllerID(-1), m_status(ControllerStatusUnknown) { }
     ControllerEntry(const ControllerEntry &other) { copy(other); }
 
-    int getSerialNumber(void) const { return m_serialNumber; }
-    void setSerialNumber(int value) { m_serialNumber = value; }
+    long getSerialNumber(void) const { return m_serialNumber; }
+    void setSerialNumber(long value) { m_serialNumber = value; }
     int getControllerID(void) const { return m_controllerID; }
     void setControllerID(int value) { m_controllerID = value; }
     ControllerStatusEnum getStatus(void) const { return m_status; }
@@ -40,7 +39,7 @@ private:
         m_status = other.m_status;
     }
 
-    int m_serialNumber;
+    long m_serialNumber;
     int m_controllerID;
     ControllerStatusEnum m_status;
     QString m_version;
@@ -51,7 +50,6 @@ ControllerManager * ControllerManager::m_instance = NULL;
 ControllerManager::ControllerManager(QObject *parent)
     : QObject(parent)
 {
-    connect(this, &ControllerManager::sendNotificationMessage, NotificationServer::instance(), &NotificationServer::sendNotificationMessage);
     connect(MessageBroadcaster::instance(), SIGNAL(newMessage(UDPMessage)), this, SLOT(newUDPMessage(UDPMessage)));
 }
 
@@ -68,11 +66,11 @@ ControllerManager *ControllerManager::instance()
     return m_instance;
 }
 
-int ControllerManager::getConnectionSerialNumber(int index) const
+long ControllerManager::getConnectionSerialNumber(int index) const
 {
-    int serialNumber(0);
+    long serialNumber(0);
 
-    QList<int> keys = m_controllerMap.keys();
+    QList<long> keys = m_controllerMap.keys();
 
     if(m_controllerMap.value(keys.value(index)) != NULL)
         serialNumber = m_controllerMap.value(keys.value(index))->getSerialNumber();
@@ -80,7 +78,7 @@ int ControllerManager::getConnectionSerialNumber(int index) const
     return serialNumber;
 }
 
-void ControllerManager::getConnectedInfo(int serialNumber, QString &version, ControllerStatusEnum &status)
+void ControllerManager::getConnectedInfo(long serialNumber, QString &version, ControllerStatusEnum &status)
 {
     QList<ControllerEntry *> list = m_controllerMap.values();
 
@@ -101,17 +99,6 @@ unsigned long ControllerManager::getSerialNumber(int controllerID)
     return db.getSerialNumber(controllerID);
 }
 
-void ControllerManager::createAndSendNotificationMessage(long serialNumber, ControllerStatusEnum status)
-{
-    QString uri("/api/notification/controller");
-    QJsonObject obj;
-    obj["serialNumber"] = QString("%1").arg(serialNumber);
-    obj["status"] = QString("%1").arg(status);
-
-    emit sendNotificationMessage(uri, obj);
-}
-
-
 void ControllerManager::newUDPMessage(const UDPMessage &message)
 {
     if(message.getMessageID() == SYS_CONTROLLER_ONLINE)
@@ -120,7 +107,7 @@ void ControllerManager::newUDPMessage(const UDPMessage &message)
         int majorVersion = message.getField(5);
         int minorVersion = message.getField(6);
         int build = message.getField(7);
-        int serialNumber = this->getSerialNumber(controllerID);
+        long serialNumber = this->getSerialNumber(controllerID);
 
         ControllerEntry *entry = m_controllerMap.value(controllerID);
         if(entry == NULL)
@@ -132,7 +119,7 @@ void ControllerManager::newUDPMessage(const UDPMessage &message)
         m_controllerMap[controllerID] = entry;
 
         emit controllerAdded(serialNumber);
-        createAndSendNotificationMessage(serialNumber, ControllerStatusConected);
+        emit controllerStatusChanged(serialNumber, ControllerStatusConected);
     }
     else if(message.getMessageID() == SYS_RESTARTING)
     {
@@ -143,7 +130,7 @@ void ControllerManager::newUDPMessage(const UDPMessage &message)
             if(list.value(x)->getSerialNumber() == serialNumber)
             {
                 list.value(x)->setStatus(ControllerStatusRestarting);
-                createAndSendNotificationMessage(serialNumber, ControllerStatusRestarting);
+                emit controllerStatusChanged(serialNumber, ControllerStatusRestarting);
             }
         }
     }

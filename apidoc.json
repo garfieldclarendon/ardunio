@@ -1,7 +1,7 @@
 {
-  "name": "LayoutControl",
+  "name": "LayoutControlSystem",
   "version": "1.0.0",
-  "description": "GCMRR Layout Control REST API",
-  "title": "GCMRR Layout Control REST API",
+  "description": "GCMRR Layout Control System (LCS) REST API",
+  "title": "GCMRR LCS REST API",
   "url" : "https://localhost:8080/api"
 }

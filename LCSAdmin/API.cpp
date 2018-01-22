@@ -273,7 +273,7 @@ void API::textMessageReceived(const QString &message)
 {
     QJsonDocument doc(QJsonDocument::fromJson(message.toLatin1()));
     QJsonObject obj = doc.object();
-    QString urlText = obj["uri"].toString();
+    QString urlText = obj["url"].toString();
 
     if(urlText == "/api/notification/controller")
     {

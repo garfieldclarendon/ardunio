@@ -37,21 +37,6 @@ void WebServer::startServer(quint16 port)
     }
 }
 
-void WebServer::handleUdpMessage(NetActionType action, const QString &path, const QString &payload)
-{
-    QUrl url(path);
-    UrlHandler *handler = getUrlHandler(url.path());
-    if(handler)
-    {
-        qDebug("FOUND HANDLER!");
-
-        APIRequest request(action, QUrl(path));
-        request.setPayload(payload.toLatin1());
-
-        handler->handleRequest(request);
-    }
-}
-
 WebServer *WebServer::instance()
 {
     if(m_instance == NULL)
@@ -77,48 +62,6 @@ UrlHandler *WebServer::createUrlHandler(const QString &path)
 UrlHandler *WebServer::getUrlHandler(const QString &path)
 {
     return m_handlerMap.value(path);
-}
-
-bool WebServer::sendMessage(NetActionType actionType, const QString &uri, const QString &payload, QString &returnPayload)
-{
-    QNetworkAccessManager networkManager;
-
-    qDebug(QString("WebServer::sendMessage to: %1").arg(uri).toLatin1());
-    QNetworkReply *reply = NULL;
-    QNetworkRequest request;
-    request.setUrl(QUrl(uri));
-
-    if(actionType == NetActionGet)
-    {
-        reply = networkManager.get(request);
-    }
-    else if(actionType == NetActionAdd)
-    {
-        reply = networkManager.post(request, payload.toLatin1());
-    }
-    else if(actionType == NetActionUpdate)
-    {
-        reply = networkManager.put(request, payload.toLatin1());
-    }
-    else if(actionType == NetActionDelete)
-    {
-        reply = networkManager.deleteResource(request);
-    }
-
-    bool ret = false;
-    if(reply)
-    {
-        while(reply->isFinished() == false)
-            QCoreApplication::processEvents();
-
-        ret = reply->error() == QNetworkReply::NoError;
-        if(ret == false)
-            qDebug(reply->errorString().toLatin1());
-        returnPayload = reply->readAll();
-        qDebug(QString("WebServer::sendMessage - reply data: %1").arg(returnPayload).toLatin1());
-    }
-
-    return ret;
 }
 
 QString WebServer::createHeader(const QString &httpCode, int bodySize, const QString &contentType)

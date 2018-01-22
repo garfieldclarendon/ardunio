@@ -19,14 +19,11 @@
 #include "NCEInterface.h"
 #include "Simulator.h"
 
-#include "TurnoutHandler.h"
-#include "BlockHandler.h"
-#include "RouteHandler.h"
-#include "PanelHandler.h"
-#include "SemaphoreHandler.h"
-#include "SignalHandler.h"
-
 #include "APIController.h"
+#include "APIDevice.h"
+#include "APITurnout.h"
+#include "APIRoute.h"
+#include "APISignal.h"
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -35,7 +32,7 @@
 BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType);
 #endif
 
-CAppService::CAppService(int argc, char **argv, const QString &name, const QString &description)
+AppService::AppService(int argc, char **argv, const QString &name, const QString &description)
 #ifdef Q_OS_WIN
     : QtService<QApplication>(argc, argv, name),
 #else
@@ -59,21 +56,21 @@ CAppService::CAppService(int argc, char **argv, const QString &name, const QStri
     connect(&m_restartTimer, SIGNAL(timeout()), this, SLOT(stopTimerProc()));
 }
 
-CAppService::~CAppService(void)
+AppService::~AppService(void)
 {
 }
 
-void CAppService::initiateStop()
+void AppService::initiateStop()
 {
     QTimer::singleShot(100, this, SLOT(stopTimerProc()));
 }
 
-void CAppService::startSimulator()
+void AppService::startSimulator()
 {
     m_startSimulator = true;
 }
 
-void CAppService::start(void)
+void AppService::start(void)
 {
     qDebug(QObject::tr("Server started. START function").toLatin1());
 
@@ -88,8 +85,6 @@ void CAppService::start(void)
     DeviceManager::instance();
     // Force the controller manager to initialize
     ControllerManager::instance();
-    // Force the Route handler to initialize
-    RouteHandler::instance();
 
     if(!m_initialized)
     {
@@ -132,7 +127,7 @@ void CAppService::start(void)
     }
 }
 
-void CAppService::stop(void)
+void AppService::stop(void)
 {	
     UDPMessage message;
 
@@ -152,12 +147,12 @@ void CAppService::stop(void)
     logMessage(QObject::tr("Server stopped"));
 }
 
-void CAppService::timerProc(void)
+void AppService::timerProc(void)
 {
     start();
 }
 
-void CAppService::stopTimerProc()
+void AppService::stopTimerProc()
 {
     stop();
     if(m_shutdownPi)
@@ -172,7 +167,7 @@ void CAppService::stopTimerProc()
     }
 }
 
-void CAppService::shutdownMonitor(int pin, int value)
+void AppService::shutdownMonitor(int pin, int value)
 {
     qDebug(QString("shutdownMonitor: pin %1 value %2").arg(pin).arg(value).toLatin1());
 
@@ -204,7 +199,7 @@ void CAppService::shutdownMonitor(int pin, int value)
     }
 }
 
-void CAppService::aboutToQuit()
+void AppService::aboutToQuit()
 {
     UDPMessage message;
 
@@ -212,7 +207,7 @@ void CAppService::aboutToQuit()
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 
-void CAppService::startWebServer()
+void AppService::startWebServer()
 {
     WebServer *webServer = WebServer::instance();
     NotificationServer *notificationServer = NotificationServer::instance();
@@ -224,6 +219,18 @@ void CAppService::startWebServer()
     {
         APIController *controllerHandler = new APIController(this);
         Q_UNUSED(controllerHandler);
+
+        APIDevice *deviceHandler = new APIDevice;
+        Q_UNUSED(deviceHandler);
+
+        APITurnout *turnoutHandler = new APITurnout;
+        Q_UNUSED(turnoutHandler);
+
+        APIRoute  *routeHandler = new APIRoute;
+        Q_UNUSED(routeHandler);
+
+        APISignal *signalHandler = new APISignal;
+        Q_UNUSED(signalHandler);
 
         qDebug(QObject::tr("ready to start HTTP server").toLatin1());
         webServer->startServer(httpPort);
@@ -241,7 +248,7 @@ BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType)
         dwCtrlType == CTRL_BREAK_EVENT ||
         dwCtrlType == CTRL_CLOSE_EVENT)
     {
-        CAppService *service = dynamic_cast<CAppService *>(QtServiceBase::instance());
+        AppService *service = dynamic_cast<AppService *>(QtServiceBase::instance());
 
         if(service != NULL)
         {

@@ -3,65 +3,57 @@
 
 #include <QObject>
 #include <QMap>
-#include <QWebSocketServer>
 
 #include "GlobalDefs.h"
-#include "controllermessage.h"
 #include "UDPMessage.h"
 
 class ControllerEntry;
-class QWebSocket;
-class QJsonObject;
-class QTimer;
 
-/**
- * @api {get} /api/notification/controller Controller Status Change
- * @apiName ControllerStatusChangeNotification
- * @apiGroup Notifications
- *
- * @apiDescription Notification message sent when a controller's state changes (online, offline or restarting)
- * @apiSuccess {Number} serialNumber Controller's serial number.
- * @apiSuccess {Number=1,2,3} status Controller's new status.  1 = Offline, 2 = Online, 3 = Restarting
- * @apiSuccessExample {json} Success-Response:
- *      HTTP/1.1 200 OK
- *      {
- *              "serialNumber": "1546165"
- *              "status": "2"
- *      }
- *
- */
-
+/// ControllerManager
+/// \brief  Singleton class manitoring the current state of controllers.
+///
+/// This class monitors UDP messages collecting information about the current state of LCS controllers.  When a controller's online status changes,
+/// a controllerStatusChanged signal is emitted.  On a SYS_CONTROLLER_ONLINE message, the controllerAdded signal is emitted.
 class ControllerManager : public QObject
 {
     Q_OBJECT
+    /// Contstructor
     explicit ControllerManager(QObject *parent = 0);
 public:
+    /// Deststructor
     ~ControllerManager(void);
 
+    /// Returns/creates the singleton instance
     static ControllerManager *instance(void);
-    int getConnectionSerialNumber(int index) const;
-    void getConnectedInfo(int serialNumber, QString &version, ControllerStatusEnum &status);
+    /// Returns the controller's serial number at the given index.
+    long getConnectionSerialNumber(int index) const;
+    /// Fills version and status with the current information for a controller.
+    /// @param serialNumber long Serial number of the controller to lookup.
+    void getConnectedInfo(long serialNumber, QString &version, ControllerStatusEnum &status);
+    /// Returns the count of connected controllers.
     int getConnectionCount(void) const { return m_controllerMap.keys().count(); }
 
 signals:
-    void controllerConnected(int index);
-    void controllerDisconnected(int index);
-    void controllerAdded(int serialNumber);
-    void controllerRemoved(int serialNumber);
-    void sendNotificationMessage(const QString &uri, const QJsonObject &obj);
+    /// Emitted when a SYS_CONTROLLER_ONLINE UDP message is received.
+    void controllerAdded(long serialNumber);
+    /// Currently, this signal is not emitted as there is no way (currently) for the detection of a controller going offline.
+    void controllerRemoved(long serialNumber);
+    /// Emitted when a SYS_CONTROLLER_ONLINE and SYS_RESTARTING UDP messages are received.
+    void controllerStatusChanged(long serialNumber, ControllerStatusEnum newStatus);
 
 public slots:
+    /// Returns the serial number for the given controllerID.
     unsigned long getSerialNumber(int controllerID);
 
 protected slots:
+    /// UDP Message handler.
     void newUDPMessage(const UDPMessage &message);
 
 private:
-    void createAndSendNotificationMessage(long serialNumber, ControllerStatusEnum status);
 
     static ControllerManager *m_instance;
 
-    QMap<int, ControllerEntry *> m_controllerMap;
+    QMap<long, ControllerEntry *> m_controllerMap;
 };
 
 #endif // CONTROLLERMANAGER_H

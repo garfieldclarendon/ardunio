@@ -16,7 +16,7 @@
 class WebServer;
 class NotificationServer;
 
-class CAppService : public QObject,
+class AppService : public QObject,
 #ifdef Q_OS_WIN
         public QtService<QApplication>
 #else
@@ -25,8 +25,8 @@ class CAppService : public QObject,
 {
     Q_OBJECT
 public:
-    CAppService(int argc, char **argv, const QString &name, const QString &description);
-    ~CAppService(void);
+    AppService(int argc, char **argv, const QString &name, const QString &description);
+    ~AppService(void);
 
     void initiateStop(void);
     void startSimulator(void);

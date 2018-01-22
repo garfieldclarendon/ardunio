@@ -4,7 +4,6 @@
 #include "ui_StatusDialog.h"
 #include "ControllerManager.h"
 #include "DeviceManager.h"
-#include "PanelHandler.h"
 #include "MessageBroadcaster.h"
 
 StatusDialog::StatusDialog(QWidget *parent) :
@@ -24,22 +23,28 @@ StatusDialog::~StatusDialog()
     delete ui;
 }
 
-void StatusDialog::onControllerConnected(int index)
+void StatusDialog::onControllerConnected(long serialNumber)
 {
-    if(index >= ui->controllerTable->rowCount())
-    {
-        QString serialNumberText(QString("%1").arg(ControllerManager::instance()->getConnectionSerialNumber(index)));
-        QTableWidgetItem *item;
+    QString serialNumberText(QString("%1").arg(serialNumber));
+    QTableWidgetItem *item;
 
-        ui->controllerTable->insertRow(ui->controllerTable->rowCount());
-        item = new QTableWidgetItem(serialNumberText);
-        ui->controllerTable->setItem(ui->controllerTable->rowCount() - 1, 0, item);
-    }
+    ui->controllerTable->insertRow(ui->controllerTable->rowCount());
+    item = new QTableWidgetItem(serialNumberText);
+    ui->controllerTable->setItem(ui->controllerTable->rowCount() - 1, 0, item);
 }
 
-void StatusDialog::onControllerDisconnected(int index)
+void StatusDialog::onControllerDisconnected(long serialNumber)
 {
-    ui->controllerTable->removeRow(index);
+    QString serialNumberText(QString("%1").arg(serialNumber));
+
+    for(int x = 0; x < ui->controllerTable->rowCount(); x++)
+    {
+        if(ui->controllerTable->item(x, 0)->text() == serialNumberText)
+        {
+            ui->controllerTable->removeRow(x);
+            break;
+        }
+    }
 }
 
 void StatusDialog::onControllerPing(int index, quint64 length)
@@ -176,8 +181,8 @@ void StatusDialog::setupControllerList()
     ui->controllerTable->horizontalHeader()->setStyleSheet("color: blue");
     ui->controllerTable->verticalHeader()->setStyleSheet("color: blue");
 
-    connect(ControllerManager::instance(), &ControllerManager::controllerConnected, this, &StatusDialog::onControllerConnected);
-    connect(ControllerManager::instance(), &ControllerManager::controllerDisconnected, this, &StatusDialog::onControllerDisconnected);
+    connect(ControllerManager::instance(), &ControllerManager::controllerAdded, this, &StatusDialog::onControllerConnected);
+    connect(ControllerManager::instance(), &ControllerManager::controllerRemoved, this, &StatusDialog::onControllerDisconnected);
 
     for(int x = 0; x < ControllerManager::instance()->getConnectionCount(); x++)
         onControllerConnected(ControllerManager::instance()->getConnectionSerialNumber(x));

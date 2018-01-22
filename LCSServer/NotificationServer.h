@@ -20,7 +20,7 @@ signals:
     void broadcastTextMessage(const QString &message);
 
 public slots:
-    void sendNotificationMessage(const QString &uri, const QJsonObject &obj);
+    void sendNotificationMessage(const QString &url, const QJsonObject &obj);
 
 protected slots:
     void onNewConnection(void);

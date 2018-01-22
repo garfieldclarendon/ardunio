@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    CAppService service(argc, argv, name, description);
+    AppService service(argc, argv, name, description);
 
     if(startSimulator)
         service.startSimulator();

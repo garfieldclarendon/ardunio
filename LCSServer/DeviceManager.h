@@ -62,7 +62,6 @@ public:
 signals:
 //    void deviceStatusChanged(ClassEnum classCode);
     void deviceStatusChanged(int deviceID, int status);
-    void sendNotificationMessage(const QString &uri, const QJsonObject &obj);
 
 public slots:
     DeviceHandler *getHandler(DeviceClassEnum classCode) const { return m_deviceMap.value(classCode); }
@@ -74,7 +73,6 @@ protected:
     void removeDeviceHandler(DeviceClassEnum classCode);
 
 private:
-    void createAndSendNotificationMessage(int deviceID, int newState);
     static DeviceManager *m_instance;
 
     QMap<DeviceClassEnum, DeviceHandler *> m_deviceMap;

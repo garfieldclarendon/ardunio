@@ -296,6 +296,9 @@ Rectangle {
                     TextField {
                         id: moduleNameEdit
                         text: moduleName
+                        onTextChanged: {
+                            moduleName = moduleNameEdit.text
+                        }
                     }
                     Label {
                         text: "<b>Address: </b>"
@@ -305,6 +308,9 @@ Rectangle {
                         Layout.maximumWidth: 35
                         id: modueIndexEdit
                         text: address
+                        onTextChanged: {
+                            address = modueIndexEdit.text
+                        }
                     }
                     Label {
                         text: "Class:"

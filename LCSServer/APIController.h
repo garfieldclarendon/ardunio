@@ -249,12 +249,32 @@
  */
 
 
+/**
+ * @api {get} /api/notification/controller Controller Status Change
+ * @apiName ControllerStatusChangeNotification
+ * @apiGroup Notifications
+ *
+ * @apiDescription Notification message sent when a controller's state changes (online, offline or restarting)
+ * @apiSuccess {String} url Notification url.
+ * @apiSuccess {Number} serialNumber Controller's serial number.
+ * @apiSuccess {Number=1,2,3} status Controller's new status.  1 = Offline, 2 = Online, 3 = Restarting
+ * @apiSuccessExample {json} Success-Response:
+ *      HTTP/1.1 200 OK
+ *      {
+ *              "url": "/api/notification/controller"
+ *              "serialNumber": "1546165"
+ *              "status": "2"
+ *      }
+ *
+ */
+
 /////////////////////////////////////////////////////////////////////
 
 class QTcpSocket;
 
 /// APIController
 /// \brief  API handler class for a LCS controller.
+///
 /// This class handles all API requests for a controller.  Two types of requests are made as it relates to a LCS controller; "/API/..." requests sent from an
 /// external source like a web page or an application and a "/controller/..." requests sent by a LCS controller to download information from the application server.
 class APIController : public QObject
@@ -262,18 +282,21 @@ class APIController : public QObject
     Q_OBJECT
 public:
     /// Contstructor
-    /// Creates a controller API handler.  The constructor registers a \ref UrlHandler "Url Handler" object for the following url's:
-    /// "/controller/config"  Download the controller's configuration.
-    /// "/controller/module/config" Download a controller module's configuration.
-    /// "/controller/device/config" Download a device's configuration.
-    /// "/controller/notification_list" Download a controller's list of "Controllers to Notify".
+    /// Creates a controller API handler.  The constructor registers a \ref UrlHandler "Url Handler" objects.
+    /// See the API documentation for information on the URL's handled by this class.
     ///
     explicit APIController(QObject *parent = nullptr);
 
 
 signals:
+    ///Notifies interested parties that a controller's status has changed
+    void sendNotificationMessage(const QString &url, const QJsonObject &obj);
 
 public slots:
+    ///Monitors the ControllerManager for controller status changes
+    /// @param serialNumber long Serial number of the controller.
+    /// @param newStatus ControllerStatusEnum The controller's new status.
+    void onControllerStatusChanged(long serialNumber, ControllerStatusEnum newStatus);
 
     // Controller API Handlers
     /// API "/controller/config"
@@ -337,6 +360,10 @@ public slots:
     void handleResetNotificationList(const APIRequest &request, APIResponse *response);
 
 private:
+    /// Creates the JSON notification message containing the serialNumber and the new status of the controller that changed.
+    /// @param serialNumber long Serial number of the controller.
+    /// @param status ControllerStatusEnum The controller's new status.
+    void createAndSendNotificationMessage(long serialNumber, ControllerStatusEnum status);
     /// Returns the contents of a file as a QByteArray
     /// @param fileName QString containing the file's name.
     QByteArray getFile(const QString &fileName);

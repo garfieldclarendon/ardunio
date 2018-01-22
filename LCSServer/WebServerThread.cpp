@@ -13,7 +13,7 @@
 #include "APIEntity.h"
 
 WebServerThread::WebServerThread(int socketDescriptor, QObject *parent)
-    : QThread(parent), socketDescriptor(socketDescriptor), m_apiHandler(this)
+    : QThread(parent), m_socketDescriptor(socketDescriptor)
 {
 }
 
@@ -25,7 +25,7 @@ WebServerThread::~WebServerThread()
 void WebServerThread::run(void)
 {
     QTcpSocket socket;
-    if (!socket.setSocketDescriptor(socketDescriptor))
+    if (!socket.setSocketDescriptor(m_socketDescriptor))
     {
 //        emit error(tcpSocket.error());
         return;
@@ -97,6 +97,7 @@ void WebServerThread::run(void)
     socket.waitForBytesWritten();
     socket.flush();
     socket.close();
+    sleep(1);
 }
 
 QByteArray WebServerThread::getFile(const QString &fileName)

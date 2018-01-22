@@ -16,8 +16,8 @@ public:
     ~StatusDialog();
 
 protected slots:
-    void onControllerConnected(int index);
-    void onControllerDisconnected(int index);
+    void onControllerConnected(long serialNumber);
+    void onControllerDisconnected(long serialNumber);
     void onControllerPing(int index, quint64 length);
 
     void onDeviceStatusChanged(int deviceID, int status);

@@ -13,6 +13,7 @@ struct UDPMessageStruct
 typedef struct UDPMessageStruct UDPMessageStruct;
 /// UDPMessage
 /// \brief  A class for handling UDP messages sent between controllers and the application server.
+///
 /// This class along with the \ref UDPMessageStruct "Message Structure" contains the data layout of a UDP message.  Messages are sent
 /// from controller-to-controller in a peer-to-peer fasion using UDP uni-cast.  Each controller contains a list of "controllers to notify" in its configuration
 /// data.  Each time a device needs to send a command or status message, the controller's \ref NetworkManager "Network Manager" sends the message to all controllers
