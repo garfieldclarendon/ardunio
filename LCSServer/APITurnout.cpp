@@ -12,7 +12,7 @@ APITurnout::APITurnout(QObject *parent) : QObject(parent)
     UrlHandler *handler;
 
     handler = webServer->createUrlHandler("/api/activate_turnout");
-    connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleConfigUrl(APIRequest,APIResponse*)), Qt::DirectConnection);
+    connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleActivateTurnoutUrl(APIRequest,APIResponse*)), Qt::DirectConnection);
 }
 
 void APITurnout::handleActivateTurnoutUrl(const APIRequest &request, APIResponse *)

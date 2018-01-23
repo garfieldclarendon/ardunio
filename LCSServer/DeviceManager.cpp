@@ -25,6 +25,11 @@ DeviceManager *DeviceManager::instance()
     return m_instance;
 }
 
+bool DeviceManager::getIsDeviceLocked(int deviceID)
+{
+    return m_statusMap.value(deviceID).getLocked();
+}
+
 int DeviceManager::getDeviceStatus(int deviceID)
 {
     return m_statusMap.value(deviceID).getCurrentStatus();
@@ -40,15 +45,15 @@ int DeviceManager::getDeviceID(int index) const
     return m_statusMap.keys().value(index);
 }
 
-void DeviceManager::setDeviceStatus(int deviceID, int status)
+void DeviceManager::setDeviceStatus(bool locked, int deviceID, int status)
 {
-    DeviceStatus newStatus(status, QDateTime::currentDateTime());
+    DeviceStatus newStatus(locked, status, QDateTime::currentDateTime());
 
-    if(m_statusMap.value(deviceID).getCurrentStatus() != status)
+    if(m_statusMap.value(deviceID).getCurrentStatus() != status || m_statusMap.value(deviceID).getLocked() != locked)
     {
         qDebug(QString("!!!!!!!!!!!!!!!SET DEVICE STATUS %1 to %2").arg(deviceID).arg(status).toLatin1());
         m_statusMap[deviceID] = newStatus;
-        emit deviceStatusChanged(deviceID, status);
+        emit deviceStatusChanged(locked, deviceID, status);
     }
 }
 
@@ -58,7 +63,9 @@ void DeviceManager::newUDPMessage(const UDPMessage &message)
     {
         int deviceID = message.getID();
         int state = message.getField(0);
-        setDeviceStatus(deviceID, state);
+        bool locked = message.getField(1);
+
+        setDeviceStatus(locked, deviceID, state);
     }
 }
 

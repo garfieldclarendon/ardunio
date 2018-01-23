@@ -20,7 +20,7 @@ protected slots:
     void onControllerDisconnected(long serialNumber);
     void onControllerPing(int index, quint64 length);
 
-    void onDeviceStatusChanged(int deviceID, int status);
+    void onDeviceStatusChanged(int deviceID, int status, bool locked);
     void onPinStateChanged(int address, int pinNumber, int pinMode);
     void onNCEDataChanged(quint8 data, int blockIndex, int byteIndex);
 

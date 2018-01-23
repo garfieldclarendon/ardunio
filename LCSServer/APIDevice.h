@@ -13,10 +13,10 @@
  * @apiName GetDeviceList
  * @apiGroup Device
  *
- * @apiParam {Number} serialNumber (optional) filter device list by a specific controller's serial number.
- * @apiParam {Number} moduleID (optional) filter device list by a specific controller module's ID.
- * @apiParam {Number} controllerID (optional) filter device list by a specific controller's ID.
- * @apiParam {Number} classCode (optional) filter device list by a specific device classification.
+ * @apiParam {Number} [serialNumber] (optional) filter device list by a specific controller's serial number.
+ * @apiParam {Number}[moduleID] (optional) filter device list by a specific controller module's ID.
+ * @apiParam {Number} [controllerID] (optional) filter device list by a specific controller's ID.
+ * @apiParam {Number} [classCode] (optional) filter device list by a specific device classification.
  * @apiDescription Returns a list of devices.  If no parameters are supplied, all devices are returned.
  * @apiSuccess {Number} address  Address of the module the device is connected to.
  * @apiSuccess {Number} controllerID Controller ID of the controller the device is connected to.
@@ -83,7 +83,7 @@
  * @apiName DeviceConfigReset
  * @apiGroup Device
  *
- * @apiParam {Number} deviceID (optional) The device's id.  If 0 or excluded, all devices will reset their configuration data.
+ * @apiParam {Number} [deviceID] (optional) The device's id.  If 0 or excluded, all devices will reset their configuration data.
  * @apiDescription Sends a SYS_RESET_DEVICE_CONFIG broadcast UDP message instructing the device(s) to re-download its configuration data.
  * @apiExample Example usage:
  * http://localhost:8080/api/send_device_config?deviceID=1
@@ -120,18 +120,19 @@
 /**
  * @api {get} /api/notification/device Device Status Change
  * @apiName DeviceStatusChangeNotification
- * @apiGroup Notifications
+ * @apiGroup APINotifications
  *
  * @apiDescription Notification message sent when a device's state changes.
  * @apiSuccess {String} url Notification url.
  * @apiSuccess {Number} deviceID Device's ID.
  * @apiSuccess {Number} deviceState Device's new state
+ * @apiSuccess {Number=0,1} locked Device's locked state.  0 = unlocked, 1 = locked.
  * @apiSuccessExample {json} Success-Response:
- *      HTTP/1.1 200 OK
  *      {
  *              "url": "/api/notification/device"
  *              "deviceID": "1"
  *              "deviceState": "2"
+ *              "locked": "0"
  *      }
  *
  */
@@ -149,12 +150,15 @@ public slots:
     void handleGetDevicePropertyList(const APIRequest &request, APIResponse *response);
     void handleSendDeviceConfig(const APIRequest &request, APIResponse *response);
     void handleCopyDevice(const APIRequest &request, APIResponse *response);
-    void onDeviceStatusChanged(int deviceID, int status);
+    void handleLockDevice(const APIRequest &request, APIResponse *response);
+    void onDeviceStatusChanged(int deviceID, int status, bool locked);
 
 private:
+    void lockTurnout(int deviceID, bool lock);
+    void lockSignal(int deviceID, bool lock, PinStateEnum redMode, PinStateEnum greenMode, PinStateEnum yellowMode);
     QJsonArray getDeviceList(long serialNumber, int controllerID, int moduleID, int classCode, int deviceID);
     void copyDeviceProperties(int fromID, int toID);
-    void createAndSendNotificationMessage(int deviceID, int newState);
+    void createAndSendNotificationMessage(int deviceID, int newState, bool locked);
 };
 
 #endif // APIDEVICE_H

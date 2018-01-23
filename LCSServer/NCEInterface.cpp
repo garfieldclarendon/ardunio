@@ -50,7 +50,7 @@ void NCEInterface::routeStatusChanged(int routeID, bool isActive)
     postMessage(message);
 }
 
-void NCEInterface::deviceStatusChanged(int deviceID, int status)
+void NCEInterface::deviceStatusChanged(int deviceID, int status, bool )
 {
     NCEMessage message;
     message.accDecoder(deviceID, status);

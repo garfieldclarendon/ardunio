@@ -29,7 +29,7 @@ void SignalDevice::process(ModuleData &moduleData)
 	dataA = moduleData.getByteA();
 	dataB = moduleData.getByteB();
 
-	if (/* m_lockout == false && */ m_updateValues)
+	if (m_lockout == false && m_updateValues)
 	{
 		updateValues();
 	}
@@ -202,7 +202,7 @@ void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &m
 	}
 	else if (message.getMessageID() == SYS_LOCK_DEVICE && message.getID() == getID())
 	{
-		controllerLockout(message.getField(0));
+		handleLockoutMessage(message);
 	}
 	else if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG)
 	{
@@ -213,6 +213,24 @@ void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &m
 			downloadConfig();
 		}
 	}
+}
+
+void SignalDevice::handleLockoutMessage(const UDPMessage &message)
+{
+	// First field contains the the lock flag
+	controllerLockout(message.getField(0));
+	// If locked and field1 contains 1, then fields 2,3 and 4 contain the red, green and yellow settings respectively.
+	// If locked and field1 is 0, then the current pin settings are "locked" as is.
+	if (m_lockout && message.getField(1) == 1)
+	{
+		m_redMode = (PinStateEnum)message.getField(2);
+		m_greenMode = (PinStateEnum)message.getField(3);
+		m_yellowMode = (PinStateEnum)message.getField(4);
+	}
+
+	// If locked is false, force the signal to re-canculate the proper aspect.
+	if(m_lockout == false)
+		m_updateValues = true;
 }
 
 byte SignalDevice::getCurrentState(int deviceID) const

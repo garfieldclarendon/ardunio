@@ -107,9 +107,9 @@ void APIRoute::handleGetRouteEntryList(const APIRequest &request, APIResponse *r
     response->setPayload(data);
 }
 
-void APIRoute::deviceStatusChanged(int deviceID, int status)
+void APIRoute::deviceStatusChanged(int deviceID, int status, bool locked)
 {
-    qDebug(QString("RouteHandler::DEVICE_STATUS_CHANGED: %1  STATUS: %2").arg(deviceID).arg(status).toLatin1());
+    qDebug(QString("RouteHandler::DEVICE_STATUS_CHANGED: %1  STATUS: %2 LOCKED: %3").arg(deviceID).arg(status).arg(locked).toLatin1());
     QString sql = QString("SELECT DISTINCT routeID FROM routeEntry WHERE deviceID = %1").arg(deviceID);
     Database db;
     QList<int> routes;
@@ -122,10 +122,12 @@ void APIRoute::deviceStatusChanged(int deviceID, int status)
         }
     }
 
-    int currentRoute = 0;
-    bool isActive = true;
     for(int x = 0; x < routes.count(); x++)
     {
+        int currentRoute = 0;
+        bool isActive = true;
+        bool isLocked = true;
+
         QString sql = QString("SELECT routeID, deviceID, turnoutState FROM routeEntry WHERE routeID = %1 ORDER BY routeID").arg(routes.value(x));
         QSqlQuery query2 = db.executeQuery(sql);
         while(query2.next())
@@ -134,8 +136,12 @@ void APIRoute::deviceStatusChanged(int deviceID, int status)
             {
                 if(currentRoute > 0)
                 {
+                    if(isLocked && m_lockedRoutes.contains(currentRoute) == false)
+                        m_lockedRoutes << currentRoute;
+
                     createAndSendNotificationMessage(currentRoute, isActive);
                     isActive = true;
+                    isLocked = true;
                 }
                 currentRoute = query2.value("routeID").toInt();
             }
@@ -143,9 +149,13 @@ void APIRoute::deviceStatusChanged(int deviceID, int status)
             int newState = query2.value("turnoutState").toInt();
             if(DeviceManager::instance()->getDeviceStatus(deviceID) != newState)
                 isActive = false;
+            if(DeviceManager::instance()->getIsDeviceLocked(deviceID) == false)
+                isLocked = false;
         }
         if(currentRoute > 0)
         {
+            if(isLocked && m_lockedRoutes.contains(currentRoute) == false)
+                m_lockedRoutes << currentRoute;
             createAndSendNotificationMessage(currentRoute, isActive);
         }
     }

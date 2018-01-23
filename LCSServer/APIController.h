@@ -10,6 +10,12 @@
 /////////////////////////////////////////////////////////////////////
 // The following comment blocks are parsed by the apidoc application to produce the API documentation
 /**
+ * @apiDefine APINotifications Notifications
+ * API notifications are sent as a JSON text message through a separate Web Socket connection initiated by the client.  In order for the client to receive notification
+ * message, this connection must remain open/connected during the entire session.
+ */
+
+/**
  * @api {get} /controller/config:serialNumber Download Controller Configuration
  * @apiName ControllerConfiguration
  * @apiGroup Controller
@@ -132,7 +138,7 @@
  * @apiName ControllerModuleList
  * @apiGroup Controller
  *
- * @apiParam {Number} controllerID (optional) The controller's ID.
+ * @apiParam {Number} [controllerID] (optional) The controller's ID.
  * @apiDescription Returns the list of LCS controller modules for a specific controller.
  * @apiSuccess {Number} address Module's address.
  * @apiSuccess {Number} controllerID Controller's ID the module is assigned to.
@@ -174,7 +180,7 @@
  * @apiName ControllerList
  * @apiGroup Controller
  *
- * @apiParam {Number} controllerID (optional) The controller's ID.
+ * @apiParam {Number} [controllerID] (optional) The controller's ID.
  * @apiDescription Returns the list of LCS controllers.
  * @apiSuccess {Number} controllerClass Controller's Class.
  * @apiSuccess {String} controllerDescription Controller's Description.
@@ -220,7 +226,7 @@
  * @apiName ControllerReset
  * @apiGroup Controller
  *
- * @apiParam {Number} serialNumber (optional) The controller's serial number.  If 0 or excluded, all controllers will restart.
+ * @apiParam {Number} [serialNumber] (optional) The controller's serial number.  If 0 or excluded, all controllers will restart.
  * @apiDescription Sends a SYS_REBOOT_CONTROLLER broadcast UDP message instructing the controller(s) to restart.
  * @apiExample Example usage:
  * http://localhost:8080/api/send_controller_reset?serialNumber=1546165
@@ -231,7 +237,7 @@
  * @apiName ControllerConfigurationReset
  * @apiGroup Controller
  *
- * @apiParam {Number} serialNumber (optional) The controller's serial number.  If 0 or excluded, all controllers will delete their configuration data.
+ * @apiParam {Number} [serialNumber] (optional) The controller's serial number.  If 0 or excluded, all controllers will delete their configuration data.
  * @apiDescription Sends a SYS_RESET_CONFIG broadcast UDP message instructing the controller(s) to delete all configuration data.  Once the data is deleted, the controller will restart.  Upon restarting, the controller re-downloads all configuration data.
  * @apiExample Example usage:
  * http://localhost:8080/api/send_controller_reset_config?serialNumber=1546165
@@ -242,7 +248,7 @@
  * @apiName ControllerConfigurationReset
  * @apiGroup Controller
  *
- * @apiParam {Number} serialNumber (optional)  The controller's serial number.  If 0 or excluded, all controllers will delete their controllers-to-notify list.
+ * @apiParam {Number} [serialNumber] (optional)  The controller's serial number.  If 0 or excluded, all controllers will delete their controllers-to-notify list.
  * @apiDescription Sends a SYS_RESET_NOTIFICATION_LIST broadcast UDP message instructing the controller(s) to delete controllers-to-notify list.  The controller responds by sending a /controller/notification_list to the application server.
  * @apiExample Example usage:
  * http://localhost:8080/api/send_controller_reset_notification_list?serialNumber=1546165
@@ -252,14 +258,13 @@
 /**
  * @api {get} /api/notification/controller Controller Status Change
  * @apiName ControllerStatusChangeNotification
- * @apiGroup Notifications
+ * @apiGroup APINotifications
  *
  * @apiDescription Notification message sent when a controller's state changes (online, offline or restarting)
  * @apiSuccess {String} url Notification url.
  * @apiSuccess {Number} serialNumber Controller's serial number.
  * @apiSuccess {Number=1,2,3} status Controller's new status.  1 = Offline, 2 = Online, 3 = Restarting
  * @apiSuccessExample {json} Success-Response:
- *      HTTP/1.1 200 OK
  *      {
  *              "url": "/api/notification/controller"
  *              "serialNumber": "1546165"

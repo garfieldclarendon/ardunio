@@ -90,7 +90,7 @@ signals:
 public slots:
     void newMessageSlot(const NCEMessage &message);
     void routeStatusChanged(int routeID, bool isActive);
-    void deviceStatusChanged(int deviceID, int status);
+    void deviceStatusChanged(int deviceID, int status, bool locked);
 
 private:
     static NCEInterface *m_instance;

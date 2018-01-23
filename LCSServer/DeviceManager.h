@@ -14,25 +14,27 @@ class DeviceStatus
 {
 public:
     DeviceStatus(void)
-        : m_currentStatus(0)
+        : m_locked(false), m_currentStatus(0)
     {
 
     }
 
-    DeviceStatus(int status, const QDateTime &dateTime)
-        : m_currentStatus(status), m_statusDateTime(dateTime)
+    DeviceStatus(bool locked, int status, const QDateTime &dateTime)
+        : m_locked(locked), m_currentStatus(status), m_statusDateTime(dateTime)
     {
 
     }
 
     DeviceStatus(const DeviceStatus &other)
     {
+        m_locked = other.m_locked;
         m_currentStatus = other.m_currentStatus;
         m_statusDateTime = other.m_statusDateTime;
     }
 
     void operator = (const DeviceStatus &other)
     {
+        m_locked = other.m_locked;
         m_currentStatus = other.m_currentStatus;
         m_statusDateTime = other.m_statusDateTime;
     }
@@ -41,8 +43,11 @@ public:
     void setCurrentStatus(int value) { m_currentStatus = value; }
     QDateTime getStatusDateTime(void) const { return m_statusDateTime; }
     void setStatusDateTime(const QDateTime &value) { m_statusDateTime = value; }
+    bool getLocked(void) const { return m_locked; }
+    void setLocked(bool value) { m_locked = value; }
 
 private:
+    bool m_locked;
     int m_currentStatus;
     QDateTime m_statusDateTime;
 };
@@ -55,17 +60,18 @@ public:
     ~DeviceManager(void);
     static DeviceManager *instance(void);
 
+    bool getIsDeviceLocked(int deviceID);
     int getDeviceStatus(int deviceID);
     int getDeviceCount(void) const;
     int getDeviceID(int index) const;
 
 signals:
 //    void deviceStatusChanged(ClassEnum classCode);
-    void deviceStatusChanged(int deviceID, int status);
+    void deviceStatusChanged(int deviceID, int status, bool locked);
 
 public slots:
     DeviceHandler *getHandler(DeviceClassEnum classCode) const { return m_deviceMap.value(classCode); }
-    void setDeviceStatus(int deviceID, int status);
+    void setDeviceStatus(bool locked, int deviceID, int status);
     void newUDPMessage(const UDPMessage &message);
 
 protected:

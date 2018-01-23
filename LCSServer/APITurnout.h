@@ -8,12 +8,25 @@
 #include "APIResponse.h"
 
 /**
+ * @api {get} /api/lock_device:deviceID,lock Lock Turnout
+ * @apiName LockTurnout
+ * @apiGroup Turnout
+ *
+ * @apiParam {Number} deviceID The turnout's Device ID.
+ * @apiParam {Number=0,1} lock Flag which unlocks or locks the turnout.  0 = unlock, 1 = lock.
+ * @apiDescription Locks/unlocks the turnout.  If the lock parameter is set to 1, the turnout will ignore future TRN_ACTIVATE and TRN_ACTIVATE_ROUTE messages until
+ * another lock message is sent with the lock flag set to 0.
+ * @apiExample Example usage:
+ * http://localhost:8080/api/lock_device?deviceID=7&lock=1
+ */
+
+/**
  * @api {get} /api/activate_turnout:deviceID,turnoutState Activate Turnout
  * @apiName ActivateTurnout
  * @apiGroup Turnout
  *
  * @apiParam {Number} deviceID The turnout's Device ID.
- * @apiParam {Number=1,3} turnoutState (optional) The desired state to set the turnout to.
+ * @apiParam {Number=1,3} [turnoutState] (optional) The desired state to set the turnout to.
  * @apiDescription Sets the turnout to the desired state (direction) 1 = Normal 2 = Diverging.  If no state is specified, the turnout is toggled between normal and thrown.
  * @apiExample Example usage:
  * http://localhost:8080/api/activate_turnout?deviceID=7&turnoutState=3

@@ -127,6 +127,7 @@ void TurnoutDevice::sendStatusMessage(TurnoutState newState)
 	message.setID(getID());
 	message.setMessageID(TRN_STATUS);
 	message.setField(0, newState);
+	message.setField(1, m_lockedRoute > 0);
 
 //	DEBUG_PRINT("TurnoutDevice::sendStatusMessage:%d STATUS %d\n", getID(), newState);
 	NetManager.sendUdpMessage(message, true);

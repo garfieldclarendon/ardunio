@@ -436,6 +436,28 @@ int Database::getdeviceID(const QString &name)
     return id;
 }
 
+DeviceClassEnum Database::getDeviceClass(int deviceID)
+{
+    DeviceClassEnum ret = DeviceUnknown;
+
+    if(db.isValid() == false)
+        db = QSqlDatabase::database();
+    db.open();
+    QSqlQuery query(db);
+
+    bool r = query.exec(QString("SELECT deviceClass FROM device WHERE id = %1").arg(deviceID));
+
+    if(r == false)
+        qDebug(query.lastError().text().toLatin1());
+
+    while(query.next())
+    {
+       ret = (DeviceClassEnum)query.value(0).toInt();
+    }
+
+    return ret;
+}
+
 QList<int> Database::getExcludeRouteList(int routeID)
 {
     QList<int> ids;

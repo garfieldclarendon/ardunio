@@ -70,6 +70,7 @@ private:
 	void downloadConfig(void);
 	void downloadAspects(void);
 	void downloadAspect(int aspectID, byte index);
+	void handleLockoutMessage(const UDPMessage &message);
 
 	PinStateEnum m_redMode;
 	PinStateEnum m_greenMode;

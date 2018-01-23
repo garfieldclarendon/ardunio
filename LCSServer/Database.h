@@ -6,6 +6,8 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+#include "GlobalDefs.h"
+
 const int CurrentDatabaseVersion = 4;
 
 class Database : public QObject
@@ -42,6 +44,8 @@ public:
     QString getSignalAspectConfig(int aspectID);
     QString getTurnoutName(int deviceID);
     int getdeviceID(const QString &name);
+    DeviceClassEnum getDeviceClass(int deviceID);
+
     QList<int> getExcludeRouteList(int routeID);
 
     void getControllerIDAndName(quint32 serialNumber, int &deviceID, QString &controllerName);

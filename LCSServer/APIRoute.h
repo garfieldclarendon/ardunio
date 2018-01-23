@@ -97,6 +97,28 @@
  *      ]
  */
 
+/**
+ * @api {get} /api/notification/route Route Status Change
+ * @apiName RouteStatusChangeNotification
+ * @apiGroup APINotifications
+ *
+ * @apiDescription Notification message sent when a route's state changes.
+ * @apiSuccess {String} url Notification url.
+ * @apiSuccess {Number} routeID Route's ID.
+ * @apiSuccess {Number=0,1} isActive Flag indicating if the route is active. 0 = not active, 1 = active.
+ * @apiSuccess {Number=0,1} isLocked Flag indicating if the route is currently locked.  0 = not locked, 1 = locked
+ * @apiSuccess {Number=0,1} canLock Flag indicating if the lock is allowed to be locked. 0 = cannot be locked, 1 = can be locked.  If
+ * any of the turnouts contained in the route are currently in a locked state, the route cannot be locked.
+ * @apiSuccessExample {json} Success-Response:
+ *      {
+ *              "url": "/api/notification/device"
+ *              "deviceID": "1"
+ *              "deviceState": "2"
+ *              "locked": "0"
+ *      }
+ *
+ */
+
 class APIRoute : public QObject
 {
     Q_OBJECT
@@ -115,7 +137,7 @@ public slots:
     void handleGetRouteList(const APIRequest &request, APIResponse *response);
     void handleGetRouteEntryList(const APIRequest &request, APIResponse *response);
 
-    void deviceStatusChanged(int deviceID, int status);
+    void deviceStatusChanged(int deviceID, int status, bool locked);
     bool isRouteActive(int routeID);
     bool isRouteLocked(int routeID) { return m_lockedRoutes.contains(routeID); }
     bool canRouteLock(int routeID) { return !m_excludeRoutes.contains(routeID); }

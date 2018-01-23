@@ -30,6 +30,8 @@ APIDevice::APIDevice(QObject *parent) : QObject(parent)
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleSendDeviceConfig(APIRequest,APIResponse*)), Qt::DirectConnection);
     handler = webServer->createUrlHandler("/api/copy_device");
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleCopyDevice(APIRequest,APIResponse*)), Qt::DirectConnection);
+    handler = webServer->createUrlHandler("/api/lock_device");
+    connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleLockDevice(APIRequest,APIResponse*)), Qt::DirectConnection);
 }
 
 void APIDevice::handleGetDeviceList(const APIRequest &request, APIResponse *response)
@@ -111,9 +113,60 @@ void APIDevice::handleCopyDevice(const APIRequest &request, APIResponse *respons
     response->setPayload(doc.toJson());
 }
 
-void APIDevice::onDeviceStatusChanged(int deviceID, int status)
+void APIDevice::handleLockDevice(const APIRequest &request, APIResponse *)
 {
-    createAndSendNotificationMessage(deviceID, status);
+    QUrlQuery urlQuery(request.getUrl());
+    int deviceID = urlQuery.queryItemValue("deviceID").toInt();
+    bool lock = urlQuery.queryItemValue("deviceID").toInt() == 1;
+    Database db;
+    DeviceClassEnum deviceClass = db.getDeviceClass(deviceID);
+
+    if(deviceClass == DeviceTurnout)
+    {
+        lockTurnout(deviceID, lock);
+    }
+    else if(deviceClass == DeviceSignal)
+    {
+        PinStateEnum redMode = (PinStateEnum)urlQuery.queryItemValue("redMode").toInt();
+        PinStateEnum greenMode = (PinStateEnum)urlQuery.queryItemValue("greenMode").toInt();
+        PinStateEnum yellowMode = (PinStateEnum)urlQuery.queryItemValue("yellowMode").toInt();
+
+        lockSignal(deviceID, lock, redMode, greenMode, yellowMode);
+    }
+}
+
+void APIDevice::onDeviceStatusChanged(int deviceID, int status, bool locked)
+{
+    createAndSendNotificationMessage(deviceID, status, locked);
+}
+
+void APIDevice::lockTurnout(int deviceID, bool lock)
+{
+    UDPMessage message;
+    message.setMessageID(SYS_LOCK_DEVICE);
+    message.setID(deviceID);
+    message.setField(0, lock);
+
+    MessageBroadcaster::instance()->sendUDPMessage(message);
+}
+
+void APIDevice::lockSignal(int deviceID, bool lock, PinStateEnum redMode, PinStateEnum greenMode, PinStateEnum yellowMode)
+{
+    UDPMessage message;
+    message.setMessageID(SYS_LOCK_DEVICE);
+    message.setID(deviceID);
+    message.setField(0, lock);
+
+    // At least one pin setting must be set to either on or flashing.  If not, assume the parameters were not supplied.
+    if(redMode != PinOff || greenMode != PinOff || yellowMode != PinOff)
+    {
+        message.setField(1, 1);
+        message.setField(2, redMode);
+        message.setField(3, greenMode);
+        message.setField(4, yellowMode);
+    }
+
+    MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 
 QJsonArray APIDevice::getDeviceList(long serialNumber, int controllerID, int moduleID, int classCode, int deviceID)
@@ -190,12 +243,13 @@ void APIDevice::copyDeviceProperties(int fromID, int toID)
     db.executeQuery(sql);
 }
 
-void APIDevice::createAndSendNotificationMessage(int deviceID, int newState)
+void APIDevice::createAndSendNotificationMessage(int deviceID, int newState, bool locked)
 {
     QString uri("/api/notification/device");
     QJsonObject obj;
     obj["deviceID"] = QString("%1").arg(deviceID);
     obj["deviceState"] = QString("%1").arg(newState);
+    obj["locked"] = QString("%1").arg(locked);
 
     emit sendNotificationMessage(uri, obj);
 }

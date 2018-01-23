@@ -70,7 +70,7 @@ void StatusDialog::onControllerPing(int index, quint64 length)
     }
 }
 
-void StatusDialog::onDeviceStatusChanged(int deviceID, int status)
+void StatusDialog::onDeviceStatusChanged(int deviceID, int status, bool locked)
 {
     QString deviceIDText(QString("%1").arg(deviceID));
     QTableWidgetItem *item(NULL);
@@ -202,7 +202,7 @@ void StatusDialog::setupDeviceList()
     for(int x = 0; x < DeviceManager::instance()->getDeviceCount(); x++)
     {
         int id = DeviceManager::instance()->getDeviceID(x);
-        onDeviceStatusChanged(id, DeviceManager::instance()->getDeviceStatus(id));
+        onDeviceStatusChanged(id, DeviceManager::instance()->getDeviceStatus(id), DeviceManager::instance()->getIsDeviceLocked(id));
     }
 }
 
