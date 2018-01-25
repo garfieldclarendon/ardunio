@@ -53,7 +53,7 @@ void DeviceManager::setDeviceStatus(bool locked, int deviceID, int status)
     {
         qDebug(QString("!!!!!!!!!!!!!!!SET DEVICE STATUS %1 to %2").arg(deviceID).arg(status).toLatin1());
         m_statusMap[deviceID] = newStatus;
-        emit deviceStatusChanged(locked, deviceID, status);
+        emit deviceStatusChanged(deviceID, status, locked);
     }
 }
 

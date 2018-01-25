@@ -1,7 +1,12 @@
 {
+ "version": "1.0.0",
   "name": "Layout Control System",
   "description": "GCMRR Layout Control System (LCS) REST API",
     "title": "GCMRR LCS REST API",
-    "withCompare":  "false",
-  "url" : "https://localhost:8080/api"
+    "url": "http://APITest.entrydns.org:8080",
+    "sampleUrl": "http://APITest.entrydns.org:8080",
+ "template": {
+  	"withCompare": false,
+  	"withGenerator": true
+  }
 }

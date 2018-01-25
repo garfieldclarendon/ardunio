@@ -30,6 +30,8 @@ APIDevice::APIDevice(QObject *parent) : QObject(parent)
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleSendDeviceConfig(APIRequest,APIResponse*)), Qt::DirectConnection);
     handler = webServer->createUrlHandler("/api/copy_device");
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleCopyDevice(APIRequest,APIResponse*)), Qt::DirectConnection);
+    handler = webServer->createUrlHandler("/api/create_device");
+    connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleCreateDevice(APIRequest,APIResponse*)), Qt::DirectConnection);
     handler = webServer->createUrlHandler("/api/lock_device");
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleLockDevice(APIRequest,APIResponse*)), Qt::DirectConnection);
 }
@@ -111,6 +113,21 @@ void APIDevice::handleCopyDevice(const APIRequest &request, APIResponse *respons
     // Copy the device properties from the original device to the newly created device.
     copyDeviceProperties(deviceID, newDeviceID);
     response->setPayload(doc.toJson());
+}
+
+void APIDevice::handleCreateDevice(const APIRequest &request, APIResponse *response)
+{
+    QUrlQuery urlQuery(request.getUrl());
+    DeviceClassEnum deviceClass = (DeviceClassEnum)urlQuery.queryItemValue("deviceClass").toInt();
+    if(deviceClass != DeviceUnknown)
+    {
+        Database db;
+        QJsonObject obj;
+        obj = db.createNewDevice(deviceClass);
+        QJsonDocument doc;
+        doc.setObject(obj);
+        response->setPayload(doc.toJson());
+    }
 }
 
 void APIDevice::handleLockDevice(const APIRequest &request, APIResponse *)

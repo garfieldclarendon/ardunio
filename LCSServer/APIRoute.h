@@ -101,6 +101,7 @@
  * @api {get} /api/notification/route Route Status Change
  * @apiName RouteStatusChangeNotification
  * @apiGroup APINotifications
+ * @apiSampleRequest off
  *
  * @apiDescription Notification message sent when a route's state changes.
  * @apiSuccess {String} url Notification url.
@@ -111,10 +112,11 @@
  * any of the turnouts contained in the route are currently in a locked state, the route cannot be locked.
  * @apiSuccessExample {json} Success-Response:
  *      {
- *              "url": "/api/notification/device"
- *              "deviceID": "1"
- *              "deviceState": "2"
- *              "locked": "0"
+ *              "url": "/api/notification/route",
+ *              "routeID": "16",
+ *              "isActive": "1",
+ *              "isLocked": "0",
+ *              "canLock": "0"
  *      }
  *
  */

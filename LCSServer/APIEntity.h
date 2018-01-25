@@ -11,7 +11,7 @@
  * @apiName FetchEntity
  * @apiGroup Entity
  *
- * @apiParam {String} [fieldName] (optional) Any combination of FieldName=value pairs can be passed to filter the list returned.  Multiple field/value pairs are joined as an "AND" in the generated WHERE clause.
+ * @apiParam {String} [fieldName]  Any combination of FieldName=value pairs can be passed to filter the list returned.  Multiple field/value pairs are joined as an "AND" in the generated WHERE clause.
  * @apiDescription Fetches records from the [EntityName] table with the optional filters applied.
  * @apiExample This example fetches all controllerModules with an address of 2:
  * http://localhost:8080/api/entity/controllerModule?address=2
@@ -54,7 +54,7 @@
  *     body:
  *     {
  *       "id": 7,
- *       "routeName": "CA 1"
+ *       "routeName": "CA 1",
  *       "routeDescription": "New Description"
  *     }
  */
@@ -96,7 +96,7 @@
  *
  *     body:
  *     {
- *       "id": 7,
+ *       "id": 7
  *     }
  */
 

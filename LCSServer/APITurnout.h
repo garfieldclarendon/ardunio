@@ -26,7 +26,7 @@
  * @apiGroup Turnout
  *
  * @apiParam {Number} deviceID The turnout's Device ID.
- * @apiParam {Number=1,3} [turnoutState] (optional) The desired state to set the turnout to.
+ * @apiParam {Number=1,3} [turnoutState]  The desired state to set the turnout to.
  * @apiDescription Sets the turnout to the desired state (direction) 1 = Normal 2 = Diverging.  If no state is specified, the turnout is toggled between normal and thrown.
  * @apiExample Example usage:
  * http://localhost:8080/api/activate_turnout?deviceID=7&turnoutState=3

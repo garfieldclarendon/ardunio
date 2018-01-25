@@ -17,9 +17,9 @@
  *
  * @apiParam {Number} deviceID The signal's Device ID.
  * @apiParam {Number=0,1} lock Flag which unlocks or locks the signal to its current aspect.
- * @apiSuccess {Number=0,1,2} [redMode] (optional) Red LED state.  0 = off, 1 = on, 2 = flashing.
- * @apiSuccess {Number=0,1,2} [greenMode] (optional) Green LED state.  0 = off, 1 = on, 2 = flashing.
- * @apiSuccess {Number=0,1,2} [yellowMode] (optional) Yellow LED state.  0 = off, 1 = on, 2 = flashing.
+ * @apiSuccess {Number=0,1,2} [redMode]  Red LED state.  0 = off, 1 = on, 2 = flashing.
+ * @apiSuccess {Number=0,1,2} [greenMode]  Green LED state.  0 = off, 1 = on, 2 = flashing.
+ * @apiSuccess {Number=0,1,2} [yellowMode]  Yellow LED state.  0 = off, 1 = on, 2 = flashing.
  * @apiDescription Locks/unlocks the signal.  If the lock parameter is set to 1, and redMode, greenMode and/or yellowMode are supplied, the
  * signal's aspect is first updated to values provided and then locked.  If all three modes are not supplied, the missing modes will be set to 0 = off.  If no
  * LED modes are supplied, the signal's current pin settings are "locked" as is.

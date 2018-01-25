@@ -131,7 +131,6 @@ unsigned long Database::getSerialNumber(int controllerID)
 int Database::addController(int controllerClass, const QString &controllerName, const QString &controllerDescription)
 {
     int controllerID(-1);
-    QByteArray config;
 
     if(db.isValid() == false)
         db = QSqlDatabase::database();
@@ -571,6 +570,40 @@ QSqlQuery Database::executeQuery(const QString &queryString)
     return query;
 }
 
+QJsonObject Database::createNewDevice(DeviceClassEnum deviceClass)
+{
+    if(db.isValid() == false)
+        db = QSqlDatabase::database();
+    if(db.isOpen() == false)
+        db.open();
+
+    QJsonObject obj;
+    QString sql(QString("INSERT INTO device (deviceClass) VALUES(%1)").arg(deviceClass));
+    bool ret = false;
+    {
+        QSqlQuery query(db);
+        ret = query.exec(sql);
+    }
+    if(ret)
+    {
+        QSqlQuery q = executeQuery("SELECT last_insert_rowid()");
+
+        if(q.next())
+        {
+            int id = q.value(0).toInt();
+            qDebug(QString("addEntity.  NEW ID = %1").arg(id).toLatin1());
+            if(id > 0)
+            {
+                sql = QString("SELECT * FROM device WHERE id = %1").arg(id);
+                obj = fetchItem(sql);
+                createDevicePropertyEntries(id, deviceClass);
+            }
+        }
+    }
+
+    return obj;
+}
+
 void Database::setupDb()
 {
     if(fullPathAndFile.length() > 0)
@@ -970,6 +1003,37 @@ void Database::upgradeToVersion4()
         this->executeQuery(sql);
         sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'FLASHINGVALUE', %2)").arg(deviceID).arg(flashingValue);
         this->executeQuery(sql);
+    }
+}
+
+void Database::createDevicePropertyEntries(int deviceID, DeviceClassEnum deviceClass)
+{
+    if(deviceClass == DeviceTurnout)
+    {
+        {
+            QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'MOTORPIN', 0)").arg(deviceID);
+            executeQuery(sql);
+        }
+        QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'INPUTPIN', 0)").arg(deviceID);
+        executeQuery(sql);
+    }
+    else if(deviceClass == DevicePanelInput)
+    {
+        QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ROUTEID', 0)").arg(deviceID);
+        executeQuery(sql);
+    }
+    else if(deviceClass == DevicePanelOutput)
+    {
+        {
+            QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ITEMID', 0)").arg(deviceID);
+            executeQuery(sql);
+        }
+        {
+            QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ONVALUE', 0)").arg(deviceID);
+            executeQuery(sql);
+        }
+        QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'FLASHINGVALUE', 0)").arg(deviceID);
+        executeQuery(sql);
     }
 }
 
