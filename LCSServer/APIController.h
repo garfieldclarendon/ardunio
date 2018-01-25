@@ -295,7 +295,7 @@ public:
 
 
 signals:
-    ///Notifies interested parties that a controller's status has changed
+    ///Notifies interested parties that a controller's status has changed.
     void sendNotificationMessage(const QString &url, const QJsonObject &obj);
 
 public slots:

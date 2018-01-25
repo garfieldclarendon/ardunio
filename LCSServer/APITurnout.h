@@ -66,15 +66,30 @@
  *      }
  */
 
+/// APITurnout
+/// \brief  API handler class for a LCS Turnout.
+///
+/// This class handles all API requests for a turnout device.
 class APITurnout : public QObject
 {
     Q_OBJECT
 public:
+    /// Contstructor
+    /// Creates a turnout API handler.  The constructor registers a \ref UrlHandler "Url Handler" objects.
+    /// See the API documentation for information on the URL's handled by this class.
+    ///
     explicit APITurnout(QObject *parent = nullptr);
 
 signals:
 
 public slots:
+    /// API "/api/activate_turnout"
+    /// \brief Activates a turnout.
+    ///
+    /// Throws a turnout to either its normal or diverging (thrown) direction depending on the supplied Turnout State parameter.
+    /// If this parameter is missing or set to 0, the turnout is toggled between thrown and diverging.
+    /// @param request APIRequest containing the url of the request including the turnout's ID and the new TurnoutState.
+    /// @param response APIResponse unused.
     void handleActivateTurnoutUrl(const APIRequest &request, APIResponse *response);
 };
 

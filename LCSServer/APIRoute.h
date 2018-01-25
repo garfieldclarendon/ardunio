@@ -16,7 +16,8 @@
  * @apiGroup Route
  *
  * @apiParam {Number} routeID The id of the route to activate.
- * @apiDescription Activates the specified route.
+ * @apiDescription Activates the specified route.  A route aligns one or more turnout devices to a specific direction (normal or thrown).
+ * This allows a single command/button to set the alignment for a train to a specific track without having to set each turnout individulally.
  * @apiExample Example usage:
  * http://localhost:8080/api/activate_route?routeID=6
  */
@@ -121,27 +122,75 @@
  *
  */
 
+/// APIRoute
+/// \brief  API handler class for a LCS Route.
+///
+/// This class handles all API requests for a route.  A route aligns one or more turnout devices to a specific direction (normal or thrown).
+/// This allows a single command/button to set the alignment for a train to a specific track without having to set each turnout individulally.
 class APIRoute : public QObject
 {
     Q_OBJECT
 public:
+    /// Contstructor
+    /// Creates a device API handler.  The constructor registers a \ref UrlHandler "Url Handler" objects.
+    /// See the API documentation for information on the URL's handled by this class.
+    ///
     explicit APIRoute(QObject *parent = nullptr);
 
+    /// Singleton function which returns a pointer the one and only instance.
     static APIRoute *instance(void) { return m_instance; }
+    /// Activeates a route.
+    /// @param int id fo the route to activate.
     void activateRoute(int routeID);
 
 signals:
+    ///Notifies interested parties that a route's status or lock state has changed.
     void sendNotificationMessage(const QString &url, const QJsonObject &obj);
 
 public slots:
+    /// API "/api/activate_route"
+    /// Activates a route.
+    /// @param request APIRequest containing the url of the request including the route's ID.
+    /// @param response APIResponse unused.
     void handleActivateRouteUrl(const APIRequest &request, APIResponse *response);
+
+    /// API "/api/lock_route"
+    /// Activates and locks a route. Once locked, turnouts assigned to the route remain locked until this function is called again with the lock parameter
+    /// set to lock=0.
+    /// @param request APIRequest containing the url of the request including the route's ID and the lock flag set to either 0 = unlock or 1 = lock.
+    /// @param response APIResponse unused.
     void handleLockRouteUrl(const APIRequest &request, APIResponse *response);
+
+    /// API "/api/route_list"
+    /// Downloads a list of all routes.
+    /// @param request APIRequest containing the url of the request.
+    /// @param response APIResponse with the payload set to the list of routes in JSON format.
     void handleGetRouteList(const APIRequest &request, APIResponse *response);
+
+    /// API "/api/route_entry_list"
+    /// Downloads a list of all routeEntries for a given route ID.
+    /// @param request APIRequest containing the url of the request including the routes ID.
+    /// @param response APIResponse with the payload set to the list of routeEntries in JSON format.
     void handleGetRouteEntryList(const APIRequest &request, APIResponse *response);
 
+    ///Monitors the DeviceManager for device status changes
+    /// @param deviceID int Device ID of the device.
+    /// @param status int The device's new status.
+    /// @param locked int The device's new locked state.
     void deviceStatusChanged(int deviceID, int status, bool locked);
+
+    /// Returns true of the given route is currently active.  A route is considered active if all turnouts are set to the direction defined in
+    /// the route's routeEntry list.
     bool isRouteActive(int routeID);
+
+
+    /// Returns true of the given route is currently locked.
     bool isRouteLocked(int routeID) { return m_lockedRoutes.contains(routeID); }
+
+    /// \brief Returns true of the given route can be locked.
+    ///
+    /// When a route is locked, all other routes that share one or more turnouts are added
+    /// to the m_excludeRoutes list.
     bool canRouteLock(int routeID) { return !m_excludeRoutes.contains(routeID); }
 
 private:

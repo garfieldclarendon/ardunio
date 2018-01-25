@@ -227,16 +227,33 @@
  *      }
 */
 
+/// APISignal
+/// \brief  API handler class for a LCS Signal.
+///
+/// This class handles all API requests for a signal device.
 class APISignal : public QObject
 {
     Q_OBJECT
 public:
+    /// Contstructor
+    /// Creates a signal API handler.  The constructor registers a \ref UrlHandler "Url Handler" objects.
+    /// See the API documentation for information on the URL's handled by this class.
+    ///
     explicit APISignal(QObject *parent = nullptr);
 
 signals:
 
 public slots:
+    /// API "/api/signal_aspect_list"
+    /// Downloads a list of all apsects for a given signal.
+    /// @param request APIRequest containing the url of the request including the signal's ID.
+    /// @param response APIResponse with the payload set to the list of signal aspects in JSON format.
     void handleGetSignalAspectList(const APIRequest &request, APIResponse *response);
+
+    /// API "/api/signal_condition_list"
+    /// Downloads a list of all conditions for a given signal aspect.
+    /// @param request APIRequest containing the url of the request including the signal aspect's ID.
+    /// @param response APIResponse with the payload set to the list of signal aspect conditions in JSON format.
     void handleGetSignalConditionList(const APIRequest &request, APIResponse *response);
 };
 
