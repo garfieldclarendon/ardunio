@@ -10,7 +10,7 @@
 class ControllerEntry;
 
 /// ControllerManager
-/// \brief  Singleton class manitoring the current state of controllers.
+/// \brief  Singleton class monitoring the current state of controllers.
 ///
 /// This class monitors UDP messages collecting information about the current state of LCS controllers.  When a controller's online status changes,
 /// a controllerStatusChanged signal is emitted.  On a SYS_CONTROLLER_ONLINE message, the controllerAdded signal is emitted.

@@ -70,7 +70,7 @@ void StatusDialog::onControllerPing(int index, quint64 length)
     }
 }
 
-void StatusDialog::onDeviceStatusChanged(int deviceID, int status, bool locked)
+void StatusDialog::onDeviceStatusChanged(int deviceID, int status, bool)
 {
     QString deviceIDText(QString("%1").arg(deviceID));
     QTableWidgetItem *item(NULL);
