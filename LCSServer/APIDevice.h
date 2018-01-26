@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////////////
 // The following comment blocks are parsed by the apidoc application to produce the API documentation
 /**
- * @api {get} /api/device_list:serialNumber,moduleID,controllerID,classCode Get a list of devices
+ * @api {get} /api/device_list:serialNumber,moduleID,controllerID,classCode,deviceID Get a list of devices
  * @apiName GetDeviceList
  * @apiGroup Device
  *
@@ -17,6 +17,7 @@
  * @apiParam {Number}[moduleID]  filter device list by a specific controller module's ID.
  * @apiParam {Number} [controllerID]  filter device list by a specific controller's ID.
  * @apiParam {Number} [classCode]  filter device list by a specific device classification.
+ * @apiParam {Number} [deviceID]  filter device list by a specific device ID.
  * @apiDescription Returns a list of devices.  If no parameters are supplied, all devices are returned.
  * @apiSuccess {Number} address  Address of the module to which the device is connected.
  * @apiSuccess {Number} controllerID Controller ID of the controller to which the device is connected.

@@ -45,13 +45,14 @@ public slots:
     QString getControllerList(int controllerID);
     QString getControllerModuleListByControllerID(int controllerID);
     QString getControllerModuleListByModuleID(int controllerModuleID);
-    QString getDeviceList(int controllerID, int moduleID, DeviceClassEnum deviceType = DeviceUnknown);
+    QString getDeviceList(int controllerID, int moduleID, DeviceClassEnum deviceType = DeviceUnknown, int deviceID = -1);
     QString getSignalAspectList(int deviceID);
     QString getSignalConditionList(int aspectID);
     QString getRouteList(void);
     QString getRouteEntryList(int routeID);
     QString getDevicePropertyList(int deviceID);
     QString copyDevice(int deviceID);
+    QString createNewDevice(DeviceClassEnum deviceClass);
 
     Entity saveEntity(const Entity &entity, bool isNew = false);
     Entity deleteEntity(const Entity &entity);

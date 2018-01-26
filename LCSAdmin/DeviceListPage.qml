@@ -4,6 +4,11 @@ import QtQuick.Layouts 1.3
 Item {
     property string pathName: "Devices"
     property string title: "Devices"
+    property alias model: deviceList.model
+
+    signal addClicked();
+    signal updateClicked(int index);
+    signal deleteClicked(int Index);
 
     GridLayout {
         columns: 2
@@ -26,7 +31,7 @@ Item {
                 deleteClicked(deviceList.currentIndex);
             }
             onUpdateButtonClicked:  {
-                updateClicked(deviceList.model.data(deviceList.currentIndex, "deviceClass"), deviceList.currentIndex);
+                updateClicked(deviceList.currentIndex);
             }
         }
 

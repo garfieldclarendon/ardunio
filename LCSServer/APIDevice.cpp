@@ -44,10 +44,11 @@ void APIDevice::handleGetDeviceList(const APIRequest &request, APIResponse *resp
     int controllerID = urlQuery.queryItemValue("controllerID").toInt();
     int port = -1;
     int classCode = urlQuery.queryItemValue("classCode").toInt();
+    int deviceID = urlQuery.queryItemValue("deviceID").toInt();
 
     qDebug(QString("handleGetDeviceList.  SerialNumber = %1 address = %2").arg(serialNumber).arg(port).toLatin1());
 
-    QJsonArray jsonArray = getDeviceList(serialNumber, controllerID, moduleID, classCode, -1);
+    QJsonArray jsonArray = getDeviceList(serialNumber, controllerID, moduleID, classCode, deviceID);
 
     QJsonDocument doc;
     doc.setArray(jsonArray);

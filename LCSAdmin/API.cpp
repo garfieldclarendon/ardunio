@@ -111,7 +111,7 @@ QString API::getControllerModuleListByModuleID(int controllerModuleID)
     return json;
 }
 
-QString API::getDeviceList(int controllerID, int moduleID, DeviceClassEnum deviceType)
+QString API::getDeviceList(int controllerID, int moduleID, DeviceClassEnum deviceType, int deviceID)
 {
     QString json;
     QString s("device_list");
@@ -121,6 +121,8 @@ QString API::getDeviceList(int controllerID, int moduleID, DeviceClassEnum devic
         s.append(QString("?controllerID=%1").arg(controllerID));
     else if(moduleID > 0)
         s.append(QString("?moduleID=%1").arg(moduleID));
+    else if(deviceID > 0)
+        s.append(QString("?deviceID=%1").arg(deviceID));
     QUrl url(buildUrl(s));
 
     json = sendToServer(url, QString(), NetActionGet);
@@ -199,6 +201,21 @@ QString API::copyDevice(int deviceID)
     QUrl url(buildUrl(s));
 
     json = sendToServer(url, QString(), NetActionGet);
+
+    return json;
+}
+
+QString API::createNewDevice(DeviceClassEnum deviceClass)
+{
+    QString json;
+    if(deviceClass != DeviceUnknown)
+    {
+        QString s("create_device");
+        s.append(QString("?deviceClass=%1").arg(deviceClass));
+        QUrl url(buildUrl(s));
+
+        json = sendToServer(url, QString(), NetActionGet);
+    }
 
     return json;
 }

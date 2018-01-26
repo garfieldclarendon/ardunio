@@ -71,29 +71,6 @@ Rectangle {
                     text: qsTr("Class")
                 }
                 Text {
-                    id: portText
-                    font.bold: true
-                    color: "blue"
-                    horizontalAlignment: Text.AlignHCenter
-                    text: qsTr("Port")
-                }
-                Text {
-                    id: serialText
-                    font.bold: true
-                    color: "blue"
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.WordWrap
-                    text: qsTr("Serial #")
-                }
-                Text {
-                    id: controllerIDText
-                    font.bold: true
-                    color: "blue"
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.WordWrap
-                    text: qsTr("Con. ID")
-                }
-                Text {
                     id: stateText
                     font.bold: true
                     color: "blue"
@@ -141,24 +118,6 @@ Rectangle {
                             text: getClassName(deviceClass)
                             Layout.minimumWidth: classText.width
                             Layout.maximumWidth: classText.width
-                        }
-                        Text {
-                            id: devicePort
-                            text: port
-                            Layout.minimumWidth: portText.width
-                            Layout.maximumWidth: portText.width
-                        }
-                        Text {
-                            id: deviceSerialNumber
-                            text: serialNumber
-                            Layout.minimumWidth: serialText.width
-                            Layout.maximumWidth: serialText.width
-                        }
-                        Text {
-                            id: moduleID
-                            text: controllerID
-                            Layout.minimumWidth: controllerIDText.width
-                            Layout.maximumWidth: controllerIDText.width
                         }
                         Text {
                             id: deviceStateText

@@ -1,7 +1,7 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.3
-import QtQuick.Dialogs 1.1
+import QtQuick.Dialogs 1.2
 import Utils 1.0
 
 ApplicationWindow {
@@ -54,7 +54,10 @@ ApplicationWindow {
                     Layout.fillWidth: true
 
                     onCurrentItemChanged: {
-                        navigationBar.titleText = deviceStackView.currentItem.title
+                        if(deviceStackView.currentItem.title)
+                            navigationBar.titleText = deviceStackView.currentItem.title
+                        else
+                            navigationBar.titleText = "";
 //                        if(depth == 1)
 //                            navigationBar.titleText = "";
                     }
@@ -72,20 +75,55 @@ ApplicationWindow {
                         id: list
                         DeviceListPage {
                             id: devices
-                        }
+                            onAddClicked: {
+                                promptDeviceTypeDlg.visible = true;
+                            }
 
-//                        ManageDevices2 {
-//                            id: devices
-//                            onAddClicked: {
-//                                var deviceEntity;
-//                                deviceEntity = list.model.getEntity(-1);
-//                                createDetailPanel(deviceClass, deviceEntity);
-//                            }
-//                            onEditClicked: {
-//                                 createDetailPanel(deviceClass, entity);
-//                            }
-//                        }
-                    }
+                            Dialog {
+                                id: promptDeviceTypeDlg
+                                visible: false
+                                title: "Select Device Type"
+                                standardButtons: StandardButton.Ok | StandardButton.Cancel
+
+                                ListModel {
+                                    id: classModel
+                                    ListElement { text: "Unknown"; classID: 0 }
+                                    ListElement { text: "Turnout"; classID: 1 }
+                                    ListElement { text: "Panel Input"; classID: 2 }
+                                    ListElement { text: "Panel Output"; classID: 3 }
+                                    ListElement { text: "Signal"; classID: 4 }
+                                    ListElement { text: "Semaphore"; classID: 5 }
+                                    ListElement { text: "Block"; classID: 6 }
+                                }
+
+                                GridLayout {
+                                    columns: 2
+                                    implicitWidth: 400
+                                    implicitHeight: 100
+                                    Text {
+                                        text: qsTr("Class: ")
+                                    }
+                                    ComboBox {
+                                        id: typeCombo
+                                        model: classModel
+                                        textRole: "text"
+                                    }
+                                }
+                                onAccepted: {
+                                    promptDeviceTypeDlg.visible = false;
+                                    if(typeCombo.currentIndex > 0)
+                                    {
+                                        var deviceEntity = devices.model.createNewDevice(typeCombo.currentIndex);
+                                        deviceEntity =
+                                        createDetailPanel(typeCombo.currentIndex, deviceEntity);
+                                    }
+                                }
+                                onDiscard: {
+                                    promptDeviceTypeDlg.visible = false;
+                                }
+                            }
+                        }
+                        }
 
                     Component.onCompleted: {
                         deviceStackView.push(list)
@@ -381,8 +419,8 @@ ApplicationWindow {
         console.debug("detailSaveClicked()");
         var entity;
         var model;
-        deviceStackView.pop();
         entity = deviceStackView.currentItem.deviceEntity;
+        deviceStackView.pop();
 
         model = deviceStackView.get(deviceStackView.index, false).model;
         var ret;

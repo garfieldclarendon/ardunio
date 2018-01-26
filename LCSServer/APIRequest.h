@@ -8,7 +8,7 @@
 #include "GlobalDefs.h"
 
 /// APIRequest
-/// \brief  Contains information for a API web request.
+/// \brief  Contains information for an API web request.
 ///
 /// This class contains all information as it relates to a REST API web request.
 class APIRequest

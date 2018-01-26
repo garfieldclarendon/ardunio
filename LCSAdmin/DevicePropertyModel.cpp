@@ -88,12 +88,12 @@ void DevicePropertyModel::createEmptyObject(QJsonObject &obj)
 
 void DevicePropertyModel::checkKeys()
 {
-    if(m_class == DeviceTurnout)
-        checkTurnoutKeys();
-    else if(m_class == DevicePanelInput)
-        checkPanelInputKeys();
-    else if(m_class == DevicePanelOutput)
-        checkPanelOutputKeys();
+//    if(m_class == DeviceTurnout)
+//        checkTurnoutKeys();
+//    else if(m_class == DevicePanelInput)
+//        checkPanelInputKeys();
+//    else if(m_class == DevicePanelOutput)
+//        checkPanelOutputKeys();
 }
 
 void DevicePropertyModel::checkTurnoutKeys()

@@ -158,8 +158,34 @@ Entity DeviceModel::copyDevice(int deviceID)
     QString jsonText = API::instance()->copyDevice(deviceID);
     QJsonDocument doc = QJsonDocument::fromJson(jsonText.toLatin1());
     QJsonObject newDevice = doc.object();
+    int newID = newDevice["id"].toVariant().toInt();
+    if(newID > 0)
+    {
+        jsonText = API::instance()->getDeviceList(-1, -1, DeviceUnknown, newID);
+        doc = QJsonDocument::fromJson(jsonText.toLatin1());
+        newDevice = doc.array().at(0).toObject();
+    }
 
     Entity entity(newDevice);
+    entity.setEntityName(m_entityName);
+    return entity;
+}
+
+Entity DeviceModel::createNewDevice(DeviceClassEnum deviceClass)
+{
+    QString jsonText = API::instance()->createNewDevice(deviceClass);
+    QJsonDocument doc = QJsonDocument::fromJson(jsonText.toLatin1());
+    QJsonObject newDevice = doc.object();
+    int deviceID = newDevice["id"].toVariant().toInt();
+    if(deviceID > 0)
+    {
+        jsonText = API::instance()->getDeviceList(-1, -1, DeviceUnknown, deviceID);
+        doc = QJsonDocument::fromJson(jsonText.toLatin1());
+        newDevice = doc.array().at(0).toObject();
+    }
+
+    Entity entity(newDevice);
+    entity.setEntityName(m_entityName);
     return entity;
 }
 

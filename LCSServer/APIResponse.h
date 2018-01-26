@@ -6,7 +6,7 @@
 #include <QString>
 
 /// APIResponse
-/// \brief  Contains information for a API web response.
+/// \brief  Contains information for an API web response.
 ///
 /// This class contains all information as it relates to a REST API web response.
 class APIResponse
