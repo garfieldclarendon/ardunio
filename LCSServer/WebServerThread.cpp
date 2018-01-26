@@ -97,7 +97,7 @@ void WebServerThread::run(void)
     socket.waitForBytesWritten();
     socket.flush();
     socket.disconnectFromHost();
-    socket.waitForDisconnected();
+//    socket.waitForDisconnected();
     sleep(1);
 }
 
