@@ -9,7 +9,7 @@ Rectangle {
     border.width: 1
     border.color: "black"
 
-    signal itemDoubleClicked(int deviceID)
+    signal itemDoubleClicked(int deviceID, int deviceClass)
 
     function getClassName(classID)
     {
@@ -135,7 +135,7 @@ Rectangle {
 
                           onDoubleClicked: {
                               deviceList.currentIndex = index
-                              itemDoubleClicked(deviceID)
+                              itemDoubleClicked(deviceID, deviceClass)
                       }
                 }
             }

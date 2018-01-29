@@ -8,7 +8,7 @@
 
 #include "GlobalDefs.h"
 
-const int CurrentDatabaseVersion = 4;
+const int CurrentDatabaseVersion = 5;
 
 class Database : public QObject
 {
@@ -80,7 +80,7 @@ private:
     bool createPanelRouteTable(void);
 
     void updateDatabaseSchema(int currentVersion);
-    void upgradeToVersion4(void);
+    void upgradeToVersion5(void);
     void createDevicePropertyEntries(int deviceID, DeviceClassEnum deviceClass);
 
     static QString fullPathAndFile;

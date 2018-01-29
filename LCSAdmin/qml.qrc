@@ -27,5 +27,7 @@
         <file>DeviceProperties.qml</file>
         <file>DeviceList.qml</file>
         <file>DeviceListPage.qml</file>
+        <file>DeviceModules.qml</file>
+
     </qresource>
 </RCC>

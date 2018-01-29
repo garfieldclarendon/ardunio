@@ -39,7 +39,6 @@ public slots:
     void deviceChanged(int deviceID, int status);
     int getDeviceRow(int deviceID);
     int getDeviceClass(int deviceID);
-    Entity copyDevice(int deviceID);
     Entity createNewDevice(DeviceClassEnum deviceClass);
 
     // QAbstractItemModel interface

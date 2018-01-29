@@ -1,32 +1,30 @@
-#ifndef DEVICEPROPERTYMODEL_H
-#define DEVICEPROPERTYMODEL_H
+#ifndef DEVICEMODULEMODEL_H
+#define DEVICEMODULEMODEL_H
 #include "UDPMessage.h"
 #include "GlobalDefs.h"
 #include "EntityModel.h"
 
 class JSonModel;
 
-class DevicePropertyModel : public EntityModel
+class DeviceModuleModel : public EntityModel
 {
     Q_OBJECT
     Q_PROPERTY(int deviceID READ getDeviceID WRITE setDeviceID NOTIFY deviceIDChanged)
-    Q_PROPERTY(int deviceClass READ getClass() WRITE setClass NOTIFY classChanged)
+    Q_PROPERTY(int moduleID READ getModuleID() WRITE setModuleID NOTIFY moduleIDChanged)
 
 public:
-    DevicePropertyModel(QObject *parent = NULL);
+    DeviceModuleModel(QObject *parent = NULL);
     QHash<int, QByteArray> roleNames(void) const override;
 
     void setDeviceID(int value);
     int getDeviceID(void) const { return m_deviceID; }
 
-    void setClass(int value);
-    int getClass(void) const { return m_class; }
+    void setModuleID(int value);
+    int getModuleID(void) const { return m_moduleID; }
 
 signals:
     void deviceIDChanged(void);
-    void classChanged(void);
-
-public slots:
+    void moduleIDChanged(void);
 
     // QAbstractItemModel interface
 public:
@@ -41,7 +39,7 @@ private:
     void createEmptyObject(QJsonObject &obj) override;
 
     int m_deviceID;
-    DeviceClassEnum m_class;
+    int m_moduleID;
 };
 
-#endif // DEVICEMODEL_H
+#endif // DEVICEMODULEMODEL_H

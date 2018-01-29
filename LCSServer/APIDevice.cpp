@@ -26,10 +26,10 @@ APIDevice::APIDevice(QObject *parent) : QObject(parent)
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleGetDeviceList(APIRequest,APIResponse*)), Qt::DirectConnection);
     handler = webServer->createUrlHandler("/api/device_property_list");
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleGetDevicePropertyList(APIRequest,APIResponse*)), Qt::DirectConnection);
+    handler = webServer->createUrlHandler("/api/module_device_port_list");
+    connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleGetModuleDevicePortList(APIRequest,APIResponse*)), Qt::DirectConnection);
     handler = webServer->createUrlHandler("/api/send_device_config");
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleSendDeviceConfig(APIRequest,APIResponse*)), Qt::DirectConnection);
-    handler = webServer->createUrlHandler("/api/copy_device");
-    connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleCopyDevice(APIRequest,APIResponse*)), Qt::DirectConnection);
     handler = webServer->createUrlHandler("/api/create_device");
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleCreateDevice(APIRequest,APIResponse*)), Qt::DirectConnection);
     handler = webServer->createUrlHandler("/api/lock_device");
@@ -75,6 +75,31 @@ void APIDevice::handleGetDevicePropertyList(const APIRequest &request, APIRespon
     response->setPayload(data);
 }
 
+void APIDevice::handleGetModuleDevicePortList(const APIRequest &request, APIResponse *response)
+{
+    QUrlQuery urlQuery(request.getUrl());
+    int deviceID = urlQuery.queryItemValue("deviceID").toInt();
+    int moduleID = urlQuery.queryItemValue("moduleID").toInt();
+    qDebug(QString("handleGetDevicePropertyList.  deviceID = %1").arg(deviceID).toLatin1());
+    Database db;
+
+    QString sql;
+    if(moduleID > 0)
+        sql = QString("SELECT id, deviceID, controllerModuleID, port FROM moduleDevicePort WHERE controllerModuleID = %1").arg(moduleID);
+    else if(deviceID > 0)
+        sql = QString("SELECT id, deviceID, controllerModuleID, port FROM moduleDevicePort WHERE deviceID = %1").arg(deviceID);
+    else
+        sql = QString("SELECT id, deviceID, controllerModuleID, port FROM moduleDevicePort");
+
+    QJsonArray jsonArray = db.fetchItems(sql);
+
+    QJsonDocument doc;
+    doc.setArray(jsonArray);
+    QByteArray data(doc.toJson());
+
+    response->setPayload(data);
+}
+
 void APIDevice::handleSendDeviceConfig(const APIRequest &request, APIResponse *)
 {
     QUrlQuery urlQuery(request.getUrl());
@@ -86,34 +111,6 @@ void APIDevice::handleSendDeviceConfig(const APIRequest &request, APIResponse *)
     message.setID(deviceID);
 
     MessageBroadcaster::instance()->sendUDPMessage(message);
-}
-
-void APIDevice::handleCopyDevice(const APIRequest &request, APIResponse *response)
-{
-    QUrlQuery urlQuery(request.getUrl());
-    int deviceID = urlQuery.queryItemValue("deviceID").toInt();
-
-    // Get the original device
-    QJsonArray deviceArray = getDeviceList(-1, -1, -1,-1, deviceID);
-
-    QJsonObject obj = deviceArray[0].toObject();
-
-    // Set its deviceID to -1 so that a new, auto-generated ID is created.
-    obj["deviceID"] = -1;
-    QJsonDocument doc;
-    doc.setObject(obj);
-    QByteArray data(doc.toJson());
-
-    // Save the new device.
-    APIEntity entity;
-    QString newJson = entity.addEntity("device", data);
-
-    doc = QJsonDocument::fromJson(newJson.toLatin1());
-    obj = doc.object();
-    int newDeviceID = obj["deviceID"].toVariant().toInt();
-    // Copy the device properties from the original device to the newly created device.
-    copyDeviceProperties(deviceID, newDeviceID);
-    response->setPayload(doc.toJson());
 }
 
 void APIDevice::handleCreateDevice(const APIRequest &request, APIResponse *response)
@@ -191,30 +188,28 @@ QJsonArray APIDevice::getDeviceList(long serialNumber, int controllerID, int mod
 {
     Database db;
 
-    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, device.port, controllerModule.address, controllerModule.id as controllerModuleID, deviceClass, serialNumber, controller.id as controllerID, controllerModule.moduleClass FROM device LEFT OUTER JOIN controllerModule ON device.controllerModuleID = controllerModule.id LEFT OUTER JOIN controller ON controller.id = controllerModule.controllerID");
+    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, deviceClass FROM device");
 
     QString where(" WHERE ");
     bool useAnd = false;
     if(serialNumber > 0)
     {
         useAnd = true;
-        where += QString("serialNumber = %1 ").arg(serialNumber);
+        where += QString(" deviceID IN (select deviceID FROM moduleDevicePort JOIN controllerModule ON moduleDevicePort.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE serialNumber = %1)").arg(serialNumber);
     }
     if(controllerID > 0)
     {
         if(useAnd)
-            where += QString("AND controllerID = %1 ").arg(controllerID);
-        else
-            where += QString("controllerID = %1 ").arg(controllerID);
+            where += QString(" AND");
+        where += QString(" deviceID IN (select deviceID FROM moduleDevicePort JOIN controllerModule ON moduleDevicePort.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.id WHERE controllerID = %1)").arg(controllerID);
 
         useAnd = true;
     }
     if(moduleID > 0)
     {
         if(useAnd)
-            where += QString("AND controllerModuleID = %1 ").arg(moduleID);
-        else
-            where += QString("controllerModuleID = %1 ").arg(moduleID);
+            where += QString(" AND");
+        where += QString(" deviceID IN (select deviceID FROM moduleDevicePort JOIN controllerModule ON moduleDevicePort.controllerModuleID = controllerModule.id WHERE controllerModuleID = %1)").arg(moduleID);
 
         useAnd = true;
     }
@@ -235,10 +230,7 @@ QJsonArray APIDevice::getDeviceList(long serialNumber, int controllerID, int mod
 
     if(useAnd)
         sql += where;
-    if(moduleID > 0 || controllerID > 0)
-        sql += QString(" ORDER BY device.port");
-    else
-        sql += QString(" ORDER BY deviceName");
+    sql += QString(" ORDER BY deviceName");
 
     QJsonArray jsonArray = db.fetchItems(sql);
     for(int x = 0; x < jsonArray.size(); x++)
@@ -252,13 +244,6 @@ QJsonArray APIDevice::getDeviceList(long serialNumber, int controllerID, int mod
     }
 
     return jsonArray;
-}
-
-void APIDevice::copyDeviceProperties(int fromID, int toID)
-{
-    QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) SELECT %1, key, value FROM deviceProperty WHERE deviceID = %2").arg(toID).arg(fromID);
-    Database db;
-    db.executeQuery(sql);
 }
 
 void APIDevice::createAndSendNotificationMessage(int deviceID, int newState, bool locked)

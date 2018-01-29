@@ -5,7 +5,7 @@ import Utils 1.0
 
 GroupBox {
     id: devicePropertyGroup
-    title: "Additional Information"
+    title: "<b>Additional Information</b>"
     property int deviceID: -1
     property int deviceClass: 0
 

@@ -19,33 +19,21 @@
  * @apiParam {Number} [classCode]  filter device list by a specific device classification.
  * @apiParam {Number} [deviceID]  filter device list by a specific device ID.
  * @apiDescription Returns a list of devices.  If no parameters are supplied, all devices are returned.
- * @apiSuccess {Number} address  Address of the module to which the device is connected.
- * @apiSuccess {Number} controllerID Controller ID of the controller to which the device is connected.
- * @apiSuccess {Number} controllerModuleID Controller Module ID of the controller to which the module the device is connected.
  * @apiSuccess {Number} deviceClass Device classification.
  * @apiSuccess {String} deviceDescription Device's description.
  * @apiSuccess {Number} deviceID Device's ID.
  * @apiSuccess {String} deviceName Device's name
  * @apiSuccess {Number} deviceState  Device's current state.
- * @apiSuccess {Number} moduleClass  Classification of the controller module to which the device is connected.
- * @apiSuccess {Number} port  Port/pin the device to which the connected.
- * @apiSuccess {Number} serialNumber  Serial Number of the controller to which the device is connected.
  * @apiExample Example usage:
  * http://localhost:8080/api/device_list?controllerID=30
  * @apiSuccessExample {json} Success-Response:
  *      HTTP/1.1 200 OK
  *      [{
- *              "address": "0",
- *              "controllerID": "30",
- *              "controllerModuleID": "8",
  *              "deviceClass": "5",
  *              "deviceDescription": "",
  *              "deviceID": "19",
  *              "deviceName": "GK Mine Signal",
  *              "deviceState": 0,
- *              "moduleClass": "5",
- *              "port": "0",
- *              "serialNumber": "585680"
  *          }
  *      ]
  */
@@ -80,6 +68,32 @@
  */
 
 /**
+ * @api {get} /api/module_device_port_list:deviceID,moduleID Get module/port entries for a given device
+ * @apiName GetModuleDevicePortList
+ * @apiGroup Device
+ *
+ * @apiParam {Number} [deviceID} device's ID.
+ * @apiParam {Number} [modleID] controllerModule's ID.
+ * @apiDescription Returns a list of moduleDevicePort entries for a given device or module.  This table cross-references
+ * a device to one or more modules.  This allows a signled device entry to be used with multiple modules; useful for PanelInputDevice and PanelOutputDevice, etc.
+ * @apiSuccess {Number} id moduleDevicePort's ID.
+ * @apiSuccess {Number} deviceID  device's ID.
+ * @apiSuccess {Number} controllerModuleID controllerModule's id.
+ * @apiSuccess {Number} port port the device is connected to.
+ * @apiExample Example usage:
+ * http://localhost:8080/api/device_property_list?deviceID=1
+ * @apiSuccessExample {json} Success-Response:
+ *      HTTP/1.1 200 OK
+ *      [{
+ *              "deviceID": "1",
+ *              "id": "58",
+ *              "controllerModuleID": "4",
+ *              "port": "0"
+ *          }
+ *      ]
+ */
+
+/**
  * @api {get} /api/send_device_config:deviceID Reset device's configuration
  * @apiName DeviceConfigReset
  * @apiGroup Device
@@ -88,34 +102,6 @@
  * @apiDescription Sends a SYS_RESET_DEVICE_CONFIG broadcast UDP message instructing the device(s) to re-download its configuration data.
  * @apiExample Example usage:
  * http://localhost:8080/api/send_device_config?deviceID=1
- */
-
-/**
- * @api {get} /api/copy_device:deviceID Copy a device's data to a new device entry
- * @apiName CopyDevice
- * @apiGroup Device
- *
- * @apiParam {Number} deviceID The device's id to be coppied.
- * @apiDescription Creates a copy of an existing device.  The new entry is an exact copy of the original except for the id field which is set to the new entry's id value.
- * @apiSuccess {Number} controllerModuleID  Controller Module's ID to which the device is connected.
- * @apiSuccess {Number} deviceClass Device's classification.
- * @apiSuccess {String} deviceDescription Device's description.
- * @apiSuccess {String} deviceName Device Device's name.
- * @apiSuccess {Number} id Device's new ID.
- * @apiSuccess {Number} port/pin Port to which the device is connected.
- * @apiExample Example usage:
- * http://localhost:8080/api/copy_device?deviceID=1
- * @apiSuccessExample {json} Success-Response:
- *      HTTP/1.1 200 OK
- *      [{
- *              "controllerModuleID": "4",
- *              "deviceClass": "1",
- *              "deviceDescription": "",
- *              "deviceName": "TY30-1",
- *              "id": "82",
- *              "port": "0"
- *          }
- *      ]
  */
 
 /**
@@ -199,17 +185,17 @@ public slots:
     /// @param response APIResponse with the payload set to the list of deviceProperties in JSON format.
     void handleGetDevicePropertyList(const APIRequest &request, APIResponse *response);
 
+    /// API "/api/module_device_port_list"
+    /// Downloads a list of module/port entries for a given deviceID.
+    /// @param request APIRequest containing the url of the request including the device's ID.
+    /// @param response APIResponse with the payload set to the list of deviceProperties in JSON format.
+    void handleGetModuleDevicePortList(const APIRequest &request, APIResponse *response);
+
     /// API "/api/send_device_config"
     /// Sends a SYS_RESET_DEVICE_CONFIG broadcast UDP message instructing the device to reset its configuration.
     /// @param request APIRequest containing the url of the request including the device's ID.
     /// @param response APIResponse unused.
     void handleSendDeviceConfig(const APIRequest &request, APIResponse *response);
-
-    /// API "/api/copy_device"
-    /// Creates a new device entry and copies the information to the new entry from the device with the supplied deviceID.
-    /// @param request APIRequest containing the url of the request including the device's ID.
-    /// @param response APIResponse with the payload set to the new device data in JSON format.
-    void handleCopyDevice(const APIRequest &request, APIResponse *response);
 
     /// API "/api/create_device"
     /// Creates a new device entry.  deviceProperty entries (if applicable) are also created for the supplied deviceClass.
@@ -234,7 +220,6 @@ private:
     void lockTurnout(int deviceID, bool lock);
     void lockSignal(int deviceID, bool lock, PinStateEnum redMode, PinStateEnum greenMode, PinStateEnum yellowMode);
     QJsonArray getDeviceList(long serialNumber, int controllerID, int moduleID, int classCode, int deviceID);
-    void copyDeviceProperties(int fromID, int toID);
     void createAndSendNotificationMessage(int deviceID, int newState, bool locked);
 };
 

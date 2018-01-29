@@ -12,6 +12,12 @@
             "tableName": "deviceProperty"
         },
         {
+            "name": "moduleDevicePort",
+            "keyField": "id",
+            "tableKeyField": "id",
+            "tableName": "moduleDevicePort"
+        },
+        {
             "name": "controller",
             "keyField": "controllerID",
             "tableKeyField": "id",

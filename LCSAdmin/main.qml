@@ -114,7 +114,6 @@ ApplicationWindow {
                                     if(typeCombo.currentIndex > 0)
                                     {
                                         var deviceEntity = devices.model.createNewDevice(typeCombo.currentIndex);
-                                        deviceEntity =
                                         createDetailPanel(typeCombo.currentIndex, deviceEntity);
                                     }
                                 }
@@ -319,7 +318,6 @@ ApplicationWindow {
             panel.saveClicked.connect(detailSaveClicked);
             panel.cancelClicked.connect(detailCancelClicked);
             panel.aspectDoubleClicked.connect(showAspectConditions);
-            panel.copyDevice.connect(copyDeviceClicked);
             panel.width = deviceStackView.width - 10;
             panel.height = deviceStackView.height - 10;
             deviceStackView.push(panel);
@@ -331,7 +329,6 @@ ApplicationWindow {
             panel = component.createObject(deviceStackView, {"deviceEntity": entity});
             panel.saveClicked.connect(detailSaveClicked);
             panel.cancelClicked.connect(detailCancelClicked);
-            panel.copyDevice.connect(copyDeviceClicked);
             panel.width = deviceStackView.width - 10;
             panel.height = deviceStackView.height - 10;
             deviceStackView.push(panel);
@@ -401,17 +398,6 @@ ApplicationWindow {
     function controllerCancelClicked()
     {
         controllerStackView.pop();
-    }
-
-    function copyDeviceClicked(deviceID)
-    {
-        console.debug("copyDetailClicked: " + deviceID);
-        var entity;
-        var model;
-        deviceStackView.pop();
-        model = deviceStackView.get(deviceStackView.index, false).model;
-        entity = model.copyDevice(deviceID);
-        model.setEntity(-1, entity);
     }
 
     function detailSaveClicked()

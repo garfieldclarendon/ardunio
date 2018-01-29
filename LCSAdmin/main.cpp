@@ -5,6 +5,7 @@
 
 #include "DeviceModel.h"
 #include "DevicePropertyModel.h"
+#include "DeviceModuleModel.h"
 #include "SignalAspectModel.h"
 #include "SignalConditionModel.h"
 #include "ControllerModel.h"
@@ -33,15 +34,13 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<DeviceModel>("Utils", 1, 0, "DeviceModel");
     qmlRegisterType<DevicePropertyModel>("Utils", 1, 0, "DevicePropertyModel");
+    qmlRegisterType<DeviceModuleModel>("Utils", 1, 0, "DeviceModuleModel");
     qmlRegisterType<SignalAspectModel>("Utils", 1, 0, "SignalAspectModel");
     qmlRegisterType<SignalConditionModel>("Utils", 1, 0, "SignalConditionModel");
     qmlRegisterType<ControllerModel>("Utils", 1, 0, "ControllerModel");
     qmlRegisterType<ControllerModuleModel>("Utils", 1, 0, "ControllerModuleModel");
     qmlRegisterType<RouteModel>("Utils", 1, 0, "RouteModel");
     qmlRegisterType<RouteEntryModel>("Utils", 1, 0, "RouteEntryModel");
-//    qmlRegisterType<PanelModuleModel>("Utils", 1, 0, "PanelModuleModel");
-//    qmlRegisterType<PanelInputModel>("Utils", 1, 0, "PanelInputModel");
-//    qmlRegisterType<PanelOutputModel>("Utils", 1, 0, "PanelOutputModel");
 
     qmlRegisterType<TrackSingle>("Track", 1, 0, "TrackSingle");
     qmlRegisterType<TrackSiding>("Track", 1, 0, "TrackSiding");

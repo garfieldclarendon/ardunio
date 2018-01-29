@@ -328,7 +328,7 @@ QJsonArray Database::getNotificationList(quint32 serialNumber)
     QList<int> ids;
     int controllerID = getControllerID(serialNumber);
     ids << controllerID;
-    QJsonArray array1 = fetchItems(QString("SELECT DISTINCT controllerID FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id AND controllerModule.disable = 0 WHERE device.ID IN (SELECT deviceID FROM deviceProperty JOIN device ON deviceProperty.value = device.id JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE key = 'ITEMID' AND serialNumber = %1)").arg(serialNumber));
+    QJsonArray array1 = fetchItems(QString("SELECT DISTINCT controllerID FROM moduleDevicePort JOIN controllerModule ON moduleDevicePort.controllerModuleID = controllerModule.id AND controllerModule.disable = 0 WHERE moduleDevicePort.deviceID IN (SELECT deviceProperty.deviceID FROM deviceProperty JOIN moduleDevicePort ON deviceProperty.value = moduleDevicePort.deviceID JOIN controllerModule ON moduleDevicePort.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE key = 'ITEMID' AND serialNumber = %1)").arg(serialNumber));
     for(int x = array1.size() - 1; x >= 0; x--)
     {
         int id = array1[x].toObject()["controllerID"].toVariant().toInt();
@@ -337,7 +337,7 @@ QJsonArray Database::getNotificationList(quint32 serialNumber)
         else
             array1.removeAt(x);
     }
-    QJsonArray array2 = fetchItems(QString("SELECT DISTINCT controllerID FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id AND controllerModule.disable = 0 WHERE controllerModule.controllerID IN (SELECT pc.controllerID FROM controllerModule AS pc JOIN device on pc.id = device.controllerModuleID JOIN signalAspect on device.id = signalAspect.deviceID JOIN signalCondition ON signalAspect.id = signalCondition.signalAspectID WHERE signalCondition.deviceID IN (SELECT device.id FROM controller JOIN controllerModule ON controller.id = controllerModule.controllerID JOIN device ON device.controllerModuleID = controllerModule.id WHERE serialNumber = %1))").arg(serialNumber));
+    QJsonArray array2 = fetchItems(QString("SELECT DISTINCT controllerID FROM moduleDevicePort JOIN controllerModule ON moduleDevicePort.controllerModuleID = controllerModule.id AND controllerModule.disable = 0 WHERE controllerModule.controllerID IN (SELECT pc.controllerID FROM controllerModule AS pc JOIN moduleDevicePort on pc.id = moduleDevicePort.controllerModuleID JOIN signalAspect on moduleDevicePort.deviceID = signalAspect.deviceID JOIN signalCondition ON signalAspect.id = signalCondition.signalAspectID WHERE signalCondition.deviceID IN (SELECT moduleDevicePort.deviceID FROM controller JOIN controllerModule ON controller.id = controllerModule.controllerID JOIN moduleDevicePort ON moduleDevicePort.controllerModuleID = controllerModule.id WHERE serialNumber = %1))").arg(serialNumber));
     for(int x = array2.size() - 1; x >= 0; x--)
     {
         QJsonObject o = array2[x].toObject();
@@ -351,7 +351,7 @@ QJsonArray Database::getNotificationList(quint32 serialNumber)
             array2.removeAt(x);
         }
     }
-    QJsonArray array3 = fetchItems(QString("SELECT DISTINCT controllerID from routeEntry JOIN device ON routeEntry.deviceID = device.id JOIN controllerModule ON device.controllerModuleID = controllerModule.id AND controllerModule.disable = 0  WHERE routeID IN (SELECT value FROM deviceProperty JOIN device ON deviceProperty.deviceID = device.id JOIN controllerModule ON device.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE key = 'ROUTEID' AND serialNumber = %1)").arg(serialNumber));
+    QJsonArray array3 = fetchItems(QString("SELECT DISTINCT controllerID from routeEntry JOIN moduleDevicePort ON routeEntry.deviceID = moduleDevicePort.deviceID JOIN controllerModule ON moduleDevicePort.controllerModuleID = controllerModule.id AND controllerModule.disable = 0  WHERE routeID IN (SELECT value FROM deviceProperty JOIN moduleDevicePort ON deviceProperty.deviceID = moduleDevicePort.deviceID JOIN controllerModule ON moduleDevicePort.controllerModuleID = controllerModule.id JOIN controller ON controllerModule.controllerID = controller.ID WHERE key = 'ROUTEID' AND serialNumber = %1)").arg(serialNumber));
     for(int x = array3.size() - 1; x >= 0; x--)
     {
         QJsonObject o = array3[x].toObject();
@@ -372,7 +372,7 @@ QByteArray Database::getControllerModuleConfig(quint32 serialNumber, quint32 add
     QJsonArray deviceArray;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT DISTINCT controller.id, moduleClass, address, device.id as deviceID, deviceClass, port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID LEFT OUTER JOIN device ON controllerModule.id = device.controllerModuleID WHERE serialNumber = %1 AND controllerModule.address = %2 AND controllerModule.disable <> 1 ORDER BY address").arg(serialNumber).arg(address));
+    query.exec(QString("SELECT DISTINCT controller.id, moduleClass, address, device.id as deviceID, deviceClass, port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID LEFT OUTER JOIN moduleDevicePort ON controllerModule.id = moduleDevicePort.controllerModuleID LEFT OUTER JOIN device ON moduleDevicePort.deviceID = device.id WHERE serialNumber = %1 AND controllerModule.address = %2 AND controllerModule.disable <> 1 ORDER BY address").arg(serialNumber).arg(address));
 
     while (query.next())
     {
@@ -905,8 +905,6 @@ bool Database::createDeviceTable()
     QSqlQuery query(db);
     ret = query.exec("CREATE TABLE IF NOT EXISTS device "
                      "(id INTEGER primary key, "
-                     "controllerModuleID INTEGER, "
-                     "port INTEGER, "
                      "deviceClass INTEGER, "
                      "deviceName VARCHAR(20), "
                      "deviceDescription VARCHAR(50))");
@@ -938,7 +936,7 @@ bool Database::createDevicePropertyTable()
     return ret;
 }
 
-void Database::updateDatabaseSchema(int /* currentVersion */)
+void Database::updateDatabaseSchema(int currentVersion)
 {
     // Add db schema changes here from version to versioin
     // If all changes are succesful, call setDBVersion() with the CurrentDatabaseVersion
@@ -946,64 +944,9 @@ void Database::updateDatabaseSchema(int /* currentVersion */)
     // created....In this instance, the database will have the most recent database
     // schema, so no changes will be needed.
 
+    if(currentVersion != 5)
+        upgradeToVersion5();
     setDBVersion(CurrentDatabaseVersion);
-}
-
-void Database::upgradeToVersion4()
-{
-    QJsonArray array = this->fetchItems("SELECT pinIndex, inputName, inputID, panelModuleID FROM panelInputEntry JOIN controllerModule ON panelInputEntry.panelModuleID = controllerModule.id");
-
-    for(int x = 0; x < array.count(); x++)
-    {
-        QJsonObject obj = array[x].toObject();
-        QString pinIndex = obj["pinIndex"].toString();
-        QString moduleID = obj["panelModuleID"].toString();
-        QString name = obj["inputName"].toString();
-
-        QString sql = QString("INSERT INTO device (deviceClass, port, controllerModuleID, deviceName) VALUES(2, %1, %2, '%3')").arg(pinIndex).arg(moduleID).arg(name);
-        this->executeQuery(sql);
-    }
-    array = this->fetchItems("SELECT device.id AS deviceID, inputID FROM panelInputEntry JOIN device ON panelInputEntry.inputName = device.deviceName AND deviceClass = 2");
-    for(int x = 0; x < array.count(); x++)
-    {
-        QJsonObject obj = array[x].toObject();
-        QString deviceID = obj["deviceID"].toString();
-        QString inputID = obj["inputID"].toString();
-
-        QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ROUTEID', %2)").arg(deviceID).arg(inputID);
-        this->executeQuery(sql);
-    }
-
-
-
-    array = this->fetchItems("SELECT pinIndex, outputName, panelModuleID FROM panelOutputEntry JOIN controllerModule ON panelOutputEntry.panelModuleID = controllerModule.id");
-
-    for(int x = 0; x < array.count(); x++)
-    {
-        QJsonObject obj = array[x].toObject();
-        QString pinIndex = obj["pinIndex"].toString();
-        QString moduleID = obj["panelModuleID"].toString();
-        QString name = obj["outputName"].toString();
-
-        QString sql = QString("INSERT INTO device (deviceClass, port, controllerModuleID, deviceName) VALUES(3, %1, %2, '%3')").arg(pinIndex).arg(moduleID).arg(name);
-        this->executeQuery(sql);
-    }
-    array = this->fetchItems("SELECT device.id AS deviceID, itemID, onValue, flashingValue FROM panelOutputEntry JOIN device ON panelOutputEntry.outputName = device.deviceName AND deviceClass = 3");
-    for(int x = 0; x < array.count(); x++)
-    {
-        QJsonObject obj = array[x].toObject();
-        QString deviceID = obj["deviceID"].toString();
-        QString itemID = obj["itemID"].toString();
-        QString onValue = obj["onValue"].toString();
-        QString flashingValue = obj["flashingValue"].toString();
-
-        QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ITEMID', %2)").arg(deviceID).arg(itemID);
-        this->executeQuery(sql);
-        sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ONVALUE', %2)").arg(deviceID).arg(onValue);
-        this->executeQuery(sql);
-        sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'FLASHINGVALUE', %2)").arg(deviceID).arg(flashingValue);
-        this->executeQuery(sql);
-    }
 }
 
 void Database::createDevicePropertyEntries(int deviceID, DeviceClassEnum deviceClass)
@@ -1037,3 +980,68 @@ void Database::createDevicePropertyEntries(int deviceID, DeviceClassEnum deviceC
     }
 }
 
+
+void Database::upgradeToVersion5()
+{
+    QString sql = QString("CREATE TABLE IF NOT EXISTS moduleDevicePort "
+                          "(id INTEGER primary key, "
+                          "controllerModuleID INTEGER, "
+                          "deviceID INTEGER, "
+                          "port INTEGER)");
+
+    this->executeQuery(sql);
+    QJsonArray array = this->fetchItems("SELECT id, controllerModuleID, deviceName, port FROM device ORDER BY deviceName");
+
+    QMap<QString, int> map;
+
+    QList<int> devicesToDelete;
+
+    for(int x = 0; x < array.count(); x++)
+    {
+        QJsonObject obj = array[x].toObject();
+        int id = obj["id"].toVariant().toInt();
+        int moduleID = obj["controllerModuleID"].toVariant().toInt();
+        int port = obj["port"].toVariant().toInt();
+        QString name = obj["deviceName"].toVariant().toString();
+
+        if(map.contains(name.toUpper()))
+        {
+            devicesToDelete << id;
+            id = map.value(name.toUpper());
+        }
+        else
+        {
+            map[name.toUpper()] = id;
+        }
+        if(id == 11)
+        {
+            qDebug("STOP!");
+        }
+
+        sql = QString("INSERT INTO moduleDevicePort (deviceID, controllerModuleID, port) VALUES(%1, %2, %3)").arg(id).arg(moduleID).arg(port);
+        this->executeQuery(sql);
+    }
+
+    for(int x = 0; x < devicesToDelete.count(); x++)
+    {
+        sql = QString("DELETE FROM device WHERE id = %1").arg(devicesToDelete.value(x));
+        this->executeQuery(sql);
+        sql = QString("DELETE FROM deviceProperty WHERE deviceID = %1").arg(devicesToDelete.value(x));
+        this->executeQuery(sql);
+    }
+
+    sql = QString("ALTER TABLE device RENAME TO temp_device");
+    this->executeQuery(sql);
+    sql = QString("CREATE TABLE device ("
+                  "id INTEGER primary key, "
+                  "deviceName VARCHAR(20), "
+                  "deviceDescription VARCHAR(50), "
+                  "deviceClass INTEGER)");
+    this->executeQuery(sql);
+    sql = QString("INSERT INTO device "
+                  "SELECT id, deviceName, deviceDescription, deviceClass "
+                  "FROM temp_device");
+    this->executeQuery(sql);
+    sql = QString("DROP TABLE temp_device");
+    this->executeQuery(sql);
+}

@@ -49,6 +49,7 @@ Rectangle {
         anchors.fill: parent
         columns: 3
         GenericDeviceDetails {
+            devicePropertiesVisible: false
             deviceEntity: main.deviceEntity
             Layout.columnSpan: 3
             Layout.fillWidth: true

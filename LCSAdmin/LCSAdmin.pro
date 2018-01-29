@@ -37,7 +37,8 @@ HEADERS += API.h \
     LabelTurnout.h \
     LabelInput.h \
     LabelOutput.h \
-    LabelController.h
+    LabelController.h \
+    DeviceModuleModel.h
 
 SOURCES += main.cpp \
            DeviceModel.cpp \
@@ -63,7 +64,8 @@ SOURCES += main.cpp \
     LabelTurnout.cpp \
     LabelInput.cpp \
     LabelOutput.cpp \
-    LabelController.cpp
+    LabelController.cpp \
+    DeviceModuleModel.cpp
 
 RESOURCES += qml.qrc
 

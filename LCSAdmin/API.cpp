@@ -130,6 +130,21 @@ QString API::getDeviceList(int controllerID, int moduleID, DeviceClassEnum devic
     return json;
 }
 
+QString API::getModuleDevicePortList(int deviceID, int moduleID)
+{
+    QString json;
+    QString s("module_device_port_list");
+    if(deviceID > 0)
+        s.append(QString("?deviceID=%1").arg(deviceID));
+    else if(moduleID > 0)
+        s.append(QString("?moduleID=%1").arg(moduleID));
+    QUrl url(buildUrl(s));
+
+    json = sendToServer(url, QString(), NetActionGet);
+
+    return json;
+}
+
 QString API::getSignalAspectList(int deviceID)
 {
     QString json;
@@ -183,19 +198,6 @@ QString API::getDevicePropertyList(int deviceID)
 {
     QString json;
     QString s("device_property_list");
-    if(deviceID > 0)
-        s.append(QString("?deviceID=%1").arg(deviceID));
-    QUrl url(buildUrl(s));
-
-    json = sendToServer(url, QString(), NetActionGet);
-
-    return json;
-}
-
-QString API::copyDevice(int deviceID)
-{
-    QString json;
-    QString s("copy_device");
     if(deviceID > 0)
         s.append(QString("?deviceID=%1").arg(deviceID));
     QUrl url(buildUrl(s));

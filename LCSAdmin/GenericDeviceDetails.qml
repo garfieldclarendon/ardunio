@@ -4,10 +4,10 @@ import QtQuick.Controls 2.2
 
 Rectangle {
     property var deviceEntity
+    property alias devicePropertiesVisible: deviceProperties.visible
 
     signal saveClicked();
     signal cancelClicked();
-    signal copyDevice(int deviceID);
 
     implicitHeight: saveButton.height * 8
     width: 400
@@ -58,7 +58,7 @@ Rectangle {
     {
         deviceEntity.setValue("deviceName", nameEdit.text);
         deviceEntity.setValue("deviceDescription", descriptionEdit.text);
-        deviceEntity.setValue("port", portEdit.text);
+        deviceModules.saveData();
     }
 
     function getClassName(classID)
@@ -155,57 +155,6 @@ Rectangle {
         }
 // Fourth Row
         Label {
-            text: "Controller Module:"
-            font.bold: true
-            font.underline: true
-            color: "blue"
-            horizontalAlignment: Qt.AlignRight
-            Layout.fillWidth: true
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: {
-                    cursorShape = Qt.OpenHandCursor;
-                }
-                onExited: {
-                    cursorShape = Qt.ArrowCursor;
-                }
-
-                onDoubleClicked: {
-                    console.debug("CONTROLLER MODULE DOUBL-CLICKED!!!");
-                }
-            }
-        }
-        TextField {
-            id: moduleEdit
-            text: deviceEntity.data.controllerModuleID
-            Layout.fillWidth: true
-        }
-        Button {
-            id: copyDeviceButton
-            text: "Copy"
-            onClicked: {
-                copyDevice(deviceEntity.data.deviceID);
-            }
-        }
-// Fourth Row
-        Label {
-            text: "Port:"
-            font.bold: true
-            horizontalAlignment: Qt.AlignRight
-            Layout.fillWidth: true
-        }
-        TextField {
-            id: portEdit
-            text: deviceEntity.data.port
-            Layout.fillWidth: true
-        }
-        Item {
-            width: 10
-            height: 10
-        }
-// Sixth Row
-        Label {
             text: "<b>Device Class: </b>"
             font.bold: true
             horizontalAlignment: Qt.AlignRight
@@ -225,37 +174,13 @@ Rectangle {
             width: 10
             height: 10
         }
-// Seventh Row
-        Label {
-            text: "Serial Number (controller):"
-            font.bold: true
-            font.underline: true
-            color: "blue"
-            horizontalAlignment: Qt.AlignRight
+// Fith Row
+        DeviceModules {
+            id: deviceModules
+            deviceID: deviceEntity.data.deviceID
+            Layout.columnSpan: 3
+            Layout.fillHeight: true
             Layout.fillWidth: true
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: {
-                    cursorShape = Qt.OpenHandCursor;
-                }
-                onExited: {
-                    cursorShape = Qt.ArrowCursor;
-                }
-
-                onDoubleClicked: {
-                    console.debug("SERIAL NUMBER DOUBL-CLICKED!!!");
-                }
-            }
-        }
-        Label {
-            id: serialNumber
-            text: deviceEntity.data.serialNumber
-            Layout.fillWidth: true
-        }
-        Item {
-            width: 10
-            height: 10
         }
 // Last Row
         DeviceProperties {
