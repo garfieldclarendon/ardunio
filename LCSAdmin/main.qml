@@ -27,7 +27,7 @@ ApplicationWindow {
                 }
         }
     }
-    SwipeView {
+    StackLayout {
         id: swipeView
         anchors.fill: parent
         currentIndex: tabBar.currentIndex

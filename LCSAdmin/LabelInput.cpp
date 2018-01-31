@@ -17,7 +17,7 @@ void LabelInput::paintHeader(QRectF &rect, QPainter *painter)
     QPen pen = painter->pen();
 
     QFont font = painter->font();
-    font.setPointSize(16);
+    font.setPointSize(12);
     font.setBold(true);
     painter->setFont(font);
     painter->drawText(rect, 0, "Input Module", &size);
@@ -37,8 +37,6 @@ void LabelInput::paintHeader(QRectF &rect, QPainter *painter)
 
 void LabelInput::paintBody(QRectF &rect, QPainter *painter)
 {
-    QRectF size;
-
     QPen pen = painter->pen();
     QFont font = painter->font();
     font.setFamily("Courier New");
@@ -47,20 +45,53 @@ void LabelInput::paintBody(QRectF &rect, QPainter *painter)
     font.setBold(false);
     painter->setFont(font);
 
-    for(int x = 0; x < m_model->rowCount(); x++)
-    {
-        QString text = QString("%1 - %2").arg(m_model->data(x, "port").toString(), 2, QChar(' ')).arg(m_model->data(x, "deviceName").toString());
-        painter->drawText(rect, 0, text, &size);
-        rect.setTop(rect.top() + size.height());
 
-        if(x != m_model->rowCount() - 1)
-        {
-            pen.setWidth(3);
-            painter->setPen(pen);
-            painter->drawLine(rect.topLeft(), rect.topRight());
-            pen.setWidth(1);
-            painter->setPen(pen);
-            rect.setTop(rect.top() + m_padding);
-        }
+    QString list[16];
+
+    for(int x = 0; x < m_model->getRowCount(); x++)
+    {
+        int port = m_model->data(x, "port").toInt();
+        QString text = m_model->data(x, "labelName").toString();
+        if(text.trimmed().length() == 0)
+            text = m_model->data(x, "deviceName").toString();
+        list[port] = text;
+    }
+
+    for(int x = 7; x >= 0; x--)
+    {
+        paintInput(rect, painter, list[x], x);
+    }
+
+    pen.setWidth(3);
+    painter->setPen(pen);
+    painter->drawLine(rect.topLeft(), rect.topRight());
+    pen.setWidth(1);
+    painter->setPen(pen);
+    rect.setTop(rect.top() + 3);
+
+    for(int x = 8; x < 16; x++)
+    {
+        paintInput(rect, painter, list[x], x);
+    }
+}
+
+void LabelInput::paintInput(QRectF &rect, QPainter *painter, const QString &text, int port)
+{
+    QRectF size;
+    if(port > 7)
+        port = port - 8;
+    QString t = QString("%1 - %2").arg(port).arg(text);
+    painter->drawText(rect, 0, t, &size);
+    rect.setTop(rect.top() + size.height());
+
+    if(port != m_model->rowCount() - 1)
+    {
+        QPen pen = painter->pen();
+        pen.setWidth(3);
+        painter->setPen(pen);
+        painter->drawLine(rect.topLeft(), rect.topRight());
+        pen.setWidth(1);
+        painter->setPen(pen);
+        rect.setTop(rect.top() + m_padding);
     }
 }

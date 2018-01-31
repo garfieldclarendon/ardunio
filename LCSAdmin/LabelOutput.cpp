@@ -18,7 +18,7 @@ void LabelOutput::paintHeader(QRectF &rect, QPainter *painter)
     QPen pen = painter->pen();
 
     QFont font = painter->font();
-    font.setPointSize(16);
+    font.setPointSize(12);
     font.setBold(true);
     painter->setFont(font);
     painter->drawText(rect, 0, "Output Module", &size);
@@ -38,8 +38,6 @@ void LabelOutput::paintHeader(QRectF &rect, QPainter *painter)
 
 void LabelOutput::paintBody(QRectF &rect, QPainter *painter)
 {
-    QRectF size;
-
     QPen pen = painter->pen();
     QFont font = painter->font();
     font.setFamily("Courier New");
@@ -48,47 +46,80 @@ void LabelOutput::paintBody(QRectF &rect, QPainter *painter)
     font.setBold(false);
     painter->setFont(font);
 
-    for(int x = 0; x < m_model->rowCount(); x++)
+    QString list[16];
+
+    for(int x = 0; x < m_model->getRowCount(); x++)
     {
+        int port = m_model->data(x, "port").toInt();
+        QString text = m_model->data(x, "labelName").toString();
+        if(text.trimmed().length() == 0)
+            text = m_model->data(x, "deviceName").toString();
         if(m_model->data(x, "deviceClass").toInt() == DeviceSignal)
         {
-            paintSignal(rect, painter, x);
+            list[port] = text + "(red)";
+            if(port + 1 < 16)
+                list[port + 1] = text + "(green)";
+            if(port + 2 < 16)
+                list[port + 2] = text + "(yellow)";
         }
         else
         {
-            QString text = QString("%1 - %2").arg(m_model->data(x, "port").toString(), 2, QChar(' ')).arg(m_model->data(x, "deviceName").toString());
-            painter->drawText(rect, 0, text, &size);
-            rect.setTop(rect.top() + size.height());
-
-            if(x != m_model->rowCount() - 1)
-            {
-                pen.setWidth(3);
-                painter->setPen(pen);
-                painter->drawLine(rect.topLeft(), rect.topRight());
-                pen.setWidth(1);
-                painter->setPen(pen);
-                rect.setTop(rect.top() + m_padding);
-            }
+            list[port] = text;
         }
+    }
+
+    for(int x = 7; x >= 0; x--)
+    {
+        paintOutput(rect, painter, list[x], x);
+    }
+
+    pen.setWidth(3);
+    painter->setPen(pen);
+    painter->drawLine(rect.topLeft(), rect.topRight());
+    pen.setWidth(1);
+    painter->setPen(pen);
+    rect.setTop(rect.top() + 3);
+
+    for(int x = 8; x < 16; x++)
+    {
+        paintOutput(rect, painter, list[x], x);
     }
 }
 
-void LabelOutput::paintSignal(QRectF &rect, QPainter *painter, int row)
+void LabelOutput::paintSignal(QRectF &rect, QPainter *painter, int row, int port)
 {
     QRectF size;
-    int port = m_model->data(row, "port").toInt();
-    for(int x = port; x < port + 3; x++)
-    {
-        QString text = QString("%1 - %2 ").arg(x, 2, 10, QChar(' ')).arg(m_model->data(row, "deviceName").toString());
-        if(x == port)
-            text += "(red)";
-        else if(x == port + 1)
-            text += "(green)";
-        else if(x == port + 2)
-            text += "(yellow)";
+    QString text = QString("%1 - %2 ").arg(row, 2, 10, QChar(' ')).arg(m_model->data(row, "deviceName").toString());
 
-        painter->drawText(rect, 0, text, &size);
-        rect.setTop(rect.top() + size.height());
+    if(row == port)
+        text += "(red)";
+    else if(row == port + 1)
+        text += "(green)";
+    else if(row == port + 2)
+        text += "(yellow)";
+
+    painter->drawText(rect, 0, text, &size);
+    rect.setTop(rect.top() + size.height());
+    QPen pen = painter->pen();
+    pen.setWidth(3);
+    painter->setPen(pen);
+    painter->drawLine(rect.topLeft(), rect.topRight());
+    pen.setWidth(1);
+    painter->setPen(pen);
+    rect.setTop(rect.top() + m_padding);
+}
+
+void LabelOutput::paintOutput(QRectF &rect, QPainter *painter, const QString &text, int port)
+{
+    QRectF size;
+    if(port > 7)
+        port = port - 8;
+    QString t = QString("%1 - %2").arg(port).arg(text);
+    painter->drawText(rect, 0, t, &size);
+    rect.setTop(rect.top() + size.height());
+
+    if(port != m_model->rowCount() - 1)
+    {
         QPen pen = painter->pen();
         pen.setWidth(3);
         painter->setPen(pen);

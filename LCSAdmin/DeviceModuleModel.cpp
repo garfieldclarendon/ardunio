@@ -14,10 +14,15 @@ QHash<int, QByteArray> DeviceModuleModel::roleNames(void) const
 {
     QHash<int, QByteArray> roleNames;
 
-    roleNames[Qt::UserRole + 0] = QByteArray("controllerModuleID");
+    roleNames[Qt::UserRole + 0] = QByteArray("id");
     roleNames[Qt::UserRole + 1] = QByteArray("deviceID");
-    roleNames[Qt::UserRole + 2] = QByteArray("id");
-    roleNames[Qt::UserRole + 3] = QByteArray("port");
+    roleNames[Qt::UserRole + 2] = QByteArray("controllerModuleID");
+    roleNames[Qt::UserRole + 3] = QByteArray("moduleName");
+    roleNames[Qt::UserRole + 4] = QByteArray("moduleClass");
+    roleNames[Qt::UserRole + 5] = QByteArray("deviceName");
+    roleNames[Qt::UserRole + 6] = QByteArray("labelName");
+    roleNames[Qt::UserRole + 7] = QByteArray("deivceClass");
+    roleNames[Qt::UserRole + 8] = QByteArray("port");
 
     return roleNames;
 }

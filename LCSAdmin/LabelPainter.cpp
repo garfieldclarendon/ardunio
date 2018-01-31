@@ -14,7 +14,6 @@ LabelPainter::LabelPainter(EntityModel *model, QObject *parent)
 void LabelPainter::printerPaintRequested(QPrinter *printer)
 {
     QPainter painter(printer);
-
     QRectF r = printer->pageRect();
 
     QPen pen;

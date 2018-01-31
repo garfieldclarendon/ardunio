@@ -75,20 +75,28 @@
  * @apiParam {Number} [deviceID} device's ID.
  * @apiParam {Number} [modleID] controllerModule's ID.
  * @apiDescription Returns a list of moduleDevicePort entries for a given device or module.  This table cross-references
- * a device to one or more modules.  This allows a signled device entry to be used with multiple modules; useful for PanelInputDevice and PanelOutputDevice, etc.
+ * a device to one or more modules.  This allows a single device entry to be used with multiple modules; useful for PanelInputDevice and PanelOutputDevice, etc.
  * @apiSuccess {Number} id moduleDevicePort's ID.
  * @apiSuccess {Number} deviceID  device's ID.
  * @apiSuccess {Number} controllerModuleID controllerModule's id.
+ * @apiSuccess {String} moduleName controllerModule's name.
+ * @apiSuccess {Number} moduleClass controllerModule's class.
+ * @apiSuccess {String} deviceName device's name.
+ * @apiSuccess {Number} deviceClass device's class.
  * @apiSuccess {Number} port port the device is connected to.
  * @apiExample Example usage:
- * http://localhost:8080/api/device_property_list?deviceID=1
+ * http://localhost:8080/api/device_property_list?deviceID=11
  * @apiSuccessExample {json} Success-Response:
  *      HTTP/1.1 200 OK
  *      [{
- *              "deviceID": "1",
- *              "id": "58",
- *              "controllerModuleID": "4",
- *              "port": "0"
+ *              "controllerModuleID": "13",
+ *              "deviceClass": "6",
+ *              "deviceID": "11",
+ *              "deviceName": "Block 30-1",
+ *              "id": "1",
+ *              "moduleClass": "8",
+ *              "moduleName": "Blocks 30-1, 30-9, 31-1, 31-9",
+ *              "port": "7"
  *          }
  *      ]
  */
@@ -117,8 +125,7 @@
  * @apiSuccess {String} deviceName Device Device's name.
  * @apiSuccess {Number} id Device's new ID.
  * @apiSuccess {Number} port/pin Port to which the device is connected.
- * @apiExample This example creates a new Turnout device entry.  In addition to the device table entry, two entries are also added to the
- * deviceProperty table; MOTORPIN and INPUTPIN with values set to 0:
+ * @apiExample This example creates a new Turnout device entry.  In addition to the device table entry, two entries are also added to the deviceProperty table; MOTORPIN and INPUTPIN with values set to 0:
  * http://localhost:8080/api/create_device?deviceClass=1
  * @apiSuccessExample {json} Success-Response:
  *      HTTP/1.1 200 OK

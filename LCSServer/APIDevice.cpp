@@ -84,12 +84,12 @@ void APIDevice::handleGetModuleDevicePortList(const APIRequest &request, APIResp
     Database db;
 
     QString sql;
+    sql = QString("SELECT moduleDevicePort.id, deviceID, controllerModuleID, moduleName, moduleClass, deviceName, labelName, deviceClass, port  FROM moduleDevicePort LEFT OUTER JOIN controllerModule ON moduleDevicePort.controllerModuleID = controllerModule.id LEFT OUTER JOIN device ON moduleDevicePort.deviceID = device.id");
+
     if(moduleID > 0)
-        sql = QString("SELECT id, deviceID, controllerModuleID, port FROM moduleDevicePort WHERE controllerModuleID = %1").arg(moduleID);
+        sql += QString(" WHERE moduleDevicePort.controllerModuleID = %1 ORDER BY port").arg(moduleID);
     else if(deviceID > 0)
-        sql = QString("SELECT id, deviceID, controllerModuleID, port FROM moduleDevicePort WHERE deviceID = %1").arg(deviceID);
-    else
-        sql = QString("SELECT id, deviceID, controllerModuleID, port FROM moduleDevicePort");
+        sql += QString(" WHERE moduleDevicePort.deviceID = %1").arg(deviceID);
 
     QJsonArray jsonArray = db.fetchItems(sql);
 

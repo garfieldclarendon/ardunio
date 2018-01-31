@@ -14,6 +14,7 @@
 #include "LabelOutput.h"
 #include "LabelController.h"
 #include "ControllerModel.h"
+#include "DeviceModuleModel.h"
 
 const qreal refDpi = 162.;
 const qreal refHeight = 962.;
@@ -63,15 +64,17 @@ int UI::applyRatio(const int value)
 
 void UI::printModuleLabel(int moduleID)
 {
-    DeviceModel model;
-    model.setControllerModuleID(moduleID);
+    DeviceModuleModel model;
+    model.setModuleID(moduleID);
+
+    ModuleClassEnum moduleClass = (ModuleClassEnum)model.data(0, "moduleClass").toInt();
 
     QPrinter printer(QPrinter::HighResolution);
-    QPageSize pageSize(QSizeF(50.0, 100.0), QPageSize::Millimeter, QString(), QPageSize::ExactMatch);
+    QPageSize pageSize(QSizeF(58.0, 100.0), QPageSize::Millimeter, QString(), QPageSize::ExactMatch);
     printer.setPageSize(pageSize);
 
     QPrintPreviewDialog dlg(&printer, QApplication::focusWidget());
-    LabelPainter *painter = createLabelPainter((ModuleClassEnum)model.data(0, "moduleClass").toInt(), &model);
+    LabelPainter *painter = createLabelPainter(moduleClass, &model);
     painter->setParent(&dlg);
     connect(&dlg, SIGNAL(paintRequested(QPrinter*)), painter, SLOT(printerPaintRequested(QPrinter*)));
 
@@ -84,14 +87,8 @@ void UI::printControllerLabel(int controllerID)
     model.setControllerID(controllerID);
 
     QPrinter printer(QPrinter::HighResolution);
-    QPageSize pageSize(QSizeF(50.0, 100.0), QPageSize::Millimeter, QString(), QPageSize::ExactMatch);
+    QPageSize pageSize(QSizeF(58.0, 100.0), QPageSize::Millimeter, QString(), QPageSize::ExactMatch);
     printer.setPageSize(pageSize);
-    QPageLayout layout = printer.pageLayout();
-    QMarginsF min = layout.minimumMargins();
-    min.setTop(min.top()/2);
-    layout.setMinimumMargins(min);
-    layout.setMargins(min);
-    bool ret = printer.setPageLayout(layout);
 
     QPrintPreviewDialog dlg(&printer, QApplication::focusWidget());
     LabelController *painter = new LabelController(&model, &dlg);

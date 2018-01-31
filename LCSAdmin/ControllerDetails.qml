@@ -321,7 +321,7 @@ Rectangle {
                         id: moduleClassCombo
                         model: moduleClassModel
                         textRole: "text"
-                        Layout.fillWidth: true
+//                        Layout.fillWidth: true
                         currentIndex: getModuleClassRow(moduleClass)
                         onActivated: {
                             moduleClass = moduleClassModel.get(currentIndex).classID;

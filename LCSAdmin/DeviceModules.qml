@@ -48,7 +48,7 @@ GroupBox {
                     height: moduleIDText.height + 12
                     Text {
                         id: moduleIDLabel
-                        text: "<b>Module ID:</b>"
+                        text: "<b>ID:</b>"
                         horizontalAlignment: Text.AlignRight
                     }
                     TextField {

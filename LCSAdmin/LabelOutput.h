@@ -13,7 +13,8 @@ public:
     // LabelPainter interface
     void paintHeader(QRectF &rect, QPainter *painter) override;
     void paintBody(QRectF &rect, QPainter *painter) override;
-    void paintSignal(QRectF &rect, QPainter *painter, int row);
+    void paintSignal(QRectF &rect, QPainter *painter, int row, int port);
+    void paintOutput(QRectF &rect, QPainter *painter, const QString &text, int port);
 
 };
 
