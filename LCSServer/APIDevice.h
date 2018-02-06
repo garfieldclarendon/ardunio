@@ -113,12 +113,14 @@
  */
 
 /**
- * @api {get} /api/create_device:deviceClass Create a device entry
+ * @api {post} /api/create_device:createExtra Create a device entry
  * @apiName CreateDevice
  * @apiGroup Device
  *
- * @apiParam {Number} deviceClass The classification of the device's to be created.
- * @apiDescription Creates a new, blank device entry.  In addition to the device table entry, any required deviceProperty entries are also created.
+ * @apiParam {Number} [createExtra] Flag that, when set to true, instructs the system to create additional companion devices.
+ * @apiDescription Creates a new device entry.  In addition to the device table entry, any required deviceProperty entries are also created.  If
+ * the createExtra flag is set to 1, additional devices are created.  For turnouts,
+ * two PanelOutput devices are created for the red and green panel LEDs.  For a block device, one PanelOutput device is created for the yellow LED.
  * @apiSuccess {Number} controllerModuleID  Controller Module's ID to which the device is connected.
  * @apiSuccess {Number} deviceClass Device's classification populated with the supplied deviceClass.
  * @apiSuccess {String} deviceDescription Device's description.
@@ -126,7 +128,13 @@
  * @apiSuccess {Number} id Device's new ID.
  * @apiSuccess {Number} port/pin Port to which the device is connected.
  * @apiExample This example creates a new Turnout device entry.  In addition to the device table entry, two entries are also added to the deviceProperty table; MOTORPIN and INPUTPIN with values set to 0:
- * http://localhost:8080/api/create_device?deviceClass=1
+ * http://localhost:8080/api/create_device?createExtra=1
+ *     body:
+ *     {
+ *       "deviceName": "TY-NEW",
+ *       "deviceDescription": "Description",
+ *       "deviceClass": "1"
+ *     }
  * @apiSuccessExample {json} Success-Response:
  *      HTTP/1.1 200 OK
  *      [{
@@ -228,6 +236,8 @@ private:
     void lockSignal(int deviceID, bool lock, PinStateEnum redMode, PinStateEnum greenMode, PinStateEnum yellowMode);
     QJsonArray getDeviceList(long serialNumber, int controllerID, int moduleID, int classCode, int deviceID);
     void createAndSendNotificationMessage(int deviceID, int newState, bool locked);
+    void createTurnoutExtra(const QString &deviceName, int turnoutID);
+    void createBlockExtra(const QString &deviceName, int blockID);
 };
 
 #endif // APIDEVICE_H

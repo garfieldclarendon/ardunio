@@ -116,16 +116,77 @@ void APIDevice::handleSendDeviceConfig(const APIRequest &request, APIResponse *)
 void APIDevice::handleCreateDevice(const APIRequest &request, APIResponse *response)
 {
     QUrlQuery urlQuery(request.getUrl());
-    DeviceClassEnum deviceClass = (DeviceClassEnum)urlQuery.queryItemValue("deviceClass").toInt();
+    int flag = urlQuery.queryItemValue("createExtra").toInt();
+    QJsonDocument doc;
+    doc = QJsonDocument::fromJson(request.getPayload());
+    QJsonObject obj = doc.object();
+
+    DeviceClassEnum deviceClass = (DeviceClassEnum)obj["deviceClass"].toVariant().toInt();
+    QString deviceName = obj["deviceName"].toVariant().toString();
+    QString description = obj["deviceDescription"].toVariant().toString();
+
     if(deviceClass != DeviceUnknown)
     {
         Database db;
         QJsonObject obj;
-        obj = db.createNewDevice(deviceClass);
+        obj = db.createNewDevice(deviceName, description, deviceClass);
+        int deviceID = obj["id"].toVariant().toInt();
         QJsonDocument doc;
         doc.setObject(obj);
         response->setPayload(doc.toJson());
+
+        if(flag)
+        {
+            if(deviceClass == DeviceTurnout)
+            {
+                createTurnoutExtra(deviceName, deviceID);
+            }
+            else if(deviceClass == DeviceBlock)
+            {
+                createBlockExtra(deviceName, deviceID);
+            }
+        }
     }
+}
+
+void APIDevice::createTurnoutExtra(const QString &deviceName, int turnoutID)
+{
+    Database db;
+    QJsonObject o;
+    int newID;
+    QString sql;
+
+    o = db.createNewDevice(deviceName + " - Green", QString(), DevicePanelOutput);
+    newID = o["id"].toVariant().toInt();
+    sql = QString("UPDATE deviceProperty set value = %1 WHERE deviceID = %2 AND key = 'ITEMID'").arg(turnoutID).arg(newID);
+    db.executeQuery(sql);
+    sql = QString("UPDATE deviceProperty set value = 1 WHERE deviceID = %1 AND key = 'ONVALUE'").arg(newID);
+    db.executeQuery(sql);
+    sql = QString("UPDATE deviceProperty set value = 4 WHERE deviceID = %1 AND key = 'FLASHINGVALUE'").arg(newID);
+    db.executeQuery(sql);
+
+    o = db.createNewDevice(deviceName + " - Red", QString(), DevicePanelOutput);
+    newID = o["id"].toVariant().toInt();
+    sql = QString("UPDATE deviceProperty set value = %1 WHERE deviceID = %2 AND key = 'ITEMID'").arg(turnoutID).arg(newID);
+    db.executeQuery(sql);
+    sql = QString("UPDATE deviceProperty set value = 3 WHERE deviceID = %1 AND key = 'ONVALUE'").arg(newID);
+    db.executeQuery(sql);
+    sql = QString("UPDATE deviceProperty set value = 2 WHERE deviceID = %1 AND key = 'FLASHINGVALUE'").arg(newID);
+    db.executeQuery(sql);
+}
+
+void APIDevice::createBlockExtra(const QString &deviceName, int blockID)
+{
+    Database db;
+    QJsonObject o;
+    int newID;
+    QString sql;
+
+    o = db.createNewDevice(deviceName + " - Green", QString(), DevicePanelOutput);
+    newID = o["id"].toVariant().toInt();
+    sql = QString("UPDATE deviceProperty set value = %1 WHERE deviceID = %2 AND key = 'ITEMID'").arg(blockID).arg(newID);
+    db.executeQuery(sql);
+    sql = QString("UPDATE deviceProperty set value = 2 WHERE deviceID = %1 AND key = 'ONVALUE'").arg(newID);
 }
 
 void APIDevice::handleLockDevice(const APIRequest &request, APIResponse *)

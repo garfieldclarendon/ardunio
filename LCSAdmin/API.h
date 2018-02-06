@@ -52,7 +52,7 @@ public slots:
     QString getRouteList(void);
     QString getRouteEntryList(int routeID);
     QString getDevicePropertyList(int deviceID);
-    QString createNewDevice(DeviceClassEnum deviceClass);
+    QString createNewDevice(const QString &name, const QString &description, DeviceClassEnum deviceClass, bool createExtra);
 
     Entity saveEntity(const Entity &entity, bool isNew = false);
     Entity deleteEntity(const Entity &entity);

@@ -39,7 +39,7 @@ public slots:
     void deviceChanged(int deviceID, int status);
     int getDeviceRow(int deviceID);
     int getDeviceClass(int deviceID);
-    Entity createNewDevice(DeviceClassEnum deviceClass);
+    Entity createNewDevice(const QString &name, const QString &description, DeviceClassEnum deviceClass, bool createExtra);
 
     // QAbstractItemModel interface
 public:

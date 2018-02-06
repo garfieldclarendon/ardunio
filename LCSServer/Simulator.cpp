@@ -70,7 +70,7 @@ void Simulator::timerProc()
 void Simulator::loadData()
 {
     Database db;
-    m_array = db.fetchItems("SELECT device.id as deviceID, deviceName FROM device JOIN controllerModule ON device.controllerModuleID = controllerModule.id WHERE disable = 0 AND deviceClass = 1");
+    m_array = db.fetchItems("SELECT device.id as deviceID, deviceName FROM device WHERE deviceClass = 1");
     for(int x = 0; x < m_array.count(); x++)
     {
         QJsonObject obj = m_array[x].toObject();

@@ -28,6 +28,6 @@
         <file>DeviceList.qml</file>
         <file>DeviceListPage.qml</file>
         <file>DeviceModules.qml</file>
-
+        <file>NewDeviceDlg.qml</file>
     </qresource>
 </RCC>

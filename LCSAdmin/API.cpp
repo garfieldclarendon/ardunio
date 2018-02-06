@@ -207,16 +207,23 @@ QString API::getDevicePropertyList(int deviceID)
     return json;
 }
 
-QString API::createNewDevice(DeviceClassEnum deviceClass)
+QString API::createNewDevice(const QString &name, const QString &description, DeviceClassEnum deviceClass, bool createExtra)
 {
     QString json;
     if(deviceClass != DeviceUnknown)
     {
+        QJsonDocument doc;
+        QJsonObject obj;
+        obj["deviceName"] = name;
+        obj["deviceDescription"] = description;
+        obj["deviceClass"] = (int)deviceClass;
+        doc.setObject(obj);
+
         QString s("create_device");
-        s.append(QString("?deviceClass=%1").arg(deviceClass));
+        s.append(QString("?createExtra=%1").arg(createExtra));
         QUrl url(buildUrl(s));
 
-        json = sendToServer(url, QString(), NetActionGet);
+        json = sendToServer(url, doc.toJson(), NetActionAdd);
     }
 
     return json;

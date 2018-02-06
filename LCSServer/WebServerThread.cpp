@@ -145,6 +145,7 @@ void WebServerThread::handleSocket(const QString &path, const QString &actionTex
             qDebug("FOUND HANDLER!");
 
             APIRequest request(actionType, url);
+            request.setPayload(payload.toLatin1());
             response = handler->handleRequest(request);
         }
         else

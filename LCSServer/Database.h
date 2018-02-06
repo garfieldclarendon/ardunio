@@ -55,7 +55,7 @@ public:
     QJsonObject createJsonObject(QSqlQuery &query);
     QJsonArray createJsonArray(QSqlQuery &query);
     QSqlQuery executeQuery(const QString &queryString);
-    QJsonObject createNewDevice(DeviceClassEnum deviceClass);
+    QJsonObject createNewDevice(const QString &name, const QString &description, DeviceClassEnum deviceClass);
 
 signals:
     void logError(int category, int code, const QString &errorText);

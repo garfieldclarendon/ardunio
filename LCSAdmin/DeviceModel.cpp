@@ -153,9 +153,9 @@ int DeviceModel::getDeviceClass(int deviceID)
     return retClass;
 }
 
-Entity DeviceModel::createNewDevice(DeviceClassEnum deviceClass)
+Entity DeviceModel::createNewDevice(const QString &name, const QString &description, DeviceClassEnum deviceClass, bool createExtra)
 {
-    QString jsonText = API::instance()->createNewDevice(deviceClass);
+    QString jsonText = API::instance()->createNewDevice(name, description, deviceClass, createExtra);
     QJsonDocument doc = QJsonDocument::fromJson(jsonText.toLatin1());
     QJsonObject newDevice = doc.object();
     int deviceID = newDevice["id"].toVariant().toInt();

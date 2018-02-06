@@ -570,7 +570,7 @@ QSqlQuery Database::executeQuery(const QString &queryString)
     return query;
 }
 
-QJsonObject Database::createNewDevice(DeviceClassEnum deviceClass)
+QJsonObject Database::createNewDevice(const QString &name, const QString &description, DeviceClassEnum deviceClass)
 {
     if(db.isValid() == false)
         db = QSqlDatabase::database();
@@ -578,7 +578,7 @@ QJsonObject Database::createNewDevice(DeviceClassEnum deviceClass)
         db.open();
 
     QJsonObject obj;
-    QString sql(QString("INSERT INTO device (deviceClass) VALUES(%1)").arg(deviceClass));
+    QString sql(QString("INSERT INTO device (deviceClass, deviceName, deviceDescription) VALUES(%1, '%2', '%3')").arg(deviceClass).arg(name).arg(description));
     bool ret = false;
     {
         QSqlQuery query(db);

@@ -76,49 +76,18 @@ ApplicationWindow {
                         DeviceListPage {
                             id: devices
                             onAddClicked: {
-                                promptDeviceTypeDlg.visible = true;
+                                newDeviceDlg.visible = true;
                             }
 
-                            Dialog {
-                                id: promptDeviceTypeDlg
-                                visible: false
-                                title: "Select Device Type"
-                                standardButtons: StandardButton.Ok | StandardButton.Cancel
-
-                                ListModel {
-                                    id: classModel
-                                    ListElement { text: "Unknown"; classID: 0 }
-                                    ListElement { text: "Turnout"; classID: 1 }
-                                    ListElement { text: "Panel Input"; classID: 2 }
-                                    ListElement { text: "Panel Output"; classID: 3 }
-                                    ListElement { text: "Signal"; classID: 4 }
-                                    ListElement { text: "Semaphore"; classID: 5 }
-                                    ListElement { text: "Block"; classID: 6 }
-                                }
-
-                                GridLayout {
-                                    columns: 2
-                                    implicitWidth: 400
-                                    implicitHeight: 100
-                                    Text {
-                                        text: qsTr("Class: ")
-                                    }
-                                    ComboBox {
-                                        id: typeCombo
-                                        model: classModel
-                                        textRole: "text"
-                                    }
-                                }
+                            NewDeviceDlg {
+                                id: newDeviceDlg
                                 onAccepted: {
-                                    promptDeviceTypeDlg.visible = false;
-                                    if(typeCombo.currentIndex > 0)
-                                    {
-                                        var deviceEntity = devices.model.createNewDevice(typeCombo.currentIndex);
-                                        createDetailPanel(typeCombo.currentIndex, deviceEntity);
-                                    }
+                                    newDeviceDlg.visible = false;
+                                    var deviceEntity = devices.model.createNewDevice(newDeviceDlg.deviceName, newDeviceDlg.deviceDescription, newDeviceDlg.deviceClass, true);
+                                    createDetailPanel(newDeviceDlg.deviceClass, deviceEntity);
                                 }
                                 onDiscard: {
-                                    promptDeviceTypeDlg.visible = false;
+                                    newDeviceDlg.visible = false;
                                 }
                             }
                         }
