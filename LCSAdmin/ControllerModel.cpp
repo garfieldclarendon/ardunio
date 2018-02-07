@@ -64,8 +64,7 @@ void ControllerModel::createEmptyObject(QJsonObject &obj)
     }
 }
 
-
-void ControllerModel::apiReady()
+void ControllerModel::loadData()
 {
     if(m_jsonModel && API::instance()->getApiReady())
     {
@@ -76,6 +75,12 @@ void ControllerModel::apiReady()
         m_jsonModel->setJson(jsonDoc, false);
         endResetModel();
     }
+}
+
+
+void ControllerModel::apiReady()
+{
+    loadData();
 }
 
 void ControllerModel::controllerChanged(int serialNumber, ControllerStatusEnum status, quint64 pingLength)

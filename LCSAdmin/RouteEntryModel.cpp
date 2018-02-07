@@ -50,15 +50,7 @@ bool RouteEntryModel::filterAcceptsRow(int , const QModelIndex &) const
 
 void RouteEntryModel::apiReady()
 {
-    if(m_jsonModel && API::instance()->getApiReady() && m_routeID > 0)
-    {
-        QJsonDocument jsonDoc;
-        QString json = API::instance()->getRouteEntryList(m_routeID);
-        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
-        beginResetModel();
-        m_jsonModel->setJson(jsonDoc, false);
-        endResetModel();
-    }
+    loadData();
 }
 
 
@@ -76,6 +68,19 @@ int RouteEntryModel::getRouteEntryRow(int routeEntryID)
         }
     }
     return row;
+}
+
+void RouteEntryModel::loadData()
+{
+    if(m_jsonModel && API::instance()->getApiReady() && m_routeID > 0)
+    {
+        QJsonDocument jsonDoc;
+        QString json = API::instance()->getRouteEntryList(m_routeID);
+        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+        beginResetModel();
+        m_jsonModel->setJson(jsonDoc, false);
+        endResetModel();
+    }
 }
 
 void RouteEntryModel::createEmptyObject(QJsonObject &obj)

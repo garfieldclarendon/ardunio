@@ -22,6 +22,7 @@ signals:
     void aspectIDChanged(void);
 
 public slots:
+    void loadData() override;
 
     // QAbstractItemModel interface
 public:

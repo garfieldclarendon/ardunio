@@ -18,6 +18,7 @@ signals:
 public slots:
     void routeChanged(int routeID, bool isActive, bool isLocked, bool canLock);
     int getRouteRow(int routeID);
+    void loadData() override;
 
     // QAbstractItemModel interface
 public:

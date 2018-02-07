@@ -27,7 +27,8 @@ signals:
     void moduleIDChanged(void);
 
     // QAbstractItemModel interface
-public:
+public slots:
+    void loadData() override;
 
 protected slots:
     void apiReady(void);
@@ -40,6 +41,7 @@ private:
 
     int m_deviceID;
     int m_moduleID;
+
 };
 
 #endif // DEVICEMODULEMODEL_H

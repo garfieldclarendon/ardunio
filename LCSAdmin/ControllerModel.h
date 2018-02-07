@@ -27,6 +27,7 @@ public slots:
     int getControllerRow(int controllerID);
     int getControllerClass(int controllerID);
     void setControllerID(int value);
+    void loadData() override;
 
     // QAbstractItemModel interface
 public:
@@ -47,6 +48,7 @@ private:
 
     // EntityModel interface
 public slots:
+
 };
 
 #endif // CONTROLLERMODEL_H

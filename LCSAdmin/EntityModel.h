@@ -30,6 +30,7 @@ public slots:
     bool save(void);
     int getRowCount(void) const;
     QVariant data(int row, const QString &key) const;
+    virtual void loadData(void) = 0;
 
     // QAbstractItemModel interface
 public:

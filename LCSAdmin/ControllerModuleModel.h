@@ -22,6 +22,7 @@ signals:
     void controllerIDChanged(void);
 
 public slots:
+    void loadData() override;
 
     // QAbstractItemModel interface
 public:

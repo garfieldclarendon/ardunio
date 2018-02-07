@@ -68,15 +68,7 @@ void DeviceModuleModel::setModuleID(int value)
 
 void DeviceModuleModel::apiReady()
 {
-    if(m_jsonModel && API::instance()->getApiReady() && (m_deviceID > 0 || m_moduleID > 0))
-    {
-        QJsonDocument jsonDoc;
-        QString json = API::instance()->getModuleDevicePortList(m_deviceID, m_moduleID);
-        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
-        beginResetModel();
-        m_jsonModel->setJson(jsonDoc, false);
-        endResetModel();
-    }
+    loadData();
 }
 
 void DeviceModuleModel::createEmptyObject(QJsonObject &obj)
@@ -94,6 +86,19 @@ void DeviceModuleModel::createEmptyObject(QJsonObject &obj)
         else if(key == "port")
             v = 0;
         obj[key] = QJsonValue::fromVariant(v);
+    }
+}
+
+void DeviceModuleModel::loadData()
+{
+    if(m_jsonModel && API::instance()->getApiReady() && (m_deviceID > 0 || m_moduleID > 0))
+    {
+        QJsonDocument jsonDoc;
+        QString json = API::instance()->getModuleDevicePortList(m_deviceID, m_moduleID);
+        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+        beginResetModel();
+        m_jsonModel->setJson(jsonDoc, false);
+        endResetModel();
     }
 }
 

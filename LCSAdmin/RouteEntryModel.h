@@ -20,6 +20,7 @@ signals:
 
 public slots:
     int getRouteEntryRow(int routeEntryID);
+    void loadData() override;
 
     // QAbstractItemModel interface
 public:

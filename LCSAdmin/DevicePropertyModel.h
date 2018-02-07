@@ -27,6 +27,7 @@ signals:
     void classChanged(void);
 
 public slots:
+    void loadData() override;
 
     // QAbstractItemModel interface
 public:

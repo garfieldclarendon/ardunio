@@ -34,15 +34,7 @@ bool RouteModel::filterAcceptsRow(int , const QModelIndex &) const
 
 void RouteModel::apiReady()
 {
-    if(m_jsonModel && API::instance()->getApiReady())
-    {
-        QJsonDocument jsonDoc;
-        QString json = API::instance()->getRouteList();
-        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
-        beginResetModel();
-        m_jsonModel->setJson(jsonDoc, false);
-        endResetModel();
-    }
+    loadData();
 }
 
 void RouteModel::routeChanged(int routeID, bool isActive, bool isLocked, bool canLock)
@@ -74,6 +66,19 @@ int RouteModel::getRouteRow(int routeID)
         }
     }
     return row;
+}
+
+void RouteModel::loadData()
+{
+    if(m_jsonModel && API::instance()->getApiReady())
+    {
+        QJsonDocument jsonDoc;
+        QString json = API::instance()->getRouteList();
+        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+        beginResetModel();
+        m_jsonModel->setJson(jsonDoc, false);
+        endResetModel();
+    }
 }
 
 void RouteModel::createEmptyObject(QJsonObject &obj)

@@ -51,7 +51,7 @@ void DevicePropertyModel::setClass(int value)
     }
 }
 
-void DevicePropertyModel::apiReady()
+void DevicePropertyModel::loadData()
 {
     if(m_jsonModel && API::instance()->getApiReady() && m_deviceID > 0)
     {
@@ -62,6 +62,11 @@ void DevicePropertyModel::apiReady()
         m_jsonModel->setJson(jsonDoc, false);
         endResetModel();
     }
+}
+
+void DevicePropertyModel::apiReady()
+{
+    loadData();
 }
 
 void DevicePropertyModel::createEmptyObject(QJsonObject &obj)

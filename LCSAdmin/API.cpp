@@ -431,7 +431,7 @@ QString API::sendToServer(const QUrl &url, const QString &json, NetActionType ne
     request.setUrl(url);
 
     QNetworkAccessManager manager;
-    QNetworkReply *reply;
+    QNetworkReply *reply = NULL;
 
     if(netAction == NetActionGet)
         reply = manager.get(request);
@@ -442,15 +442,19 @@ QString API::sendToServer(const QUrl &url, const QString &json, NetActionType ne
     else if(netAction == NetActionDelete)
         reply = manager.sendCustomRequest(request, "DELETE", json.toLatin1());
 
-    while (true)
+    if(reply)
     {
-        QCoreApplication::processEvents();
-        QThread::currentThread()->msleep(50);
-        if(reply->isFinished() || reply->isRunning() == false)
-            break;
+        while (true)
+        {
+            QCoreApplication::processEvents();
+            QThread::currentThread()->msleep(50);
+            if(reply->isFinished() || reply->isRunning() == false)
+                break;
+        }
+
+        ret = reply->readAll();
+        reply->deleteLater();
     }
 
-    ret = reply->readAll();
-    reply->deleteLater();
     return ret;
 }

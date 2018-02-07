@@ -61,6 +61,19 @@ void ControllerModuleModel::setControllerModuleID(int value)
     }
 }
 
+void ControllerModuleModel::loadData()
+{
+    if(m_jsonModel && API::instance()->getApiReady())
+    {
+        QJsonDocument jsonDoc;
+        QString json = API::instance()->getControllerModuleListByControllerID(m_controllerID);
+        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+        beginResetModel();
+        m_jsonModel->setJson(jsonDoc, false);
+        endResetModel();
+    }
+}
+
 int ControllerModuleModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
@@ -76,15 +89,7 @@ bool ControllerModuleModel::filterAcceptsRow(int source_row, const QModelIndex &
 
 void ControllerModuleModel::apiReady()
 {
-    if(m_jsonModel && API::instance()->getApiReady())
-    {
-        QJsonDocument jsonDoc;
-        QString json = API::instance()->getControllerModuleListByControllerID(m_controllerID);
-        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
-        beginResetModel();
-        m_jsonModel->setJson(jsonDoc, false);
-        endResetModel();
-    }
+    loadData();
 }
 
 void ControllerModuleModel::createEmptyObject(QJsonObject &obj)

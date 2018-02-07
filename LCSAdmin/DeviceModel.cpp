@@ -99,15 +99,7 @@ bool DeviceModel::filterAcceptsRow(int source_row, const QModelIndex &) const
 
 void DeviceModel::apiReady()
 {
-    if(m_jsonModel && API::instance()->getApiReady())
-    {
-        QJsonDocument jsonDoc;
-        QString json = API::instance()->getDeviceList(m_controllerID, m_controllerModuleID, DeviceUnknown);
-        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
-        beginResetModel();
-        m_jsonModel->setJson(jsonDoc, false);
-        endResetModel();
-    }
+    loadData();
 }
 
 void DeviceModel::deviceChanged(int deviceID, int status)
@@ -169,6 +161,19 @@ Entity DeviceModel::createNewDevice(const QString &name, const QString &descript
     Entity entity(newDevice);
     entity.setEntityName(m_entityName);
     return entity;
+}
+
+void DeviceModel::loadData()
+{
+    if(m_jsonModel && API::instance()->getApiReady())
+    {
+        QJsonDocument jsonDoc;
+        QString json = API::instance()->getDeviceList(m_controllerID, m_controllerModuleID, DeviceUnknown);
+        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+        beginResetModel();
+        m_jsonModel->setJson(jsonDoc, false);
+        endResetModel();
+    }
 }
 
 void DeviceModel::setFilterText(const QString &filterText)

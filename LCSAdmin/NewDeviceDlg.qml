@@ -9,7 +9,7 @@ Dialog {
     title: "New Device"
     standardButtons: StandardButton.Ok | StandardButton.Cancel
     width: 400
-    height: nameEdit.height * 3 + 25
+    height: 400
 
     property alias deviceName: nameEdit.text
     property alias deviceDescription: descEdit.text

@@ -40,6 +40,7 @@ public slots:
     int getDeviceRow(int deviceID);
     int getDeviceClass(int deviceID);
     Entity createNewDevice(const QString &name, const QString &description, DeviceClassEnum deviceClass, bool createExtra);
+    void loadData() override;
 
     // QAbstractItemModel interface
 public:

@@ -41,6 +41,19 @@ void SignalConditionModel::setAspectID(int value)
     }
 }
 
+void SignalConditionModel::loadData()
+{
+    if(m_jsonModel && API::instance()->getApiReady())
+    {
+        QJsonDocument jsonDoc;
+        QString json = API::instance()->getSignalConditionList(m_aspectID);
+        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+        beginResetModel();
+        m_jsonModel->setJson(jsonDoc, false);
+        endResetModel();
+    }
+}
+
 int SignalConditionModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
@@ -56,15 +69,7 @@ bool SignalConditionModel::filterAcceptsRow(int source_row, const QModelIndex &)
 
 void SignalConditionModel::apiReady()
 {
-    if(m_jsonModel && API::instance()->getApiReady())
-    {
-        QJsonDocument jsonDoc;
-        QString json = API::instance()->getSignalConditionList(m_aspectID);
-        jsonDoc = QJsonDocument::fromJson(json.toLatin1());
-        beginResetModel();
-        m_jsonModel->setJson(jsonDoc, false);
-        endResetModel();
-    }
+    loadData();
 }
 
 void SignalConditionModel::createEmptyObject(QJsonObject &obj)
