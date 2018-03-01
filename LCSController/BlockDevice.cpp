@@ -69,11 +69,11 @@ void BlockDevice::processPin(byte pin, byte value)
 	{
 		DEBUG_PRINT("BlockDevice::processPin  DeviceID %d  Pin %d  value %d\n", getID(), pin, value);
 		BlockState newState;
-//		long t = millis();
-//		if (value == m_last && m_last != m_current && (t - m_currentTimeout) > TIMEOUT_INTERVAL)
-		if (value != m_current)
+		long t = millis();
+		if (value == m_last && m_last != m_current && (t - m_currentTimeout) > TIMEOUT_INTERVAL)
+//		if (value != m_current)
 		{
-//			m_currentTimeout = t;
+			m_currentTimeout = t;
 			m_current = value;
 
 			if (value == PinOff)
@@ -86,7 +86,7 @@ void BlockDevice::processPin(byte pin, byte value)
 				sendStatusMessage();
 			}
 		}
-//		m_last = value;
+		m_last = value;
 	}
 }
 
