@@ -360,10 +360,16 @@ public slots:
     void handleControllerResetConfig(const APIRequest &request, APIResponse *response);
 
     /// API "/api/send_controller_reset_notification_list"
-    /// Sends a SYS_RESET_NOTIFICATION_LIST broadcast UDP message instructing the controller(s) to delete controllers-to-notify list.  The controller responds by sending a /controller/notification_list to the application server.
+    /// Sends a SYS_RESET_NOTIFICATION_LIST broadcast UDP message instructing the controller(s) to delete controllers-to-notify list.  The controller responds by sending a /controller/notification_list request to the application server.
     /// @param request APIRequest containing the url of the request including the controller's serial number.  If the serial number is less than 1, all controllers delete their controllers-to-notify list.
     /// @param response APIResponse unused.
     void handleResetNotificationList(const APIRequest &request, APIResponse *response);
+
+    /// API "/api/send_controller_firmware"
+    /// Sends a SYS_DOWNLOAD_FIRMWARE broadcast UDP message instructing the controller(s) to download the firmware.  The controller responds by sending a /controller/firmware request to the application server.
+    /// @param request APIRequest containing the url of the request including the controller's serial number.  If the serial number is less than 1, all controllers download the new firmware.
+    /// @param response APIResponse unused.
+    void handleSendFirmware(const APIRequest &request, APIResponse *response);
 
 private:
     /// Creates the JSON notification message containing the serialNumber and the new status of the controller that changed.
