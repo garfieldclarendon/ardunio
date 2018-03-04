@@ -42,6 +42,8 @@ APIController::APIController(QObject *parent) : QObject(parent)
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleControllerResetConfig(APIRequest,APIResponse*)), Qt::DirectConnection);
     handler = webServer->createUrlHandler("/api/send_controller_reset_notification_list");
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleResetNotificationList(APIRequest,APIResponse*)), Qt::DirectConnection);
+    handler = webServer->createUrlHandler("/api/send_controller_firmware");
+    connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleSendFirmware(APIRequest,APIResponse*)), Qt::DirectConnection);
 }
 
 void APIController::onControllerStatusChanged(long serialNumber, ControllerStatusEnum newStatus)
@@ -225,6 +227,14 @@ void APIController::handleResetNotificationList(const APIRequest &request, APIRe
     int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
 
     MessageBroadcaster::instance()->sendResetNotificationListCommand(serialNumber);
+}
+
+void APIController::handleSendFirmware(const APIRequest &request, APIResponse *)
+{
+    QUrlQuery urlQuery(request.getUrl());
+    int serialNumber = urlQuery.queryItemValue("serialNumber").toInt();
+
+    MessageBroadcaster::instance()->sendDownloadFirmware(serialNumber);
 }
 
 QByteArray APIController::getFile(const QString &fileName)
