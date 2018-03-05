@@ -158,7 +158,11 @@ QByteArray APIEntity::addEntity(const QString &name, const QString &jsonText)
     QString filter = QString("%1 = %2").arg(tableKey).arg(id);
     model.setTable(tableName);
     model.setFilter(filter);
-    model.select();
+    if(model.select() == false)
+    {
+        QString error = model.lastError().text();
+        obj["dbError"] = error;
+    }
     model.insertRow(model.rowCount());
 
     if(model.rowCount() > 0)
@@ -174,7 +178,7 @@ QByteArray APIEntity::addEntity(const QString &name, const QString &jsonText)
                 r.setGenerated(key, true);
             }
         }
-        r.setGenerated(keyField, false);
+        r.setGenerated(tableKey, false);
         model.setRecord(0, r);
         if(model.submitAll() == false)
         {

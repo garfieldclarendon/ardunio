@@ -42,10 +42,10 @@ void WebServerThread::run(void)
     QString payload;
     APIResponse response;
 
-    while(line.length() > 0)
+    while(line.simplified().length() > 0)
     {
         line = socket.readLine();
-        if(line.startsWith("Content-Length:"))
+        if(line.startsWith("Content-Length:", Qt::CaseInsensitive))
         {
             int index = line.indexOf(":");
             payloadSize = line.mid(index+1).toInt();
@@ -65,7 +65,7 @@ void WebServerThread::run(void)
     QString url;
     url = tokens.value(1);
     QUrl u(url);
-    if (tokens.value(0) == "GET" && u.path().startsWith("/web", Qt::CaseInsensitive))
+    if (tokens.value(0).compare("GET", Qt::CaseInsensitive) == 0 && u.path().startsWith("/web", Qt::CaseInsensitive))
     {
         QString path = QCoreApplication::applicationDirPath();
         QDir::setCurrent(path);
@@ -74,7 +74,7 @@ void WebServerThread::run(void)
             path.chop(1);
         if(path.endsWith("web", Qt::CaseInsensitive))
             path += "/index.html";
-        path.replace("web", "Files");
+        path.replace("web", "Files", Qt::CaseInsensitive);
         QString returnCode("200 OK");
         // PROCESS //
         QByteArray fileData;

@@ -162,6 +162,15 @@ int Database::addController(int controllerClass, const QString &controllerName, 
     return controllerID;
 }
 
+QSqlDatabase Database::getDatabase()
+{
+    if(db.isValid() == false)
+        db = QSqlDatabase::database();
+    db.open();
+
+    return db;
+}
+
 int Database::getNextID(const QString &tableName)
 {
     int id(-1);

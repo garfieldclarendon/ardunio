@@ -27,7 +27,7 @@ public:
     int getControllerID(long serialNumber);
     unsigned long getSerialNumber(int controllerID);
     int addController(int controllerClass, const QString &controllerName, const QString &controllerDescription);
-    QSqlDatabase getDatabase(void) const { return db; }
+    QSqlDatabase getDatabase(void);
     int getNextID(const QString &tableName);
     int getDBVersion(void);
     void setDBVersion(int newVersion);
