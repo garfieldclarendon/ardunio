@@ -76,15 +76,14 @@ Module *modules[MAX_MODULES];
 
 void setup() 
 {
-#ifdef PROJECT_DEBUG
 	Serial.begin(115200);
+#ifdef PROJECT_DEBUG
 	Serial.println("-------------------------------------------------");
 	Serial.printf("LCS Controller Version: %d.%d.%d\n\n", MajorVersion, MinorVersion, BuildVersion);
 	Serial.print("DEBUG BUILD STARTING.  Available RAM: ");
 	Serial.println(ESP.getFreeHeap());
 	Serial.println("-------------------------------------------------");
 #else
-	Serial.begin(74880);
 	Serial.println();
 	Serial.println();
 	Serial.println("-------------------------------------------------");

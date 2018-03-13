@@ -11,9 +11,48 @@ Rectangle {
 
     signal itemDoubleClicked(int deviceID, int deviceClass)
 
+    function getDeviceState(currentState, deviceClass)
+    {
+        if(deviceClass === "1")
+            return getTurnoutState(currentState);
+        else if(deviceClass === "6")
+            return getBlockState(currentState);
+
+        return currentState;
+    }
+
+    function getBlockState(currentState)
+    {
+        if(currentState === 0)
+            return "Unknown";
+        else if(currentState === 1)
+            return "Unoccupied";
+        else if(currentState === 2)
+            return "Occupied";
+
+        return currentState;
+    }
+
+    function getTurnoutState(currentState)
+    {
+        console.debug("getTurnoutState: " + currentState);
+        if(currentState === 0)
+            return "Unknown";
+        else if(currentState === 1)
+            return "Normal";
+        else if(currentState === 2)
+            return "To Diverging";
+        else if(currentState === 3)
+            return "Diverging";
+        else if(currentState === 4)
+            return "To Normal";
+
+        return currentState;
+    }
+
     function getClassName(classID)
     {
-        if(classID === 0)
+        if(classID === "0")
             return "Unknown";
         else if(classID === "1")
             return "Turnout";
@@ -121,7 +160,7 @@ Rectangle {
                         }
                         Text {
                             id: deviceStateText
-                            text: deviceState ? deviceState : "N/A"
+                            text: deviceState ? getDeviceState(deviceState, deviceClass) : "N/A"
                             Layout.minimumWidth: stateText.width
                             Layout.maximumWidth: stateText.width
                         }
