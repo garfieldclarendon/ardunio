@@ -29,7 +29,7 @@ void BlockDevice::process(ModuleData &data)
 	}
 
 	long t = millis();
-	if (value == m_last && m_last != m_current && (t - m_currentTimeout) > TIMEOUT_INTERVAL)
+	if (value == m_last && m_last != m_current && (t - m_currentTimeout) > (TIMEOUT_INTERVAL + 550))
 	{
 		m_currentTimeout = t;
 		m_current = value;

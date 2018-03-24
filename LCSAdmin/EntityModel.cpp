@@ -66,7 +66,7 @@ void EntityModel::deleteRow(int row)
     rowCountChanged();
 }
 
-void EntityModel::moveUp(int row)
+void EntityModel::moveUp(int row, const QString &fieldName)
 {
     int rows = rowCount();
     if(row > 0 && row < rows)
@@ -74,10 +74,10 @@ void EntityModel::moveUp(int row)
         Entity one = getEntity(row);
         Entity two = getEntity(row - 1);
         QJsonObject obj = one.getObject();
-        obj["rowIndex"] = row - 1;
+        obj[fieldName] = row - 1;
         one.setObject(obj);
         obj = two.getObject();
-        obj["rowIndex"] = row + 1;
+        obj[fieldName] = row + 1;
         two.setObject(obj);
 
         m_jsonModel->setEntity(row - 1, one, false);
@@ -91,17 +91,17 @@ void EntityModel::moveUp(int row)
     }
 }
 
-void EntityModel::moveDown(int row)
+void EntityModel::moveDown(int row, const QString &fieldName)
 {
     if(row >= 0 && row < rowCount() - 1)
     {
         Entity one = getEntity(row);
         Entity two = getEntity(row + 1);
         QJsonObject obj = one.getObject();
-        obj["rowIndex"] = row + 1;
+        obj[fieldName] = row + 1;
         one.setObject(obj);
         obj = two.getObject();
-        obj["rowIndex"] = row - 1;
+        obj[fieldName] = row - 1;
         two.setObject(obj);
 
         m_jsonModel->setEntity(row + 1, one, false);
@@ -118,7 +118,7 @@ void EntityModel::moveDown(int row)
 bool EntityModel::save()
 {
     bool ret = false;
-    qDebug("EntityModel::save()");
+    qDebug(QString("EntityModel::save(): %1").arg(m_entityName).toLatin1());
     if(API::instance()->getApiReady())
     {
         QList<int> rows;

@@ -96,6 +96,8 @@ void JSonModel::setEntity(int row, const Entity entity, bool emitSignal)
     else
     {
         m_jsonArray[row] = entity.getObject();
+        if(m_modifiedRows.contains(row) == false)
+            m_modifiedRows << row;
         if(emitSignal)
         {
             QModelIndex start = index(row, 0);

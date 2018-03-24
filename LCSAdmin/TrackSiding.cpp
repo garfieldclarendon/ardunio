@@ -4,7 +4,7 @@
 #include "DeviceModel.h"
 
 TrackSiding::TrackSiding()
-    : m_isActive(false), m_blockState(BlockUnknown), m_blockDeviceID(0), m_blockSidingBlockID(0), m_model(NULL)
+    : m_sidingDeviceID(0), m_blockDeviceID(0), m_blockSidingBlockID(0), m_isActive(false), m_blockState(BlockUnknown), m_model(NULL)
 {
     setTotalTracks(2);
 }

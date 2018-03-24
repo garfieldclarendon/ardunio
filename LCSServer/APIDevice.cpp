@@ -182,11 +182,12 @@ void APIDevice::createBlockExtra(const QString &deviceName, int blockID)
     int newID;
     QString sql;
 
-    o = db.createNewDevice(deviceName + " - Green", QString(), DevicePanelOutput);
+    o = db.createNewDevice(deviceName + " - Yellow", QString(), DevicePanelOutput);
     newID = o["id"].toVariant().toInt();
     sql = QString("UPDATE deviceProperty set value = %1 WHERE deviceID = %2 AND key = 'ITEMID'").arg(blockID).arg(newID);
     db.executeQuery(sql);
     sql = QString("UPDATE deviceProperty set value = 2 WHERE deviceID = %1 AND key = 'ONVALUE'").arg(newID);
+    db.executeQuery(sql);
 }
 
 void APIDevice::handleLockDevice(const APIRequest &request, APIResponse *)

@@ -2,7 +2,7 @@ import QtQuick 2.9
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
 import QtGraphicalEffects 1.0
-import QtQuick.Dialogs 1.1
+import QtQuick.Dialogs 1.2
 import Utils 1.0
 
 Rectangle {
@@ -174,7 +174,7 @@ Rectangle {
                             }
                         }
                         onClicked: {
-                            aspectModel.moveUp(index);
+                            aspectModel.moveUp(index, "sortIndex");
                         }
                     }
                     ToolButton {
@@ -191,7 +191,7 @@ Rectangle {
                             }
                         }
                         onClicked: {
-                            aspectModel.moveDown(index);
+                            aspectModel.moveDown(index, "sortIndex");
                         }
                     }
                 }

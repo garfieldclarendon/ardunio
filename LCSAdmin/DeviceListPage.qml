@@ -7,6 +7,7 @@ Item {
     property string pathName: "Devices"
     property string title: "Devices"
     property alias model: deviceList.model
+    property alias currentIndex:deviceList.currentIndex
 
     signal addClicked();
     signal updateClicked(int index);

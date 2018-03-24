@@ -25,8 +25,8 @@ public slots:
     virtual Entity getEntity(int row);
     void setEntity(int row, const Entity &entity);
     void deleteRow(int row);
-    void moveUp(int row);
-    void moveDown(int row);
+    void moveUp(int row, const QString &fieldName);
+    void moveDown(int row, const QString &fieldName);
     bool save(void);
     int getRowCount(void) const;
     QVariant data(int row, const QString &key) const;
