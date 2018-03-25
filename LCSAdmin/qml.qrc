@@ -29,5 +29,7 @@
         <file>DeviceListPage.qml</file>
         <file>DeviceModules.qml</file>
         <file>NewDeviceDlg.qml</file>
+        <file>ModuleDevices.qml</file>
+        <file>ModuleDevicesPage.qml</file>
     </qresource>
 </RCC>

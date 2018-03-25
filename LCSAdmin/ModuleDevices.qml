@@ -5,25 +5,27 @@ import Utils 1.0
 
 GroupBox {
     id: deviceModuleGroup
-    title: "<b>Assigned Controller Modules</b>"
-    property int deviceID: -1
-    property int deviceClass: 0
+    title: "<b>Module Devices</b>"
+    property int moduleID: -1
+    property int moduleClass: 0
+
+    TextMetrics {
+        id: comboMetrics
+        text: "CONTROLLER NAME"
+    }
 
     DeviceModuleModel {
         id: model
-        deviceID:  deviceModuleGroup.deviceID
+        moduleID:   deviceModuleGroup.moduleID
     }
 
-    ControllerModuleModel {
-        id: moduleModel
-        moduleClass: {
-            if(deviceClass === 1 || deviceClass === 5)
+    DeviceModel {
+        id: deviceModel
+        deviceClass: {
+            if(moduleClass == 1)
                 return 1;
-            else if(deviceClass === 2 || deviceClass === 6)
-                return 8;
-            else if(deviceClass === 3 || deviceClass === 4)
-                return 9;
-            return 0;
+            else
+                return 0;
         }
     }
 
@@ -42,9 +44,9 @@ GroupBox {
                 sourceSize.height: 18
             }
             onClicked: {
-                var entity = model.getEntity(-1);
-                model.setEntity(-1, entity);
-                modulesList.currentIndex = modulesList.rowCount - 1
+//                var entity = model.getEntity(-1);
+//                model.setEntity(-1, entity);
+//                modulesList.currentIndex = modulesList.rowCount - 1
             }
         }
         ListView {
@@ -58,31 +60,23 @@ GroupBox {
                 RowLayout {
                     id: wrapper
                     width: parent.width
-                    height: portLabel.height + 12
+                    height: deviceIDCombo.height + 12
                     Text {
                         id: moduleIDLabel
                         text: "<b>ID:</b>"
                         horizontalAlignment: Text.AlignRight
                     }
                     ComboBox {
-                        id: moduleIDCombo
-                        model: moduleModel
-                        textRole: "moduleName"
-                        currentIndex: moduleModel.getModuleRow(controllerModuleID);
+                        id: deviceIDCombo
+                        model: deviceModel
+                        textRole: "deviceName"
+                        currentIndex: deviceModel.getDeviceRow(deviceID);
                         Layout.minimumWidth: comboMetrics.width
                         Layout.fillWidth: true
                         onActivated: {
-                            controllerModuleID = moduleModel.data(moduleIDCombo.currentIndex, "controllerModuleID");
+                            deviceID = deviceModel.data(deviceIDCombo.currentIndex, "deviceID");
                         }
                      }
-
-//                    TextField {
-//                        id: moduleIDText
-//                        text: controllerModuleID ? controllerModuleID : ""
-//                        onTextChanged: {
-//                            controllerModuleID = moduleIDText.text
-//                        }
-//                    }
                     Text {
                         id: portLabel
                         text: "<b>Port:</b>"

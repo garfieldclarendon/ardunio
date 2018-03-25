@@ -269,6 +269,7 @@ ApplicationWindow {
         panel = component.createObject(controllerStackView, {"controllerEntity": entity});
         panel.saveClicked.connect(controllerSaveClicked);
         panel.cancelClicked.connect(controllerCancelClicked);
+        panel.itemDoubleClicked.connect(controllerModuleDoubleClicked);
         panel.width = controllerStackView.width - 10;
         panel.height = controllerStackView.height - 10;
         controllerStackView.push(panel);
@@ -362,6 +363,16 @@ ApplicationWindow {
         {
             model.setEntity(controllerStackView.currentItem.currentIndex, entity);
         }
+    }
+
+    function controllerModuleDoubleClicked(moduleID)
+    {
+        console.debug("controllerModuleDoubleClicked!");
+        var component = Qt.createComponent("ModuleDevicesPage.qml");
+        var panel = component.createObject(deviceStackView, { "moduleID": moduleID, "height": deviceStackView.height - 10, "width": deviceStackView.width - 10 });
+//        panel.closeButtonClicked.connect(detailCancelClicked);
+        controllerStackView.push(panel);
+        console.debug("controllerModuleDoubleClicked! DONE");
     }
 
     function controllerCancelClicked()

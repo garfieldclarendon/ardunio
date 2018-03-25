@@ -186,11 +186,15 @@ void APIController::handleGetControllerModuleList(const APIRequest &request, API
     QUrlQuery urlQuery(request.getUrl());
     int controllerID = urlQuery.queryItemValue("controllerID").toInt();
     int controllerModuleID = urlQuery.queryItemValue("controllerModuleID").toInt();
+    int moduleClass = urlQuery.queryItemValue("moduleClass").toInt();
+
     QString sql = QString("SELECT id as controllerModuleID, controllerID, moduleName, moduleClass, address, disable FROM controllerModule");
     if(controllerID > 0)
         sql += QString(" WHERE controllerID = %1").arg(controllerID);
     else if(controllerModuleID > 0)
         sql += QString(" WHERE id = %1").arg(controllerModuleID);
+    else if(moduleClass > 0)
+        sql += QString(" WHERE moduleClass = %1").arg(moduleClass);
     if(controllerID > 0)
         sql += QString(" ORDER BY address");
     else

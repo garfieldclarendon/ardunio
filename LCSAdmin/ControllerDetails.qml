@@ -10,6 +10,7 @@ Rectangle {
 
     signal saveClicked();
     signal cancelClicked();
+    signal itemDoubleClicked(int moduleID)
 
     implicitHeight: saveButton.height * 7
     width: 400
@@ -276,6 +277,7 @@ Rectangle {
             id: moduleView
             clip: true
             model: moduleModel
+            cacheBuffer: 0
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -284,6 +286,18 @@ Rectangle {
                 border.width: 1
                 width: parent.width
                 height: moduleNameEdit.height + 10
+                MouseArea {
+                          anchors.fill: parent
+                          onClicked: {
+                              moduleView.currentIndex = index;
+                          }
+
+                          onDoubleClicked: {
+                              console.debug("ControllerDetails module double clicked!");
+                              moduleView.currentIndex = index;
+                              itemDoubleClicked(controllerModuleID);
+                      }
+                }
 
                 GridLayout {
                     anchors.fill: parent
@@ -358,8 +372,8 @@ Rectangle {
                             ui.printModuleLabel(controllerModuleID);
                         }
                     }
-                }
-            }
+                } //GridLayout
+            } // Rectangle
         } //ListView
     }
 }

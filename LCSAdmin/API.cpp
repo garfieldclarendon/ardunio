@@ -111,6 +111,18 @@ QString API::getControllerModuleListByModuleID(int controllerModuleID)
     return json;
 }
 
+QString API::getControllerModuleListByClass(ModuleClassEnum moduleClass)
+{
+    QString json;
+    QString s("controller_module_list");
+    s.append(QString("?moduleClass=%1").arg(moduleClass));
+
+    QUrl url(buildUrl(s));
+    json = sendToServer(url, QString(), NetActionGet);
+
+    return json;
+}
+
 QString API::getDeviceList(int controllerID, int moduleID, DeviceClassEnum deviceType, int deviceID)
 {
     QString json;

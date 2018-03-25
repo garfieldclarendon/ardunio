@@ -4,7 +4,7 @@
 #include "API.h"
 
 ControllerModuleModel::ControllerModuleModel(QObject *parent)
-    : EntityModel("controllerModule", parent), m_controllerID(0), m_controllerModuleID(0)
+    : EntityModel("controllerModule", parent), m_controllerID(0), m_controllerModuleID(0), m_class(ModuleUnknown)
 {
     connect(API::instance(), SIGNAL(apiReady()), this, SLOT(apiReady()));
 }
@@ -61,6 +61,25 @@ void ControllerModuleModel::setControllerModuleID(int value)
     }
 }
 
+void ControllerModuleModel::setModuleClass(ModuleClassEnum &value)
+{
+    if(m_class != value)
+    {
+        m_class = value;
+        emit moduleClassChanged();
+        QJsonDocument jsonDoc;
+        if(API::instance()->getApiReady())
+        {
+            QString json = API::instance()->getControllerModuleListByClass(m_class);
+            jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+            beginResetModel();
+            m_jsonModel->setJson(jsonDoc, false);
+            endResetModel();
+            emit rowCountChanged();
+        }
+    }
+}
+
 void ControllerModuleModel::loadData()
 {
     if(m_jsonModel && API::instance()->getApiReady())
@@ -72,6 +91,20 @@ void ControllerModuleModel::loadData()
         m_jsonModel->setJson(jsonDoc, false);
         endResetModel();
     }
+}
+
+int ControllerModuleModel::getModuleRow(int moduleID)
+{
+    int row = -1;
+    for(int x = 0; x < getRowCount(); x++)
+    {
+        if(data(x, "controllerModuleID").toInt() == moduleID)
+        {
+            row = x;
+            break;
+        }
+    }
+    return row;
 }
 
 int ControllerModuleModel::columnCount(const QModelIndex &parent) const

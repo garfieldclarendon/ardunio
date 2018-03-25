@@ -178,6 +178,7 @@ Rectangle {
         DeviceModules {
             id: deviceModules
             deviceID: deviceEntity.data.deviceID
+            deviceClass: deviceEntity.data.deviceClass
             Layout.columnSpan: 3
             Layout.fillHeight: true
             Layout.fillWidth: true
