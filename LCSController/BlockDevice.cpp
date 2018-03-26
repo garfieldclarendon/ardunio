@@ -16,7 +16,7 @@ void BlockDevice::process(ModuleData &data)
 {
 	byte value;
 	byte pin;
-  static long statusTimeout = 0;
+	static long statusTimeout = 0;
   
 	if (getPort() < 8)
 	{
@@ -32,37 +32,42 @@ void BlockDevice::process(ModuleData &data)
 	long t = millis();
 	if (value == m_last)
 	{
-    if(m_last != m_current)
-    {
-      if((t - m_currentTimeout) > TIMEOUT_INTERVAL)
-      {
-        m_current = value;
-        m_currentTimeout = t;
+		if(m_last != m_current)
+		{
+			if((t - m_currentTimeout) > TIMEOUT_INTERVAL)
+			{
+				m_current = value;
+				m_currentTimeout = t;
   
-        BlockState newState;
-        if (bitRead(value, pin) == LOW)
-          newState = BlockOccupied;
-        else
-          newState = BlockClear;
+				BlockState newState;
+				if (bitRead(value, pin) == LOW)
+					newState = BlockOccupied;
+				else
+					newState = BlockClear;
 
-    		if (m_currentState != newState)
-    		{
-          if(m_currentState == BlockOccupied  && (t - statusTimeout) > 1250)
-    		  {
-    			  m_currentState = newState;
-            sendStatusMessage();
-            statusTimeout = t;
-    	  	}
-          else if(m_currentState == BlockClear)
-          {
-            m_currentState = newState;
-    		    sendStatusMessage();
-            statusTimeout = t;
-          }
-    		}
-      }
-	  }
-	} //IF(M_LST != M_CURRENT)
+				if (m_currentState != newState)
+				{
+					if(m_currentState == BlockOccupied && (t - statusTimeout) > 1250)
+					{
+						m_currentState = newState;
+						sendStatusMessage();
+						statusTimeout = t;
+					}
+					else if(m_currentState == BlockClear)
+					{
+						m_currentState = newState;
+						sendStatusMessage();
+						statusTimeout = t;
+					}
+				}
+			}
+		}
+		else
+		{
+			m_currentTimeout = t;
+			statusTimeout = t;
+		}
+	}
 	m_last = value;
 }
 
