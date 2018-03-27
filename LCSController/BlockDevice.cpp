@@ -34,7 +34,7 @@ void BlockDevice::process(ModuleData &data)
 	{
 		if(m_last != m_current)
 		{
-			if((t - m_currentTimeout) > TIMEOUT_INTERVAL)
+			if((t - m_currentTimeout) > TIMEOUT_INTERVAL + 100)
 			{
 				m_current = value;
 				m_currentTimeout = t;
@@ -47,13 +47,13 @@ void BlockDevice::process(ModuleData &data)
 
 				if (m_currentState != newState)
 				{
-					if(m_currentState == BlockOccupied && (t - statusTimeout) > 1250)
+					if(m_currentState == BlockOccupied /* && (t - statusTimeout) > 1250 */ )
 					{
 						m_currentState = newState;
 						sendStatusMessage();
 						statusTimeout = t;
 					}
-					else if(m_currentState == BlockClear)
+					else
 					{
 						m_currentState = newState;
 						sendStatusMessage();
@@ -62,12 +62,11 @@ void BlockDevice::process(ModuleData &data)
 				}
 			}
 		}
-		else
-		{
-			m_currentTimeout = t;
-			statusTimeout = t;
-		}
 	}
+  else if(m_currentState == BlockOccupied)
+  {
+    m_currentTimeout = t;
+  }
 	m_last = value;
 }
 
