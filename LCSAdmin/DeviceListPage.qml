@@ -73,10 +73,12 @@ Item {
                 addClicked(deviceList.model.data(deviceList.currentIndex, "deviceClass"));
             }
             onDeleteButtonClicked: {
+                crudButtons.enableUpdate = true;
                 deleteClicked(deviceList.currentIndex);
             }
             onUpdateButtonClicked:  {
                 updateClicked(deviceList.currentIndex);
+                crudButtons.enableUpdate = false;
             }
         }
 

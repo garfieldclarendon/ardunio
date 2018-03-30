@@ -104,7 +104,7 @@ GroupBox {
                             sourceSize.height: 18
                         }
                         onClicked: {
-                            model.deleteRow(index);
+                            modulesList.model.deleteRow(index);
                         }
                     }
                 }

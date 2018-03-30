@@ -78,6 +78,13 @@ ApplicationWindow {
                             onAddClicked: {
                                 newDeviceDlg.visible = true;
                             }
+                            onDeleteClicked: {
+                                devices.model.deleteRow(devices.currentIndex);
+
+                            }
+                            onUpdateClicked: {
+                                devices.model.save();
+                            }
 
                             NewDeviceDlg {
                                 id: newDeviceDlg
