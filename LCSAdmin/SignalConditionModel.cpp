@@ -15,9 +15,10 @@ QHash<int, QByteArray> SignalConditionModel::roleNames(void) const
 
     roleNames[Qt::UserRole + 0] = QByteArray("signalConditionID");
     roleNames[Qt::UserRole + 1] = QByteArray("signalAspectID");
-    roleNames[Qt::UserRole + 2] = QByteArray("deviceID");
-    roleNames[Qt::UserRole + 3] = QByteArray("conditionOperand");
-    roleNames[Qt::UserRole + 4] = QByteArray("deviceState");
+    roleNames[Qt::UserRole + 2] = QByteArray("connectionType");
+    roleNames[Qt::UserRole + 3] = QByteArray("deviceID");
+    roleNames[Qt::UserRole + 4] = QByteArray("conditionOperand");
+    roleNames[Qt::UserRole + 5] = QByteArray("deviceState");
 
     return roleNames;
 }
@@ -87,6 +88,8 @@ void SignalConditionModel::createEmptyObject(QJsonObject &obj)
         else if(key == "deviceID")
             v = -1;
         else if(key == "deviceState")
+            v = 0;
+        else if(key == "connectionType")
             v = 0;
         obj[key] = QJsonValue::fromVariant(v);
     }

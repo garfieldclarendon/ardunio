@@ -16,7 +16,6 @@ void BlockDevice::process(ModuleData &data)
 {
 	byte value;
 	byte pin;
-	static long statusTimeout = 0;
   
 	if (getPort() < 8)
 	{
@@ -28,7 +27,7 @@ void BlockDevice::process(ModuleData &data)
 		value = data.getByteB();
 		pin = getPort() - 8;
 	}
-
+	value = bitRead(value, pin);
 	long t = millis();
 	if (value == m_last)
 	{
@@ -40,33 +39,23 @@ void BlockDevice::process(ModuleData &data)
 				m_currentTimeout = t;
   
 				BlockState newState;
-				if (bitRead(value, pin) == LOW)
+				if (value == LOW)
 					newState = BlockOccupied;
 				else
 					newState = BlockClear;
 
 				if (m_currentState != newState)
 				{
-					if(m_currentState == BlockOccupied /* && (t - statusTimeout) > 1250 */ )
-					{
-						m_currentState = newState;
-						sendStatusMessage();
-						statusTimeout = t;
-					}
-					else
-					{
-						m_currentState = newState;
-						sendStatusMessage();
-						statusTimeout = t;
-					}
+					m_currentState = newState;
+					sendStatusMessage();
 				}
 			}
 		}
 	}
-  else if(m_currentState == BlockOccupied)
-  {
-    m_currentTimeout = t;
-  }
+	else if(m_currentState == BlockOccupied)
+	{
+		m_currentTimeout = t;
+	}
 	m_last = value;
 }
 

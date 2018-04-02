@@ -73,8 +73,9 @@
  * @apiParam {Number} aspectID The aspect's ID.
  * @apiDescription Returns a list conditions that must be met for the aspect to be valid (selected).  All conditions in this list are evaluated by
  * comparing the device's current state specified by deviceID to the entry's deviceState using the conditionOperand (equals or not equals).  If the comparison is successful
- * the Signal Condition is considered to be true/valid.  All conditions in this list must evaluate to true for the aspect to be selected.
+ * the Signal Condition is considered to be true/valid.  All conditions in this list must evaluate to true based on the connection type for the aspect to be selected.
  * @apiSuccess {Number=0,1} conditionOperand Operand used for comparison.  0 = Equals, 1 = Not Equals.
+ * @apiSuccess {Number=0,1} connectionType Operand used for connecting two comparisons.  0 = AND, 1 = OR.
  * @apiSuccess {Number} deviceID The ID of the device to be monitored.
  * @apiSuccess {Number} deviceState The state the monitored device is compared to.  When evaluated, this value is compared to the device's current state.
  * @apiSuccess {Number} signalAspectID signalAspect's ID.
@@ -85,36 +86,42 @@
  *      HTTP/1.1 200 OK
  *      [{
  *              "conditionOperand": "0",
+ *              "connectionType": "0",
  *              "deviceID": "17",
  *              "deviceState": "3",
  *              "signalAspectID": "6",
  *              "signalConditionID": "19"
  *          }, {
  *              "conditionOperand": "0",
+ *              "connectionType": "0",
  *              "deviceID": "18",
  *              "deviceState": "3",
  *              "signalAspectID": "6",
  *              "signalConditionID": "20"
  *          }, {
  *              "conditionOperand": "0",
+ *              "connectionType": "0",
  *              "deviceID": "11",
  *              "deviceState": "1",
  *              "signalAspectID": "6",
  *              "signalConditionID": "21"
  *          }, {
  *              "conditionOperand": "0",
+ *              "connectionType": "0",
  *              "deviceID": "5",
  *              "deviceState": "3",
  *              "signalAspectID": "6",
  *              "signalConditionID": "22"
  *          }, {
  *              "conditionOperand": "0",
+ *              "connectionType": "0",
  *              "deviceID": "6",
  *              "deviceState": "3",
  *              "signalAspectID": "6",
  *              "signalConditionID": "23"
  *          }, {
  *              "conditionOperand": "0",
+ *              "connectionType": "0",
  *              "deviceID": "8",
  *              "deviceState": "1",
  *              "signalAspectID": "6",

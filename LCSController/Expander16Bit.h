@@ -23,5 +23,6 @@ private:
 	byte expanderRead(const byte reg);
 	int I2C_ClearBus(void);
 	byte m_address;
+	byte m_retryCount;
 };
 

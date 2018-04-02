@@ -59,7 +59,7 @@ bool NetworkManager::processWiFi(void)
 	bool wiFiReconnected = false;
 	wl_status_t status = WiFi.status();
 	//	DEBUG_PRINT("[WIFI] process::status %d\n", status);
-	if (m_wifiStatus == WiFiDisconnected && (status == WL_DISCONNECTED || status == WL_IDLE_STATUS || status == WL_CONNECT_FAILED))
+	if (m_wifiStatus == WiFiDisconnected && (status == WL_DISCONNECTED || status == WL_IDLE_STATUS || status == WL_CONNECT_FAILED || WL_CONNECTION_LOST))
 	{
 		WiFi.begin(ssid, password);
 		status = WiFi.status();

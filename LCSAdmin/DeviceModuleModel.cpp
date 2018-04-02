@@ -23,6 +23,7 @@ QHash<int, QByteArray> DeviceModuleModel::roleNames(void) const
     roleNames[Qt::UserRole + 6] = QByteArray("labelName");
     roleNames[Qt::UserRole + 7] = QByteArray("deivceClass");
     roleNames[Qt::UserRole + 8] = QByteArray("port");
+    roleNames[Qt::UserRole + 9] = QByteArray("address");
 
     return roleNames;
 }

@@ -19,6 +19,7 @@ typedef struct DeviceStateStruct DeviceStateStruct;
 
 struct SignalConditionStruct
 {
+	ConditionConnectionEnum connection;
 	int deviceID;
 	ConditionEnum operand;
 	byte deviceState;
@@ -37,7 +38,7 @@ typedef struct SignalAspectStruct SignalAspectStruct;
 
 class SignalDevice : public Device
 {
-	const byte CONFIG_VERSION = 4;
+	const byte CONFIG_VERSION = 5;
 public:
 	SignalDevice();
 	virtual ~SignalDevice();
@@ -71,6 +72,7 @@ private:
 	void downloadAspects(void);
 	void downloadAspect(int aspectID, byte index);
 	void handleLockoutMessage(const UDPMessage &message);
+	bool isNextConditionOR(SignalAspectStruct *aspect, byte nextIndex);
 
 	PinStateEnum m_redMode;
 	PinStateEnum m_greenMode;

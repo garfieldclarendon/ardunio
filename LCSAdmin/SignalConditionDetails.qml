@@ -34,8 +34,12 @@ Rectangle {
         id: operandModel
         ListElement { text: "Equals"; mode: 0 }
         ListElement { text: "Not Equals"; mode: 1 }
-        ListElement { text: "Greater Than"; mode: 2 }
-        ListElement { text: "Less Than"; mode: 3 }
+    }
+
+    ListModel {
+        id: connectionTypeModel
+        ListElement { text: "AND"; mode: 0 }
+        ListElement { text: "OR"; mode: 1 }
     }
 
     ListModel {
@@ -129,11 +133,22 @@ Rectangle {
                 GridLayout {
                     anchors.fill: parent
                     anchors.margins: 5
-                    columns: 7
+                    columns: 8
                     Item {
                         Layout.fillWidth: true
                         height: 10
                     }
+                    ComboBox {
+                        id: connectionTypeCombo
+                        model: connectionTypeModel
+                        textRole: "text"
+                        currentIndex: index > 0 ? connectionType : -1
+                        Layout.minimumWidth: comboMetrics.width
+                        enabled: index > 0 ? true : false
+                        onActivated: {
+                            connectionType = connectionTypeCombo.currentIndex;
+                        }
+                     }
 
                     Label {
                         text: "<b>Device: </b>"

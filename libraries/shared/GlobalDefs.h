@@ -4,7 +4,7 @@
 
 const unsigned char MajorVersion = 3;
 const unsigned char MinorVersion = 0;
-const unsigned char BuildVersion = 20;
+const unsigned char BuildVersion = 21;
 
 /** When PROJECT_DEBUG is defined, DEBUG_PRINT will print output to the serial port.  Otherwise, DEBUG_PRINT does nothing (for release builds)  */
 #ifdef PROJECT_DEBUG
@@ -13,6 +13,8 @@ const unsigned char BuildVersion = 20;
 #define DEBUG_PRINT(...) // nothing to do here
 #endif
 
+/** Maximum I2C BUS RETRY COUNT */
+#define MAX_I2C_RETRY 3
 /** Total turnouts per module */
 #define MAX_TURNOUTS 2
 /** Total modules per controller */
@@ -41,6 +43,12 @@ enum ControllerStatusEnum
     ControllerStatusConected ///< No longer used.  Kept for backward compatability.
 };
 
+	/// This enum describes the connection between two condition compares
+enum ConditionConnectionEnum
+{
+	ConnectionAND,
+	ConnectionOR
+};
     /// This enum describes boolean conditional tests used by the Signal device
 enum ConditionEnum
 {

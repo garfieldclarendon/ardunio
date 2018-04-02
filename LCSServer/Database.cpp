@@ -273,7 +273,7 @@ void Database::getSignalConfig(int deviceID, QJsonObject &device)
 QString Database::getSignalAspectConfig(int aspectID)
 {
     QJsonObject aspect = fetchItem(QString("SELECT id as aspectID, redMode, greenMode, yellowMode FROM signalAspect WHERE aspectID = %1").arg(aspectID));
-    QJsonArray conditions = fetchItems(QString("select deviceID, conditionOperand, deviceState FROM signalCondition WHERE signalAspectID = %1").arg(aspectID));
+    QJsonArray conditions = fetchItems(QString("select connectionType, deviceID, conditionOperand, deviceState FROM signalCondition WHERE signalAspectID = %1").arg(aspectID));
     aspect["conditions"] = conditions;
     QJsonDocument doc;
     doc.setObject(aspect);
@@ -859,6 +859,7 @@ bool Database::createSignalConditionTable()
     QSqlQuery query(db);
     ret = query.exec("CREATE TABLE IF NOT EXISTS signalCondition "
               "(id INTEGER primary key, "
+              "connectionType INTEGER, "
               "signalAspectID INTEGER, "
               "deviceID INTEGER, "
               "conditionOperand INTEGER, "

@@ -4,7 +4,6 @@
 #include "SignalDevice.h"
 #include "NetworkManager.h"
 
-
 SignalDevice::SignalDevice()
 	: m_downloadConfig(false), m_lockout(false), m_updateValues(true), m_redMode(PinOn), 
 	m_greenMode(PinOff), m_yellowMode(PinOff), m_currentBlinkTimeout(0), m_blinkingTimeout(750), 
@@ -117,26 +116,33 @@ void SignalDevice::updateValues(void)
 				DEBUG_PRINT("SignalDevice::updateValues(%d): deviceID %d status %d == %d\n", getID(), aspect.conditions[index].deviceID, state, aspect.conditions[index].deviceState);
 				if (state > 0)
 				{
-					if (aspect.conditions[index].operand == ConditionEquals)
+					while (valid)
 					{
-						if (state != aspect.conditions[index].deviceState)
+						if (aspect.conditions[index].operand == ConditionEquals)
+						{
+							if (state != aspect.conditions[index].deviceState)
+							{
+								valid = false;
+							}
+						}
+						else if (aspect.conditions[index].operand == ConditionNotEquals)
+						{
+							if (state == aspect.conditions[index].deviceState)
+							{
+								valid = false;
+							}
+						}
+						else
 						{
 							valid = false;
+							DEBUG_PRINT("INVALID ConditionOperand! %d\n", aspect.conditions[index].operand);
+							setInvalidAspect();
+							done = true;
 						}
-					}
-					else if (aspect.conditions[index].operand == ConditionNotEquals)
-					{
-						if (state == aspect.conditions[index].deviceState)
-						{
-							valid = false;
-						}
-					}
-					else
-					{
-						valid = false;
-						DEBUG_PRINT("INVALID ConditionOperand! %d\n", aspect.conditions[index].operand);
-						setInvalidAspect();
-						done = true;
+						if (valid)
+							break;
+						else
+							valid = isNextConditionOR(&aspect, index);
 					}
 				}
 				else
@@ -170,6 +176,17 @@ void SignalDevice::updateValues(void)
 	}
 	m_updateValues = false;
 	DEBUG_PRINT("SignalDevice::updateValues(%d): END\n", getID());
+}
+
+bool SignalDevice::isNextConditionOR(SignalAspectStruct *aspect, byte nextIndex)
+{
+	bool ret = false;
+
+	if(nextIndex < aspect->conditionCount)
+	{
+		ret = aspect->conditions[nextIndex].connection == ConnectionOR;
+	}
+	return ret;
 }
 
 void SignalDevice::setup(int deviceID, byte port)
@@ -425,6 +442,7 @@ void SignalDevice::downloadAspect(int aspectID, byte index)
 	for (byte x = 0; x < conditions.size(); x++)
 	{
 		DEBUG_PRINT("parseConfig  CONDITION %d.\n", x);
+		aspect.conditions[x].connection = (ConditionConnectionEnum)(int)conditions[x]["connection"];
 		aspect.conditions[x].deviceID = conditions[x]["deviceID"];
 		aspect.conditions[x].operand = (ConditionEnum)(int)conditions[x]["conditionOperand"];
 		aspect.conditions[x].deviceState = conditions[x]["deviceState"];

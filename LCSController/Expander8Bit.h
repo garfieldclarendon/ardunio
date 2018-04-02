@@ -18,5 +18,6 @@ private:
 	void expanderWrite(const byte reg, const byte data);
 	byte expanderRead(const byte reg);
 	byte m_address;
+	byte m_retryCount;
 };
 

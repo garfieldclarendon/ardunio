@@ -47,7 +47,7 @@ void APISignal::handleGetSignalConditionList(const APIRequest &request, APIRespo
     qDebug(QString("handleGetSignalConditionList.").toLatin1());
     Database db;
 
-    QString sql = QString("SELECT id as signalConditionID, signalAspectID, deviceID, conditionOperand, deviceState FROM signalCondition");
+    QString sql = QString("SELECT id as signalConditionID, signalAspectID, connectionType, deviceID, conditionOperand, deviceState FROM signalCondition");
     sql += QString(" WHERE signalAspectID = %1").arg(aspectID);
 
     QJsonArray jsonArray = db.fetchItems(sql);

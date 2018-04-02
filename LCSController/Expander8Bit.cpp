@@ -20,12 +20,13 @@
 #define BASE_ADDRESS 0x20  // MCP23008 is on I2C port 0x20
 
 Expander8Bit::Expander8Bit()
-	: m_address(0)
+	: m_address(0), m_retryCount(0)
 {
 }
 
 void Expander8Bit::expanderBegin(byte ioDir)
 {
+	m_retryCount = 0;
 	expanderWrite(IODIR, ioDir);
 }
 
@@ -42,31 +43,46 @@ byte Expander8Bit::read(void)
 void Expander8Bit::expanderWrite(const byte reg, const byte data)
 {
 	//	DEBUG_PRINT("expanderWrite: Address: %d Register: %d  Data: %d\n", moduleAddress, reg, data);
-	Wire.beginTransmission(BASE_ADDRESS | getAddress());
-	Wire.write(reg);
-	Wire.write(data);
-	byte r = Wire.endTransmission(true);
-	if (r != 0)
+	if (m_retryCount < MAX_I2C_RETRY)
 	{
-		DEBUG_PRINT("expanderWrite8: Address: %d Register: %d  Data: %d FAILED! ERROR: %d\n", getAddress(), reg, data, r);
-		if (I2C_ClearBus() == 0)
-			Wire.begin(4, 5);
+		Wire.beginTransmission(BASE_ADDRESS | getAddress());
+		Wire.write(reg);
+		Wire.write(data);
+		byte r = Wire.endTransmission(true);
+		if (r != 0)
+		{
+			DEBUG_PRINT("expanderWrite8: Address: %d Register: %d  Data: %d FAILED! ERROR: %d  retry count %d\n", getAddress(), reg, data, r, m_retryCount);
+			m_retryCount++;
+			if (I2C_ClearBus() == 0)
+				Wire.begin(4, 5);
+			else
+				m_retryCount = 99;
+		}
 		else
-			ESP.restart();
+		{
+			m_retryCount = 0;
+		}
 	}
 }
 
 byte Expander8Bit::expanderRead(const byte reg)
 {
 	byte ret(0);
-
-	Wire.beginTransmission(BASE_ADDRESS | getAddress());
-	Wire.write(reg);
-	byte r = Wire.endTransmission(true);
-	if (r == 0)
+	if (m_retryCount < MAX_I2C_RETRY)
 	{
-		Wire.requestFrom((byte)(BASE_ADDRESS | getAddress()), (byte)1);
-		ret = Wire.read();
+		Wire.beginTransmission(BASE_ADDRESS | getAddress());
+		Wire.write(reg);
+		byte r = Wire.endTransmission(true);
+		if (r == 0)
+		{
+			Wire.requestFrom((byte)(BASE_ADDRESS | getAddress()), (byte)1);
+			ret = Wire.read();
+			m_retryCount = 0;
+		}
+		else
+		{
+			m_retryCount++;
+		}
 	}
 	//	DEBUG_PRINT("expanderRead: Address: %d Register: %d  Data: %d\n", moduleAddress, reg, ret);
 

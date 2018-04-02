@@ -31,17 +31,18 @@
 #define BASE_ADDRESS 0x20  // MCP23017 is on I2C port 0x20
 
 Expander16Bit::Expander16Bit(void)
-	: m_address(0)
+	: m_address(0), m_retryCount(0)
 {
 }
 
 Expander16Bit::Expander16Bit(byte address)
-	: m_address(address)
+	: m_address(address), m_retryCount(0)
 {
 }
 
 void Expander16Bit::expanderBegin(byte ioDirA, byte ioDirB)
 {
+	m_retryCount = 0;
 	// set port A direction
 	expanderWrite(IODIRA, ioDirA);
 	// set port B direction
@@ -71,53 +72,74 @@ void Expander16Bit::writeB(const byte data)
 void Expander16Bit::expanderWrite(const byte reg, const byte data)
 {
 	//	DEBUG_PRINT("expanderWrite: Address: %d Register: %d  Data: %d\n", moduleAddress, reg, data);
-	Wire.beginTransmission(BASE_ADDRESS | getAddress());
-	Wire.write(reg);
-	Wire.write(data);
-	byte r = Wire.endTransmission(true);
-	if (r != 0)
+	if (m_retryCount < MAX_I2C_RETRY)
 	{
-		DEBUG_PRINT("expanderWrite16: Address: %d Register: %d  Data: %d FAILED! ERROR: %d\n", getAddress(), reg, data, r);
-		if (I2C_ClearBus() == 0)
-			Wire.begin(4, 5);
+		Wire.beginTransmission(BASE_ADDRESS | getAddress());
+		Wire.write(reg);
+		Wire.write(data);
+		byte r = Wire.endTransmission(true);
+		if (r != 0)
+		{
+			DEBUG_PRINT("expanderWrite16: Address: %d Register: %d  Data: %d FAILED! ERROR: %d\n", getAddress(), reg, data, r);
+			m_retryCount++;
+			if (I2C_ClearBus() == 0)
+				Wire.begin(4, 5);
+			else
+				m_retryCount = 99;
+		}
 		else
-			ESP.restart();
+		{
+			m_retryCount = 0;
+		}
 	}
 }
 
 void Expander16Bit::expanderWriteBoth(const byte reg, const byte data)
 {
-	Wire.beginTransmission(BASE_ADDRESS | getAddress());
-	Wire.write(reg);
-	Wire.write(data);  // port A
-	Wire.write(data);  // port B
-	byte r = Wire.endTransmission(true);
-	if (r != 0)
+	if (m_retryCount < MAX_I2C_RETRY)
 	{
-		DEBUG_PRINT("expanderWrite16: Address: %d Register: %d  Data: %d FAILED! ERROR: %d\n", getAddress(), reg, data, r);
-		if (I2C_ClearBus() == 0)
-			Wire.begin(4, 5);
+		Wire.beginTransmission(BASE_ADDRESS | getAddress());
+		Wire.write(reg);
+		Wire.write(data);  // port A
+		Wire.write(data);  // port B
+		byte r = Wire.endTransmission(true);
+		if (r != 0)
+		{
+			DEBUG_PRINT("expanderWrite16: Address: %d Register: %d  Data: %d FAILED! ERROR: %d\n", getAddress(), reg, data, r);
+			m_retryCount++;
+			if (I2C_ClearBus() == 0)
+				Wire.begin(4, 5);
+			else
+				m_retryCount = 99;
+		}
 		else
-			ESP.restart();
+		{
+			m_retryCount = 0;
+		}
 	}
 }
 byte Expander16Bit::expanderRead(const byte reg)
 {
 	byte ret(0);
 
-	Wire.beginTransmission(BASE_ADDRESS | getAddress());
-	Wire.write(reg);
-	byte r = Wire.endTransmission(true);
-	if (r == 0)
+	if (m_retryCount < MAX_I2C_RETRY)
 	{
-		Wire.requestFrom((byte)(BASE_ADDRESS | getAddress()), (byte)1);
-		ret = Wire.read();
-	}
-	else
-	{
-//		DEBUG_PRINT("expanderRead: Address: %d Register: %d  FAILED! ERROR: %d\n", getAddress(), reg, r);
-	}
+		Wire.beginTransmission(BASE_ADDRESS | getAddress());
+		Wire.write(reg);
+		byte r = Wire.endTransmission(true);
+		if (r == 0)
+		{
+			Wire.requestFrom((byte)(BASE_ADDRESS | getAddress()), (byte)1);
+			ret = Wire.read();
+			m_retryCount = 0;
+		}
+		else
+		{
+			m_retryCount++;
+			DEBUG_PRINT("expanderRead: Address: %d Register: %d  FAILED! ERROR: %d\n", getAddress(), reg, r);
+		}
 	//	DEBUG_PRINT("expanderRead: Address: %d Register: %d  Data: %d\n", moduleAddress, reg, ret);
+	}
 
 	return ret;
 }
