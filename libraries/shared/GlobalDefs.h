@@ -4,7 +4,7 @@
 
 const unsigned char MajorVersion = 3;
 const unsigned char MinorVersion = 0;
-const unsigned char BuildVersion = 21;
+const unsigned char BuildVersion = 24;
 
 /** When PROJECT_DEBUG is defined, DEBUG_PRINT will print output to the serial port.  Otherwise, DEBUG_PRINT does nothing (for release builds)  */
 #ifdef PROJECT_DEBUG

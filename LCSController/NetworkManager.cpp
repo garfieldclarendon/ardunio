@@ -200,7 +200,7 @@ void NetworkManager::sendUdpMessage(const UDPMessage &message, bool addToQueue)
 
 	if (m_serverAddress != (uint32_t)0)
 	{
-		sendUdpMessage(message, m_serverAddress, true);
+		sendUdpMessage(message, m_serverAddress, false);
 	}
 
 	// Give other modules connected to this controller a chance to process the message too
@@ -293,10 +293,13 @@ String NetworkManager::getNotificationList(void)
 
 String NetworkManager::httpGet(const String &url)
 {
+  DEBUG_PRINT("[HTTP] GET 1...\n");
 	HTTPClient http;
+  DEBUG_PRINT("[HTTP] GET 1...\n");
 
 	m_udp.stop();
 	http.setReuse(false);
+  DEBUG_PRINT("[HTTP] GET 1...\n");
 	// Build the full url including the port number
 	String fullUrl("http://");
 	fullUrl += getServerAddress().toString();
@@ -469,7 +472,7 @@ void NetworkManager::addMessageToQueue(const UDPMessage &message, const IPAddres
 	{
 		if (current->message.getMessageID() == message.getMessageID() && current->message.getID() == message.getID() && current->address == address)
 		{
-			DEBUG_PRINT("addMessageToQueue: REPLACING %d with %d\n", message.getTransactionNumber(), message.getTransactionNumber());
+			DEBUG_PRINT("addMessageToQueue: REPLACING %d with %d\n", current->message.getTransactionNumber(), message.getTransactionNumber());
 			current->message = message;
 			current->count = 0;
 			return;
@@ -546,7 +549,7 @@ void NetworkManager::checkMessageQueue(void)
 	static unsigned long timeout = 0;
 
 	unsigned long t = millis();
-	if ((t - timeout) >= 1000)
+	if ((t - timeout) >= 2000)
 	{
 		timeout = t;
 		MessageQueueStruct *current = m_firstMessageQueue;
@@ -568,7 +571,7 @@ void NetworkManager::checkMessageQueue(void)
 						DEBUG_PRINT("GIVING UP ON MESSAGE RETRY: %d\n", current->message.getTransactionNumber());
 						UDPMessage message;
 						current->message = message;
-						current->address = (uint32_t)0;
+//						current->address = (uint32_t)0;
 						current->count = 0;
 					}
 				}

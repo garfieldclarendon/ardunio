@@ -10,6 +10,8 @@ SignalDevice::SignalDevice()
 	m_aspectCount(0), m_aspectDownload(NULL)
 {
 	memset(m_deviceStates, 0, sizeof(DeviceStateStruct) * MAX_SIGNAL_DEVICES);
+  m_aspectDownload = NULL;
+  m_aspectCount = 0;
 }
 
 
@@ -400,6 +402,7 @@ void SignalDevice::downloadConfig(void)
 	m_aspectDownload->next = NULL;
 
 	String json = NetManager.getDeviceConfig(getID());
+  DEBUG_PRINT("SignalDevice::downloadConfig SIZE %d!\n", json.length());
 	if (json.length() > 0)
 	{
 		parseConfig(json, true);
@@ -411,23 +414,27 @@ void SignalDevice::downloadConfig(void)
 
 void SignalDevice::downloadAspects(void)
 {
-	DEBUG_PRINT("SignalDevice::downloadAspects: TOTAL %d\n", m_aspectCount);
-	AspectDownloadStruct *download = m_aspectDownload;
-	byte x = 0;
-	while (download)
-	{
-		downloadAspect(download->aspectID, x++);
-		AspectDownloadStruct *toDelete = download;
-		download = download->next;
-		delete toDelete;
-	}
-	m_aspectDownload = NULL;
+  if(NetManager.getServerAddress() != (uint32_t)0)
+  {
+  	DEBUG_PRINT("SignalDevice::downloadAspects: TOTAL %d\n", m_aspectCount);
+  	AspectDownloadStruct *download = m_aspectDownload;
+  	byte x = 0;
+  	while (download)
+  	{
+  		downloadAspect(download->aspectID, x++);
+  		AspectDownloadStruct *toDelete = download;
+  		download = download->next;
+  		delete toDelete;
+  	}
+  	m_aspectDownload = NULL;
+  }
 }
 
 void SignalDevice::downloadAspect(int aspectID, byte index)
 {
 	String json = NetManager.getSignalAspect(aspectID);
 	DEBUG_PRINT("SignalDevice::downloadAspect: %d\n", aspectID);
+
 	StaticJsonBuffer<2048> jsonBuffer;
 	JsonObject &aspectObj = jsonBuffer.parseObject(json);
 
@@ -442,7 +449,7 @@ void SignalDevice::downloadAspect(int aspectID, byte index)
 	for (byte x = 0; x < conditions.size(); x++)
 	{
 		DEBUG_PRINT("parseConfig  CONDITION %d.\n", x);
-		aspect.conditions[x].connection = (ConditionConnectionEnum)(int)conditions[x]["connection"];
+		aspect.conditions[x].connection = (ConditionConnectionEnum)(int)conditions[x]["connectionType"];
 		aspect.conditions[x].deviceID = conditions[x]["deviceID"];
 		aspect.conditions[x].operand = (ConditionEnum)(int)conditions[x]["conditionOperand"];
 		aspect.conditions[x].deviceState = conditions[x]["deviceState"];

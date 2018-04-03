@@ -129,7 +129,7 @@ bool BlockDevice::parseConfig(String &jsonText, bool setVersion)
 
 void BlockDevice::sendStatusMessage(void)
 {
-	DEBUG_PRINT("BlockDevice::sendStatusMessage: %d\n", m_currentState);
+	DEBUG_PRINT("BlockDevice::sendStatusMessage: %d  deviceID %d\n", m_currentState, getID());
 
 	UDPMessage message;
 	message.setMessageID(BLK_STATUS);
