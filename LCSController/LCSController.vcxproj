@@ -127,7 +127,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties arduino.build.auto_discover_includes="0" custom_esp8266_generic_FlashSize="4M1M" arduino.upload.port="COM3" />
+      <UserProperties arduino.build.auto_discover_includes="0" custom_esp8266_generic_FlashSize="4M1M" arduino.upload.port="COM4" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

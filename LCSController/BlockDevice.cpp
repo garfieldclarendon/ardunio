@@ -12,7 +12,7 @@ BlockDevice::~BlockDevice()
 {
 }
 
-void BlockDevice::process(ModuleData &data)
+void BlockDevice::process(ModuleData &data, UDPMessage &outMessage, byte &messageIndex)
 {
 	byte value;
 	byte pin;
@@ -47,7 +47,9 @@ void BlockDevice::process(ModuleData &data)
 				if (m_currentState != newState)
 				{
 					m_currentState = newState;
-					sendStatusMessage();
+					outMessage.setDeviceID(messageIndex, getID());
+					outMessage.setDeviceStatus(messageIndex, m_currentState);
+					messageIndex++;
 				}
 			}
 		}
@@ -77,29 +79,6 @@ void BlockDevice::setup(int deviceID, byte port)
 
 void BlockDevice::processPin(byte pin, byte value)
 {
-	if (pin == getPort())
-	{
-		DEBUG_PRINT("BlockDevice::processPin  DeviceID %d  Pin %d  value %d\n", getID(), pin, value);
-		BlockState newState;
-		long t = millis();
-		if (value == m_last && m_last != m_current && (t - m_currentTimeout) > TIMEOUT_INTERVAL)
-//		if (value != m_current)
-		{
-			m_currentTimeout = t;
-			m_current = value;
-
-			if (value == PinOff)
-				newState = BlockOccupied;
-			else
-				newState = BlockClear;
-			if (m_currentState != newState)
-			{
-				m_currentState = newState;
-				sendStatusMessage();
-			}
-		}
-		m_last = value;
-	}
 }
 
 
@@ -138,7 +117,7 @@ void BlockDevice::sendStatusMessage(void)
 	NetManager.sendUdpMessage(message, true);
 }
 
-void BlockDevice::serverFound(void)
+void BlockDevice::serverFound(UDPMessage &outMessage, byte &messageIndex)
 {
 	if (m_downloadConfig)
 	{
@@ -151,10 +130,12 @@ void BlockDevice::serverFound(void)
 			setup(getID(), getPort());
 		}
 	}
-	sendStatusMessage();
+	outMessage.setDeviceID(messageIndex, getID());
+	outMessage.setDeviceStatus(messageIndex, m_currentState);
+	messageIndex++;
 }
 
-void BlockDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message)
+void BlockDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message, UDPMessage &, byte &)
 {
 	if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG)
 	{

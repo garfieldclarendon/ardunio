@@ -196,7 +196,7 @@ void MessageBroadcaster::processUdpBuffer(const QHostAddress &address)
                 }
 
                 emit newMessage(message);
-                QString str(QString("Message: %1, Controller: %2 Transaction: %3 byteValue1 %4 byteValue2 %5").arg(datagram.messageID).arg(datagram.id).arg(datagram.transactionNumber).arg(datagram.payload[0]).arg(datagram.payload[1]));
+                QString str(QString("Message: %1, Controller: %2 Transaction: %3 byteValue1 %4 byteValue2 %5").arg(datagram.messageID).arg(datagram.id).arg(datagram.transactionNumber).arg(datagram.payload.buffer[0]).arg(datagram.payload.buffer[1]));
                 qDebug(str.toLatin1());
                 emit newRawUDPMessage(str);
                 if(message.getMessageID() == SYS_CONTROLLER_ONLINE && !m_runAsClient)

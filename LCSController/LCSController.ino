@@ -153,13 +153,27 @@ void serverFound(void)
 		Module *module = modules[x];
 		if (module)
 		{
+			UDPMessage outMessage;
+			outMessage.setMessageID(DEVICE_STATUS);
+			byte count = 0;
 			for (byte index = 0; index < MAX_DEVICES; index++)
 			{
+				if (x == 8 && count > 0)
+				{
+					NetManager.sendUdpMessage(outMessage, true);
+					outMessage = UDPMessage();
+					outMessage.setMessageID(DEVICE_STATUS);
+					count = 0;
+				}
 				Device *device = module->getDevice(index);
 				if (device)
 				{
-					device->serverFound();
+					device->serverFound(outMessage, count);
 				}
+			}
+			if (count > 0)
+			{
+				NetManager.sendUdpMessage(outMessage, true);
 			}
 		}
 	}

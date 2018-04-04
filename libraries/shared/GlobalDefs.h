@@ -4,7 +4,7 @@
 
 const unsigned char MajorVersion = 3;
 const unsigned char MinorVersion = 0;
-const unsigned char BuildVersion = 24;
+const unsigned char BuildVersion = 25;
 
 /** When PROJECT_DEBUG is defined, DEBUG_PRINT will print output to the serial port.  Otherwise, DEBUG_PRINT does nothing (for release builds)  */
 #ifdef PROJECT_DEBUG
@@ -160,6 +160,11 @@ const unsigned int LocalServerPort = 45455;
 * Block Device status message
 */
 #define BLK_STATUS 2
+/**
+* \ingroup UDPMessageID
+* Generic Device status message.  The message payload contains an array of up to 8 device's and their current status.
+*/
+#define DEVICE_STATUS 3
 
 /**
 * \ingroup UDPMessageID

@@ -11,7 +11,7 @@ PanelInputDevice::~PanelInputDevice()
 {
 }
 
-void PanelInputDevice::process(ModuleData &moduleData)
+void PanelInputDevice::process(ModuleData &moduleData, UDPMessage &, byte &)
 {
 }
 
@@ -28,7 +28,7 @@ void PanelInputDevice::setup(int deviceID, byte port)
 		m_downloadConfig = (parseConfig(json, false) == false);
 }
 
-void PanelInputDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message)
+void PanelInputDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message, UDPMessage &, byte &)
 {
 	if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG)
 	{
@@ -82,7 +82,7 @@ bool PanelInputDevice::parseConfig(String &jsonText, bool setVersion)
 	return true;
 }
 
-void PanelInputDevice::serverFound(void)
+void PanelInputDevice::serverFound(UDPMessage &, byte &)
 {
 	if (m_downloadConfig)
 	{

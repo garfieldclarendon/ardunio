@@ -101,6 +101,9 @@ void TurnoutModule::processNoWire(void)
 	m_noWireHandler.readNoWire(data);
 //	DEBUG_PRINT("processNoWire:  CURRENT_STATE %d != %d\n", m_currentState, data);
 
+	UDPMessage outMessage;
+	outMessage.setMessageID(DEVICE_STATUS);
+	byte count = 0;
 	for (byte x = 0; x < MAX_TURNOUTS; x++)
 	{
 		Device *device = getDevice(x);
@@ -108,11 +111,13 @@ void TurnoutModule::processNoWire(void)
 		{
 			ModuleData moduleData;
 			moduleData.setByteA(data);
-			device->process(moduleData);
+			device->process(moduleData, outMessage, count);
 			data = moduleData.getByteA();
 //			DEBUG_PRINT("TURNOUTDEVICE::process: DATA: %d\n", data);
 		}
 	}
+	if (count > 0)
+		NetManager.sendUdpMessage(outMessage, true);
 	if (m_currentState != data)
 	{
 		m_currentState = data;
@@ -124,6 +129,9 @@ void TurnoutModule::processWire(void)
 {
 	byte data(m_currentState);
 	data = m_expander.read();
+	UDPMessage outMessage;
+	outMessage.setMessageID(DEVICE_STATUS);
+	byte count = 0;
 	for (byte x = 0; x < MAX_TURNOUTS; x++)
 	{
 		Device *device = getDevice(x);
@@ -131,11 +139,12 @@ void TurnoutModule::processWire(void)
 		{
 			ModuleData moduleData;
 			moduleData.setByteA(data);
-			device->process(moduleData);
+			device->process(moduleData, outMessage, count);
 			data = moduleData.getByteA();
 		}
 	}
-
+	if (count > 0)
+		NetManager.sendUdpMessage(outMessage, true);
 	if (m_currentState != data)
 	{
 //		DEBUG_PRINT("process:  CURRENT_STATE %d != %d\n", m_currentState, data);
@@ -175,6 +184,9 @@ void TurnoutModule::processUDPMessageNoWire(const UDPMessage &message)
 
 void TurnoutModule::processUDPMessage(byte &data, const UDPMessage &message)
 {
+	UDPMessage outMessage;
+	outMessage.setMessageID(DEVICE_STATUS);
+	byte count = 0;
 	for (byte x = 0; x < MAX_TURNOUTS; x++)
 	{
 		Device *device = getDevice(x);
@@ -182,8 +194,10 @@ void TurnoutModule::processUDPMessage(byte &data, const UDPMessage &message)
 		{
 			ModuleData moduleData;
 			moduleData.setByteA(data);
-			device->processUDPMessage(moduleData, message);
+			device->processUDPMessage(moduleData, message, outMessage, count);
 			data = moduleData.getByteA();
 		}
 	}
+	if (count > 0)
+		NetManager.sendUdpMessage(outMessage, true);
 }

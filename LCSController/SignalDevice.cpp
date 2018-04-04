@@ -19,7 +19,7 @@ SignalDevice::~SignalDevice()
 {
 }
 
-void SignalDevice::process(ModuleData &moduleData)
+void SignalDevice::process(ModuleData &moduleData, UDPMessage &, byte &)
 {
 //	DEBUG_PRINT("SignalDevice::process: START\n");
 	if (m_aspectDownload != NULL)
@@ -205,7 +205,7 @@ void SignalDevice::setup(int deviceID, byte port)
 		m_downloadConfig = (parseConfig(json, false) == false);
 }
 
-void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message)
+void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message, UDPMessage &, byte &)
 {
 	if (message.getMessageID() == TRN_STATUS || message.getMessageID() == BLK_STATUS)
 	{
@@ -217,6 +217,23 @@ void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &m
 				m_updateValues = true;
 				break;
 			}
+		}
+	}
+	else if (message.getMessageID() == DEVICE_STATUS)
+	{
+		byte index = 0;
+		while (message.getDeviceID(index) > 0)
+		{
+			for (byte x = 0; x < MAX_SIGNAL_DEVICES; x++)
+			{
+				if (m_deviceStates[x].deviceID == message.getDeviceID(index))
+				{
+					m_deviceStates[x].state = message.getDeviceStatus(index);
+					m_updateValues = true;
+					break;
+				}
+			}
+			index++;
 		}
 	}
 	else if (message.getMessageID() == SYS_LOCK_DEVICE && message.getID() == getID())
@@ -325,7 +342,7 @@ bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 	return true;
 }
 
-void SignalDevice::serverFound(void)
+void SignalDevice::serverFound(UDPMessage &outMessage, byte &)
 {
 	DEBUG_PRINT("SignalDevice::serverFound\n");
 	if (m_downloadConfig)

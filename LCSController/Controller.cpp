@@ -70,7 +70,7 @@ void Controller::processMessage(const UDPMessage &message)
 	{
 		DEBUG_PRINT("CONTROLLER ONLINE MESSAGE!\n");
 		IPAddress address(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
-		if (NetManager.updateNotificationList(message.getID(), address))
+		if (address != (uint32_t)0 && NetManager.updateNotificationList(message.getID(), address))
 		{
 			if (m_sendStatusCallback)
 				m_sendStatusCallback();

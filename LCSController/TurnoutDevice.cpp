@@ -13,7 +13,7 @@ TurnoutDevice::~TurnoutDevice()
 {
 }
 
-void TurnoutDevice::process(ModuleData &data)
+void TurnoutDevice::process(ModuleData &data, UDPMessage &outMessage, byte &messageIndex)
 {
 //	DEBUG_PRINT("TURNOUTDEVICE::process:  CURRENT STATE: %d  DATA: %d\n", m_currentState, d);
 	TurnoutState current = readCurrentState(data.getByteA());
@@ -36,7 +36,9 @@ void TurnoutDevice::process(ModuleData &data)
 			{
 				m_currentState = current;
 //				DEBUG_PRINT("TURNOUTDEVICE::process ID: %d  State changed: %d  DATA: %d\n", getID(), m_currentState, data.getByteA());
-				sendStatusMessage();
+				outMessage.setDeviceID(messageIndex, getID());
+				outMessage.setDeviceStatus(messageIndex, m_currentState);
+				messageIndex++;
 			}
 		}
 	}
@@ -133,7 +135,7 @@ void TurnoutDevice::sendStatusMessage(TurnoutState newState)
 	NetManager.sendUdpMessage(message, true);
 }
 
-void TurnoutDevice::processUDPMessage(ModuleData &data, const UDPMessage &message)
+void TurnoutDevice::processUDPMessage(ModuleData &data, const UDPMessage &message, UDPMessage &outMessage, byte &messageIndex)
 {
 	TurnoutState newState(TrnUnknown);
 	int newLockoutRoute = 0;
@@ -205,7 +207,9 @@ void TurnoutDevice::processUDPMessage(ModuleData &data, const UDPMessage &messag
 			m_currentState = TrnToNormal;
 		else
 			m_currentState = TrnToDiverging;
-		sendStatusMessage();
+		outMessage.setDeviceID(messageIndex, getID());
+		outMessage.setDeviceStatus(messageIndex, m_currentState);
+		messageIndex++;
 	}
 	if (m_lockedRoute == 0)
 		setLockoutRoute(newLockoutRoute);
@@ -229,7 +233,7 @@ void TurnoutDevice::networkOnline(void)
 {
 }
 
-void TurnoutDevice::serverFound(void)
+void TurnoutDevice::serverFound(UDPMessage &outMessage, byte &messageIndex)
 {
 	if (m_downloadConfig)
 	{
@@ -244,7 +248,9 @@ void TurnoutDevice::serverFound(void)
 			setTurnout(data, TrnNormal);
 		}
 	}
-	sendStatusMessage();
+	outMessage.setDeviceID(messageIndex, getID());
+	outMessage.setDeviceStatus(messageIndex, m_currentState);
+	messageIndex++;
 }
 
 TurnoutState TurnoutDevice::readCurrentState(byte data)

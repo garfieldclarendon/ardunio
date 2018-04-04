@@ -1,5 +1,21 @@
 #pragma once
 
+#include <stdint.h>
+
+/// Structure used to store the status of a device.
+struct MessageDeviceStruct {
+    uint32_t deviceID; ///< ID of the device
+    unsigned char status; ///< The device's current status
+};
+typedef struct MessageDeviceStruct MessageDeviceStruct;
+
+/// Union used the by the UDPMessageStruct which contains an array of 8 device status entries.
+union PayloadUnion {
+    unsigned char buffer[24];  ///< 24 byte payload accessable as Field[0] to Field[23] through the getField() member.
+    MessageDeviceStruct deviceStatus[8]; ///< Array of 8 device status entries
+} ;
+typedef union PayloadUnion PayloadUnion;
+
 /// Structure used the by the UDPMessage class which contains the actual data of a UDP Message.
 struct UDPMessageStruct
 {
@@ -7,7 +23,7 @@ struct UDPMessageStruct
 	unsigned char messageID;  ///< The ID of the message.
 	long id; ///<  The ID of either the sender or the target of the message.  Could be the deviceID, controllerID, serialNumber or routeID.
     unsigned char transactionNumber; ///<  The message transaction number.  A unique number auto-generated for each message.
-    unsigned char payload[14];  ///< 14 byte payload accessable as Field[0] to Field[13] through the getField() member.
+    PayloadUnion payload;  ///< 24 byte payload accessable as Field[0] to Field[23] through the getField() member.
 	unsigned char endSig[2]; ///< 2 byte end-of-message signalture set to 0XEF 0XEE.
 };
 typedef struct UDPMessageStruct UDPMessageStruct;
@@ -58,7 +74,21 @@ class UDPMessage
     /// Setter function.  Sets one of the bytes in the 14 byte payload.
     /// @param fieldIndex index of the field to set
     /// @param value a byte containing the new value.
-    void setField(unsigned char fieldIndex, unsigned char value) { m_messageStruct.payload[fieldIndex] = value; }
+    void setField(unsigned char fieldIndex, unsigned char value) { m_messageStruct.payload.buffer[fieldIndex] = value; }
+
+    /// returns the device ID from the device entry at the given index.
+    int getDeviceID(unsigned char index) const { return m_messageStruct.payload.deviceStatus[index].deviceID; }
+    /// Setter function.  Sets the device ID of one of the device entries.
+    /// @param index index of the field to set
+    /// @param value an int containing the device ID.
+    void setDeviceID(unsigned char index, int value) { m_messageStruct.payload.deviceStatus[index].deviceID = value; }
+
+    /// returns the status from the device entry at the given index.
+    int getDeviceStatus(unsigned char index) const { return m_messageStruct.payload.deviceStatus[index].status; }
+    /// Setter function.  Sets the status of one of the device entries.
+    /// @param index index of the field to set
+    /// @param value an int containing the status of the device.
+    void setDeviceStatus(unsigned char index, int value) { m_messageStruct.payload.deviceStatus[index].status = value; }
 
     /// returns a reference to the internal \ref UDPMessageStruct
     char *getRef(void) const { return (char *)&m_messageStruct;  }
@@ -76,7 +106,7 @@ class UDPMessage
     /// @param fieldIndex index of the field to retrieve.
     unsigned char getField(unsigned char fieldIndex) const
 	{
-        return m_messageStruct.payload[fieldIndex];
+        return m_messageStruct.payload.buffer[fieldIndex];
 	}
     /// replaces the data of the message creating a copy
     /// Replaces the message data; copying the information from other.  This function does NOT copy the transaction number, rather, a new

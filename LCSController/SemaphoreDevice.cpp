@@ -10,9 +10,12 @@ SemaphoreDevice::~SemaphoreDevice()
 {
 }
 
-void SemaphoreDevice::process(ModuleData &moduleData)
+void SemaphoreDevice::process(ModuleData &moduleData, UDPMessage &, byte &)
 {
-	SignalDevice::process(moduleData);
+	UDPMessage outMessage;
+	outMessage.setMessageID(DEVICE_STATUS);
+	byte count = 0;
+	SignalDevice::process(moduleData, outMessage, count);
 
 	byte data = moduleData.getByteA();
 	if (getGreenMode() == PinOn && getRedMode() == PinOff)

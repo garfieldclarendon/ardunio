@@ -30,12 +30,14 @@ void OutputModule::processWire(void)
 	byte previousOutputB = m_outputB;
 	ModuleData data(m_outputA, m_outputB);
 
+	UDPMessage outMessage;
+	byte count = 0;
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
 		Device *device = getDevice(x);
 		if (device)
 		{
-			device->process(data);
+			device->process(data, outMessage, count);
 		}
 	}
 
@@ -76,13 +78,16 @@ void OutputModule::setFlashingPins(ModuleData &data)
 
 void OutputModule::processUDPMessageWire(const UDPMessage &message)
 {
+	UDPMessage outMessage;
+	outMessage.setMessageID(DEVICE_STATUS);
+	byte count = 0;
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
 		Device *device = getDevice(x);
 		if (device)
 		{
 			ModuleData moduleData;
-			device->processUDPMessage(moduleData, message);
+			device->processUDPMessage(moduleData, message, outMessage, count);
 		}
 	}
 }

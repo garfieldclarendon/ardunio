@@ -7,7 +7,7 @@ class SemaphoreDevice : public SignalDevice
 public:
 	SemaphoreDevice();
 	~SemaphoreDevice();
-	void process(ModuleData &moduleData) override;
+	void process(ModuleData &moduleData, UDPMessage &outMessage, byte &messageIndex) override;
 	void setup(int deviceID, byte port) override;
 
 private:

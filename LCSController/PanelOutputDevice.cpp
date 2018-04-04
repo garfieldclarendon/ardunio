@@ -10,7 +10,7 @@ PanelOutputDevice::~PanelOutputDevice()
 {
 }
 
-void PanelOutputDevice::process(ModuleData &moduleData)
+void PanelOutputDevice::process(ModuleData &moduleData, UDPMessage &, byte &)
 {
 	if (m_currentValue == m_onValue)
 	{
@@ -40,13 +40,25 @@ void PanelOutputDevice::setup(int deviceID, byte port)
 		m_downloadConfig = (parseConfig(json, false) == false);
 }
 
-void PanelOutputDevice::processUDPMessage(ModuleData &, const UDPMessage &message)
+void PanelOutputDevice::processUDPMessage(ModuleData &, const UDPMessage &message, UDPMessage &, byte &)
 {
 	if (message.getMessageID() == TRN_STATUS || message.getMessageID() == BLK_STATUS)
 	{
 		if (m_itemID == message.getID())
 		{
 			m_currentValue = message.getField(0);
+		}
+	}
+	if (message.getMessageID() == DEVICE_STATUS)
+	{
+		byte index = 0;
+		while (message.getDeviceID(index) > 0)
+		{
+			if (m_itemID == message.getDeviceID(index))
+			{
+				m_currentValue = message.getDeviceStatus(index);
+			}
+			index++;
 		}
 	}
 	else if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG)
@@ -99,7 +111,7 @@ bool PanelOutputDevice::parseConfig(String &jsonText, bool setVersion)
 	return true;
 }
 
-void PanelOutputDevice::serverFound(void)
+void PanelOutputDevice::serverFound(UDPMessage &, byte &)
 {
 	if (m_downloadConfig)
 	{

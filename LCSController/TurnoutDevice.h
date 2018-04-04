@@ -18,14 +18,14 @@ public:
 	~TurnoutDevice();
 
 	// Required Device overrides
-	void process(ModuleData &data) override;
+	void process(ModuleData &data, UDPMessage &outMessage, byte &messageIndex) override;
 	void setup(int deviceID, byte port) override;
 	void sendStatusMessage(void) override;
-	void processUDPMessage(ModuleData &data, const UDPMessage &message) override;
+	void processUDPMessage(ModuleData &data, const UDPMessage &message, UDPMessage &outMessage, byte &messageIndex) override;
 
 	void controllerLockout(bool isLocked) {  }
 	void networkOnline(void) override;
-	void serverFound(void) override;
+	void serverFound(UDPMessage &outMessage, byte &messageIndex) override;
 	void setTurnout(byte &data, TurnoutState newState);
 
 private:

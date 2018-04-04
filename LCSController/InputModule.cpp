@@ -1,6 +1,7 @@
 #include "InputModule.h"
 #include "NetworkManager.h"
 #include "Device.h"
+#include "GlobalDefs.h"
 
 InputModule::InputModule(void)
 	: m_inputA(0), m_inputB(0)
@@ -29,11 +30,26 @@ void InputModule::processWire(void)
 
 	ModuleData moduleData(input, inputb);
 
+	UDPMessage outMessage;
+	outMessage.setMessageID(DEVICE_STATUS);
+	byte count = 0;
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
+		if (x == 8 && count > 0)
+		{
+			NetManager.sendUdpMessage(outMessage, true);
+			outMessage = UDPMessage();
+			outMessage.setMessageID(DEVICE_STATUS);
+			count = 0;
+		}
+
 		Device *device = getDevice(x);
 		if (device)
-			device->process(moduleData);
+			device->process(moduleData, outMessage, count);
+	}
+	if (count > 0)
+	{
+		NetManager.sendUdpMessage(outMessage, true);
 	}
 
 	if (input != m_inputA)
@@ -105,32 +121,24 @@ void InputModule::handleInput(byte pin, byte pinState)
 
 void InputModule::processUDPMessageWire(const UDPMessage &message)
 {
-	byte dataA(m_inputA);
-	byte dataB(m_inputB);
+	byte dataA;
+	byte dataB;
 	dataA = m_expander.readA();
 	dataB = m_expander.readB();
 
+	ModuleData moduleData;
+	moduleData.setByteA(dataA);
+	moduleData.setByteB(dataB);
+
+	UDPMessage outMessage;
+	outMessage.setMessageID(DEVICE_STATUS);
+	byte count = 0;
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
 		Device *device = getDevice(x);
 		if (device)
 		{
-			ModuleData moduleData;
-			moduleData.setByteA(dataA);
-			moduleData.setByteB(dataB);
-
-			device->processUDPMessage(moduleData, message);
-			dataA = moduleData.getByteA();
-			dataB = moduleData.getByteB();
+			device->processUDPMessage(moduleData, message, outMessage, count);
 		}
-	}
-
-	if (m_inputA != dataA || m_inputB != dataB)
-	{
-//		DEBUG_PRINT("processUDPMessage:  CURRENT_STATE %d != %d\n", m_currentState, data);
-		m_inputA = dataA;
-		m_inputB = dataB;
-		m_expander.writeA(m_inputA);
-		m_expander.writeB(m_inputB);
 	}
 }

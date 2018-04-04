@@ -44,12 +44,12 @@ public:
 	virtual ~SignalDevice();
 
 	// Required Device overrides
-	void process(ModuleData &moduleData) override;
+	void process(ModuleData &moduleData, UDPMessage &outMessage, byte &messageIndex) override;
 	void setup(int deviceID, byte port) override;
 	void sendStatusMessage(void) override { }
-	void processUDPMessage(ModuleData &moduleData, const UDPMessage &message) override;
+	void processUDPMessage(ModuleData &moduleData, const UDPMessage &message, UDPMessage &outMessage, byte &messageIndex) override;
 
-	void serverFound(void) override;
+	void serverFound(UDPMessage &outMessage, byte &messageIndex) override;
 	void controllerLockout(bool isLocked) { m_lockout = isLocked; }
 
 	PinStateEnum getRedMode(void) const { return m_redMode;  }

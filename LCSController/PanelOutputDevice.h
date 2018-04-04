@@ -10,12 +10,12 @@ public:
 	PanelOutputDevice();
 	~PanelOutputDevice();
 	// Required Device overrides
-	void process(ModuleData &moduleData) override;
+	void process(ModuleData &moduleData, UDPMessage &outMessage, byte &messageIndex) override;
 	void setup(int deviceID, byte port) override;
 	void sendStatusMessage(void) override { }
-	void processUDPMessage(ModuleData &moduleData, const UDPMessage &message) override;
+	void processUDPMessage(ModuleData &moduleData, const UDPMessage &message, UDPMessage &outMessage, byte &messageIndex) override;
 
-	void serverFound(void) override;
+	void serverFound(UDPMessage &outMessage, byte &messageIndex) override;
 
 private:
 	bool parseConfig(String &jsonText, bool setVersion);

@@ -381,7 +381,7 @@ QByteArray Database::getControllerModuleConfig(quint32 serialNumber, quint32 add
     QJsonArray deviceArray;
 
     QSqlQuery query(db);
-    query.exec(QString("SELECT DISTINCT controller.id, moduleClass, address, device.id as deviceID, deviceClass, port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID LEFT OUTER JOIN moduleDevicePort ON controllerModule.id = moduleDevicePort.controllerModuleID LEFT OUTER JOIN device ON moduleDevicePort.deviceID = device.id WHERE serialNumber = %1 AND controllerModule.address = %2 AND controllerModule.disable <> 1 ORDER BY address").arg(serialNumber).arg(address));
+    query.exec(QString("SELECT DISTINCT controller.id, moduleClass, address, device.id as deviceID, deviceClass, port FROM controllerModule JOIN controller ON controllerModule.controllerID = controller.ID LEFT OUTER JOIN moduleDevicePort ON controllerModule.id = moduleDevicePort.controllerModuleID LEFT OUTER JOIN device ON moduleDevicePort.deviceID = device.id WHERE serialNumber = %1 AND controllerModule.address = %2 AND controllerModule.disable <> 1 ORDER BY address, port").arg(serialNumber).arg(address));
 
     while (query.next())
     {
