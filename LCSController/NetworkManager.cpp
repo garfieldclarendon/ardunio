@@ -3,7 +3,9 @@
 
 #include "NetworkManager.h"
 #include "GlobalDefs.h"
-
+extern "C" {
+#include "user_interface.h"
+}
 NetworkManager *NetworkManager::m_this = NULL;
 
 NetworkManager::NetworkManager(void)
@@ -36,9 +38,9 @@ void NetworkManager::init(int serverPort, int controllerID)
 	WiFi.mode(WIFI_STA);
 	WiFi.setAutoConnect(false);
 	WiFi.setAutoReconnect(true);
-	String name("LCS Controller ");
+	String name("LCS_Controller-");
 	name += ESP.getChipId();
-	WiFi.hostname(name);
+	wifi_station_set_hostname((char *)name.c_str());
 
 	processWiFi();
 
