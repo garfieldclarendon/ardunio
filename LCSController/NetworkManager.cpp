@@ -36,6 +36,9 @@ void NetworkManager::init(int serverPort, int controllerID)
 	WiFi.mode(WIFI_STA);
 	WiFi.setAutoConnect(false);
 	WiFi.setAutoReconnect(true);
+	String name("LCS Controller ");
+	name += ESP.getChipId();
+	WiFi.hostname(name);
 
 	processWiFi();
 
