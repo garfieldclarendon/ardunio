@@ -107,7 +107,7 @@ class UDPMessage
     unsigned char getField(unsigned char fieldIndex) const
 	{
         return m_messageStruct.payload.buffer[fieldIndex];
-	}
+    }
     /// replaces the data of the message creating a copy
     /// Replaces the message data; copying the information from other.  This function does NOT copy the transaction number, rather, a new
     /// transaction number is created.

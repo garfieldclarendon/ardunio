@@ -67,6 +67,19 @@ void DeviceManager::newUDPMessage(const UDPMessage &message)
 
         setDeviceStatus(locked, deviceID, state);
     }
+    else if(message.getMessageID() == DEVICE_STATUS)
+    {
+        int index = 0;
+        while(message.getDeviceID(index))
+        {
+            int deviceID = message.getDeviceID(index);
+            int state = message.getDeviceStatus(index);
+            bool locked = false; //message.getField(1);
+
+            setDeviceStatus(locked, deviceID, state);
+           index++;
+        }
+    }
 }
 
 void DeviceManager::addDeviceHandler(DeviceClassEnum classCode, DeviceHandler *handler)
