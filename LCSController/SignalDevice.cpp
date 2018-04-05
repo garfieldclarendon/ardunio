@@ -287,8 +287,8 @@ byte SignalDevice::getCurrentState(int deviceID) const
 
 bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 {
-	DEBUG_PRINT("SignalDevice::parseConfig\n");
-	StaticJsonBuffer<2048> jsonBuffer;
+	DEBUG_PRINT("SignalDevice::parseConfig LENGTH: %d\n", jsonText.length());
+	StaticJsonBuffer<1024> jsonBuffer;
 	JsonObject &json = jsonBuffer.parseObject(jsonText);
 
 	if (setVersion)
