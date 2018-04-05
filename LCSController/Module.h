@@ -26,7 +26,7 @@ public:
 	byte getAddress(void) const { return m_address; }
 	void addDevice(byte index, Device *device) { m_devices[index] = device; }
 	Device *getDevice(byte index) { return m_devices[index]; }
-	void sendStatusMessage(void);
+	virtual void sendStatusMessage(void);
 
 protected:
 

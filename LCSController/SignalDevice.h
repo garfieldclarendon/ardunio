@@ -48,6 +48,7 @@ public:
 	void setup(int deviceID, byte port) override;
 	void sendStatusMessage(void) override { }
 	void processUDPMessage(ModuleData &moduleData, const UDPMessage &message, UDPMessage &outMessage, byte &messageIndex) override;
+	DeviceClassEnum getDeviceType(void) const { return DeviceSignal; }
 
 	void serverFound(UDPMessage &outMessage, byte &messageIndex) override;
 	void controllerLockout(bool isLocked) { m_lockout = isLocked; }

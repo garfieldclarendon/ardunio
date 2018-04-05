@@ -16,6 +16,7 @@ public:
 
 	void serverFound(UDPMessage &outMessage, byte &messageIndex) override;
 	void processPin(byte pin, byte value) override;
+	DeviceClassEnum getDeviceType(void) const { return DevicePanelInput; }
 
 private:
 	bool parseConfig(String &jsonText, bool setVersion);

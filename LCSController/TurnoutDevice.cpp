@@ -229,9 +229,7 @@ TurnoutState TurnoutDevice::getTurnoutStateForRoute(int routeID)
 	}
 	return state;
 }
-void TurnoutDevice::networkOnline(void)
-{
-}
+
 
 void TurnoutDevice::serverFound(UDPMessage &outMessage, byte &messageIndex)
 {

@@ -17,6 +17,7 @@ public:
 	void setPort(byte value) { m_port = value;  }
 
 	// Required overrides
+	virtual DeviceClassEnum getDeviceType(void) const = 0;
 	virtual void process(ModuleData &data, UDPMessage &outMessage, byte &messageIndex) = 0;
 	virtual void setup(int deviceID, byte port) = 0;
 	virtual void sendStatusMessage(void) = 0;
@@ -31,6 +32,7 @@ public:
 	virtual void downloadConfig(void);
 	virtual void saveConfig(const String &json);
 	virtual void serverFound(UDPMessage &outMessage, byte &messageIndex) { }
+	virtual byte getCurrentStatus(void) { }
 
 private:
 	int m_id;

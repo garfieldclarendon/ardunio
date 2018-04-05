@@ -2,6 +2,7 @@
 #include "NetworkManager.h"
 #include "Device.h"
 #include "GlobalDefs.h"
+#include "BlockDevice.h"
 
 InputModule::InputModule(void)
 	: m_inputA(0), m_inputB(0)
@@ -32,19 +33,21 @@ void InputModule::processWire(void)
 
 	UDPMessage outMessage;
 	outMessage.setMessageID(DEVICE_STATUS);
+	outMessage.setID(getAddress());
 	byte count = 0;
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
-		if (x == 8 && count > 0)
+		if (count > 0)
 		{
 			NetManager.sendUdpMessage(outMessage, true);
 			outMessage = UDPMessage();
 			outMessage.setMessageID(DEVICE_STATUS);
+			outMessage.setID(getAddress());
 			count = 0;
 		}
 
 		Device *device = getDevice(x);
-		if (device)
+		if (device && device->getDeviceType() == DeviceBlock)
 			device->process(moduleData, outMessage, count);
 	}
 	if (count > 0)
@@ -132,13 +135,60 @@ void InputModule::processUDPMessageWire(const UDPMessage &message)
 
 	UDPMessage outMessage;
 	outMessage.setMessageID(DEVICE_STATUS);
+	outMessage.setID(getAddress());
 	byte count = 0;
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
+		if (count > 0)
+		{
+			NetManager.sendUdpMessage(outMessage, true);
+			outMessage = UDPMessage();
+			outMessage.setMessageID(DEVICE_STATUS);
+			outMessage.setID(getAddress());
+			count = 0;
+		}
+
 		Device *device = getDevice(x);
-		if (device)
+		if (device && device->getDeviceType() == DeviceBlock)
 		{
 			device->processUDPMessage(moduleData, message, outMessage, count);
 		}
 	}
+	if (count > 0)
+	{
+		NetManager.sendUdpMessage(outMessage, true);
+	}
+}
+
+void InputModule::sendStatusMessage(void)
+{
+//	DEBUG_PRINT("InputModule::sendStatusMessage  Module Address: %d\n\n", getAddress());
+	UDPMessage outMessage;
+	outMessage.setMessageID(DEVICE_STATUS);
+	outMessage.setID(getAddress());
+
+	byte count = 0;
+	for (byte x = 0; x < MAX_DEVICES; x++)
+	{
+		if (count == 8)
+		{
+			NetManager.sendUdpMessage(outMessage, true);
+			outMessage = UDPMessage();
+			outMessage.setMessageID(DEVICE_STATUS);
+			outMessage.setID(getAddress());
+			count = 0;
+		}
+
+		Device *device = getDevice(x);
+		if (device)
+		{
+			if (device->getDeviceType() == DeviceBlock)
+			{
+				outMessage.setDeviceID(count, device->getID());
+				outMessage.setDeviceStatus(count++, device->getCurrentStatus());
+			}
+		}
+	}
+	NetManager.sendUdpMessage(outMessage, true);
+//	DEBUG_PRINT("InputModule::sendStatusMessage  Module Address: %d DONE\n\n", getAddress());
 }

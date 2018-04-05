@@ -80,6 +80,7 @@ void OutputModule::processUDPMessageWire(const UDPMessage &message)
 {
 	UDPMessage outMessage;
 	outMessage.setMessageID(DEVICE_STATUS);
+	outMessage.setID(getAddress());
 	byte count = 0;
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{

@@ -155,14 +155,16 @@ void serverFound(void)
 		{
 			UDPMessage outMessage;
 			outMessage.setMessageID(DEVICE_STATUS);
+			outMessage.setID(module->getAddress());
 			byte count = 0;
 			for (byte index = 0; index < MAX_DEVICES; index++)
 			{
-				if (x == 8 && count > 0)
+				if (count > 0)
 				{
 					NetManager.sendUdpMessage(outMessage, true);
 					outMessage = UDPMessage();
 					outMessage.setMessageID(DEVICE_STATUS);
+					outMessage.setID(module->getAddress());
 					count = 0;
 				}
 				Device *device = module->getDevice(index);
@@ -202,9 +204,9 @@ void networkConnected(bool connected)
 						device->networkOnline();
 					else
 						device->networkOffline();
-					device->sendStatusMessage();
 				}
 			}
+			module->sendStatusMessage();
 		}
 	}
 }

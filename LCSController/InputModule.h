@@ -18,6 +18,7 @@ class InputModule : public Module
 	void processUDPMessageWire(const UDPMessage &message) override;
 	void processUDPMessageNoWire(const UDPMessage &message) override { }
 	void finishSetupWire(void) override;
+	void sendStatusMessage(void) override;
 
 	// This module is only supported on the I2CBus
 	// So these functions do not apply

@@ -110,7 +110,7 @@ void SignalDevice::updateValues(void)
 	{
 		if (loadAspect(x, &aspect))
 		{
-			DEBUG_PRINT("SignalDevice::updateValues(%d): ASPECT COUNT %d\n", getID(), aspect.conditionCount);
+			DEBUG_PRINT("SignalDevice::updateValues(%d): ASPECT CONDITION COUNT %d\n", getID(), aspect.conditionCount);
 			bool valid = aspect.conditionCount > 0;
 			for (int index = 0; index < aspect.conditionCount; index++)
 			{
@@ -118,33 +118,33 @@ void SignalDevice::updateValues(void)
 				DEBUG_PRINT("SignalDevice::updateValues(%d): deviceID %d status %d == %d\n", getID(), aspect.conditions[index].deviceID, state, aspect.conditions[index].deviceState);
 				if (state > 0)
 				{
-					while (valid)
+					if (aspect.conditions[index].operand == ConditionEquals)
 					{
-						if (aspect.conditions[index].operand == ConditionEquals)
-						{
-							if (state != aspect.conditions[index].deviceState)
-							{
-								valid = false;
-							}
-						}
-						else if (aspect.conditions[index].operand == ConditionNotEquals)
-						{
-							if (state == aspect.conditions[index].deviceState)
-							{
-								valid = false;
-							}
-						}
-						else
+						if (state != aspect.conditions[index].deviceState)
 						{
 							valid = false;
-							DEBUG_PRINT("INVALID ConditionOperand! %d\n", aspect.conditions[index].operand);
-							setInvalidAspect();
-							done = true;
 						}
-						if (valid)
-							break;
+					}
+					else if (aspect.conditions[index].operand == ConditionNotEquals)
+					{
+						if (state == aspect.conditions[index].deviceState)
+						{
+							valid = false;
+						}
+					}
+					else
+					{
+						valid = false;
+						DEBUG_PRINT("INVALID ConditionOperand! %d\n", aspect.conditions[index].operand);
+						setInvalidAspect();
+						done = true;
+					}
+					if (valid == false)
+					{
+						if (isNextConditionOR(&aspect, index + 1))
+							valid = true;
 						else
-							valid = isNextConditionOR(&aspect, index);
+							break;
 					}
 				}
 				else
@@ -183,6 +183,7 @@ void SignalDevice::updateValues(void)
 bool SignalDevice::isNextConditionOR(SignalAspectStruct *aspect, byte nextIndex)
 {
 	bool ret = false;
+	DEBUG_PRINT("SignalDevice::isNextConditionOR(%d): nextIndex %d  conditionCount %d\n", getID(), nextIndex, aspect->conditionCount);
 
 	if(nextIndex < aspect->conditionCount)
 	{

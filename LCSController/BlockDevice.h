@@ -18,6 +18,8 @@ public:
 
 	void serverFound(UDPMessage &outMessage, byte &messageIndex) override;
 	void processPin(byte pin, byte value) override;
+	byte getCurrentStatus(void) override { return m_currentState; }
+	DeviceClassEnum getDeviceType(void) const { return DeviceBlock;  }
 
 private:
 	bool parseConfig(String &jsonText, bool setVersion);

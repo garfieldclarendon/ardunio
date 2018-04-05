@@ -103,6 +103,7 @@ void TurnoutModule::processNoWire(void)
 
 	UDPMessage outMessage;
 	outMessage.setMessageID(DEVICE_STATUS);
+	outMessage.setID(getAddress());
 	byte count = 0;
 	for (byte x = 0; x < MAX_TURNOUTS; x++)
 	{
@@ -131,6 +132,7 @@ void TurnoutModule::processWire(void)
 	data = m_expander.read();
 	UDPMessage outMessage;
 	outMessage.setMessageID(DEVICE_STATUS);
+	outMessage.setID(getAddress());
 	byte count = 0;
 	for (byte x = 0; x < MAX_TURNOUTS; x++)
 	{
@@ -186,6 +188,7 @@ void TurnoutModule::processUDPMessage(byte &data, const UDPMessage &message)
 {
 	UDPMessage outMessage;
 	outMessage.setMessageID(DEVICE_STATUS);
+	outMessage.setID(getAddress());
 	byte count = 0;
 	for (byte x = 0; x < MAX_TURNOUTS; x++)
 	{
@@ -200,4 +203,23 @@ void TurnoutModule::processUDPMessage(byte &data, const UDPMessage &message)
 	}
 	if (count > 0)
 		NetManager.sendUdpMessage(outMessage, true);
+}
+
+void TurnoutModule::sendStatusMessage(void)
+{
+	UDPMessage outMessage;
+	outMessage.setMessageID(DEVICE_STATUS);
+	outMessage.setID(getAddress());
+
+	byte count = 0;
+	for (byte x = 0; x < MAX_TURNOUTS; x++)
+	{
+		Device *device = getDevice(x);
+		if (device)
+		{
+			outMessage.setDeviceID(count, device->getID());
+			outMessage.setDeviceStatus(count++, device->getCurrentStatus());
+		}
+	}
+	NetManager.sendUdpMessage(outMessage, true);
 }

@@ -68,7 +68,7 @@ void Controller::processMessage(const UDPMessage &message)
 	}
 	else if (message.getMessageID() == SYS_CONTROLLER_ONLINE)
 	{
-		DEBUG_PRINT("CONTROLLER ONLINE MESSAGE!\n");
+		DEBUG_PRINT("CONTROLLER ONLINE MESSAGE!  CONTROLLER %d\n", message.getID());
 		IPAddress address(message.getField(0), message.getField(1), message.getField(2), message.getField(3));
 		if (address != (uint32_t)0 && NetManager.updateNotificationList(message.getID(), address))
 		{

@@ -22,11 +22,12 @@ public:
 	void setup(int deviceID, byte port) override;
 	void sendStatusMessage(void) override;
 	void processUDPMessage(ModuleData &data, const UDPMessage &message, UDPMessage &outMessage, byte &messageIndex) override;
+	DeviceClassEnum getDeviceType(void) const { return DeviceTurnout; }
 
 	void controllerLockout(bool isLocked) {  }
-	void networkOnline(void) override;
 	void serverFound(UDPMessage &outMessage, byte &messageIndex) override;
 	void setTurnout(byte &data, TurnoutState newState);
+	byte getCurrentStatus(void) override { return m_currentState;  }
 
 private:
 	void setLockoutRoute(int value) { m_lockedRoute = value; }

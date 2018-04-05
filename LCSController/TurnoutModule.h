@@ -17,6 +17,7 @@ public:
 	void processNoWire(void) override;
 	void finishSetupWire(void) override;
 	void finishSetupNoWire(void) override;
+	void sendStatusMessage(void) override;
 
 	const byte motorAPin1 = 0;
 	const byte motorBPin1 = 1;

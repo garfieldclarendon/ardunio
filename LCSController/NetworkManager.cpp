@@ -189,24 +189,27 @@ void NetworkManager::sendUdpMessage(const UDPMessage &message, bool addToQueue)
 //	DEBUG_PRINT("SENDUDPMESSAGE: MessageID: %d  Transaction: %d\n",message.getMessageID(), message.getTransactionNumber());
 	NotificationStruct *current = m_firstNotification;
 
-	while (current)
+	if (getWiFiConnected())
 	{
-		if (current->address != (uint32_t)0)
+		while (current)
 		{
-			if (sendUdpMessage(message, current->address, addToQueue) == false)
-				current->address = IPAddress();
+			if (current->address != (uint32_t)0)
+			{
+				if (sendUdpMessage(message, current->address, addToQueue) == false)
+					current->address = IPAddress();
+			}
+			else
+			{
+				DEBUG_PRINT("Missing address for controller: %d\n", current->controllerID);
+			}
+			current = current->next;
 		}
-		else
-		{
-			DEBUG_PRINT("Missing address for controller: %d\n", current->controllerID);
-		}
-		current = current->next;
-	}
 
-	if (m_serverAddress != (uint32_t)0)
-	{
-		if (sendUdpMessage(message, m_serverAddress, true) == false)
-			m_serverAddress = IPAddress();
+		if (m_serverAddress != (uint32_t)0)
+		{
+			if (sendUdpMessage(message, m_serverAddress, true) == false)
+				m_serverAddress = IPAddress();
+		}
 	}
 
 	// Give other modules connected to this controller a chance to process the message too
@@ -218,7 +221,7 @@ bool NetworkManager::sendUdpMessage(const UDPMessage &message, IPAddress &addres
 {
 //	DEBUG_PRINT("SENDUDPMESSAGE WITH ADDRESS: %s  Transaction: %d\n", address.toString().c_str(), message.getTransactionNumber());
 	UDPMessage newMessage;
-	if (addToQueue)
+	if (addToQueue && message.getMessageID() != SYS_ACK)
 	{
 		newMessage.copyFrom(message);
 		addMessageToQueue(newMessage, address);
@@ -230,8 +233,11 @@ bool NetworkManager::sendUdpMessage(const UDPMessage &message, IPAddress &addres
 //	DEBUG_PRINT("SENDUDPMESSAGE WITH ADDRESS: %s  NEW Transaction: %d\n", address.toString().c_str(), newMessage.getTransactionNumber());
 
 	bool ret = false;
-	DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	DEBUG_PRINT("MessageSize: %d  MessageID: %d ID: %d  Field0: %d TO %s\n", sizeof(UDPMessageStruct), message.getMessageID(), message.getID(), message.getField(0), address.toString().c_str());
+	if (message.getMessageID() != SYS_ACK)
+	{
+		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+		DEBUG_PRINT("TransactionID: %d  MessageID: %d ID: %d  Field0: %d TO %s\n", newMessage.getTransactionNumber(), message.getMessageID(), message.getID(), message.getField(0), address.toString().c_str());
+	}
 
 	if (m_udp.beginPacket(address, UdpPort) == 0)
 	{
@@ -250,7 +256,8 @@ bool NetworkManager::sendUdpMessage(const UDPMessage &message, IPAddress &addres
 			ret = true;
 		}
 	}
-	DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	if (message.getMessageID() != SYS_ACK)
+		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 	yield();
 	return ret;
 }
@@ -397,7 +404,7 @@ void NetworkManager::checkNotificationList(void)
 {
 	if (m_currentStruct == NULL)
 		m_currentStruct = m_firstNotification;
-	if (m_currentStruct)
+	if (m_currentStruct && getWiFiConnected())
 	{
 		unsigned long t = millis();
 		if ((t - m_lastCheckTimeout) >= 3000)
@@ -424,8 +431,8 @@ bool NetworkManager::updateNotificationList(int controllerID, const IPAddress &a
 			if (n->address != address)
 			{
 				n->address = address;
+				updated = true;
 			}
-			updated = true;
 			n = NULL;
 		}
 		else
