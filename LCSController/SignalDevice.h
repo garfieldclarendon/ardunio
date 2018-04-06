@@ -38,7 +38,7 @@ typedef struct SignalAspectStruct SignalAspectStruct;
 
 class SignalDevice : public Device
 {
-	const byte CONFIG_VERSION = 5;
+	const byte CONFIG_VERSION = 7;
 public:
 	SignalDevice();
 	virtual ~SignalDevice();

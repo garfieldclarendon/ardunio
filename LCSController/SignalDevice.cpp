@@ -146,6 +146,11 @@ void SignalDevice::updateValues(void)
 						else
 							break;
 					}
+					else
+					{
+						while (isNextConditionOR(&aspect, index + 1))
+							index++;
+					}
 				}
 				else
 				{
@@ -183,12 +188,12 @@ void SignalDevice::updateValues(void)
 bool SignalDevice::isNextConditionOR(SignalAspectStruct *aspect, byte nextIndex)
 {
 	bool ret = false;
-	DEBUG_PRINT("SignalDevice::isNextConditionOR(%d): nextIndex %d  conditionCount %d\n", getID(), nextIndex, aspect->conditionCount);
 
 	if(nextIndex < aspect->conditionCount)
 	{
 		ret = aspect->conditions[nextIndex].connection == ConnectionOR;
 	}
+	DEBUG_PRINT("SignalDevice::isNextConditionOR(%d): nextIndex %d  conditionCount %d returning %d\n", getID(), nextIndex, aspect->conditionCount, ret);
 	return ret;
 }
 
@@ -314,13 +319,13 @@ bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 			{
 				if (current->aspectID == 0)
 				{
-					current->aspectID = aspects[x]["aspectID"];
+					current->aspectID = aspects[x]["id"];
 					DEBUG_PRINT("ADDING ASPECT TO DOWNLOAD ARRAY: %d\n", current->aspectID);
 				}
 				else
 				{
 					current->next = new AspectDownloadStruct;
-					current->next->aspectID = aspects[x]["aspectID"];
+					current->next->aspectID = aspects[x]["id"];
 					current->next->next = NULL;
 					DEBUG_PRINT("ADDING ASPECT TO DOWNLOAD ARRAY: %d\n", current->next->aspectID);
 					current = current->next;
@@ -331,7 +336,7 @@ bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 	JsonArray &devices = json["devices"];
 	for (byte x = 0; x < devices.size(); x++)
 	{
-		m_deviceStates[x].deviceID = devices[x]["deviceID"];
+		m_deviceStates[x].deviceID = devices[x]["id"];
 		DEBUG_PRINT("parseConfig  ADDING DEVICE: %d.\n", m_deviceStates[x].deviceID);
 	}
 
@@ -466,11 +471,11 @@ void SignalDevice::downloadAspect(int aspectID, byte index)
 	aspect.conditionCount = conditions.size();
 	for (byte x = 0; x < conditions.size(); x++)
 	{
-		DEBUG_PRINT("parseConfig  CONDITION %d.\n", x);
 		aspect.conditions[x].connection = (ConditionConnectionEnum)(int)conditions[x]["connectionType"];
 		aspect.conditions[x].deviceID = conditions[x]["deviceID"];
 		aspect.conditions[x].operand = (ConditionEnum)(int)conditions[x]["conditionOperand"];
 		aspect.conditions[x].deviceState = conditions[x]["deviceState"];
+		DEBUG_PRINT("parseConfig  CONDITION %d. DEVICEID %d\n", x, aspect.conditions[x].deviceID);
 	}
 	saveAspect(index, &aspect);
 }

@@ -264,9 +264,9 @@ void Database::getTurnoutConfig(int deviceID, QJsonObject &device)
 
 void Database::getSignalConfig(int deviceID, QJsonObject &device)
 {
-    QJsonArray aspects = fetchItems(QString("SELECT id as aspectID, redMode, greenMode, yellowMode FROM signalAspect WHERE deviceID = %1 ORDER BY sortIndex").arg(deviceID));
+    QJsonArray aspects = fetchItems(QString("SELECT id FROM signalAspect WHERE deviceID = %1 ORDER BY sortIndex").arg(deviceID));
     device["aspects"] = aspects;
-    QJsonArray devices = fetchItems(QString("SELECT DISTINCT signalCondition.deviceID FROM signalAspect JOIN signalCondition ON signalAspect.id = signalCondition.signalAspectID WHERE signalAspect.deviceID = %1").arg(deviceID));
+    QJsonArray devices = fetchItems(QString("SELECT DISTINCT signalCondition.deviceID as id FROM signalAspect JOIN signalCondition ON signalAspect.id = signalCondition.signalAspectID WHERE signalAspect.deviceID = %1").arg(deviceID));
     device["devices"] = devices;
 }
 
