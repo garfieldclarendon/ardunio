@@ -236,7 +236,10 @@ bool NetworkManager::sendUdpMessage(const UDPMessage &message, IPAddress &addres
 	if (message.getMessageID() != SYS_ACK)
 	{
 		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-		DEBUG_PRINT("TransactionID: %d  MessageID: %d ID: %d  Field0: %d TO %s\n", newMessage.getTransactionNumber(), message.getMessageID(), message.getID(), message.getField(0), address.toString().c_str());
+		if (newMessage.getMessageID() == DEVICE_STATUS)
+			DEBUG_PRINT("TransactionID: %d  MessageID: %d ID: %d  ID: %d  STATUS %d TO %s\n", newMessage.getTransactionNumber(), message.getMessageID(), message.getID(), message.getDeviceID(0), message.getDeviceStatus(0), address.toString().c_str());
+		else
+			DEBUG_PRINT("TransactionID: %d  MessageID: %d ID: %d  Field0: %d TO %s\n", newMessage.getTransactionNumber(), message.getMessageID(), message.getID(), message.getField(0), address.toString().c_str());
 	}
 
 	if (m_udp.beginPacket(address, UdpPort) == 0)

@@ -86,5 +86,6 @@ private:
 	byte m_aspectCount;
 	DeviceStateStruct m_deviceStates[MAX_SIGNAL_DEVICES];
 	AspectDownloadStruct *m_aspectDownload;
+	bool m_callSetup;
 };
 

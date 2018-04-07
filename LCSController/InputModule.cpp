@@ -37,7 +37,7 @@ void InputModule::processWire(void)
 	byte count = 0;
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
-		if (count > 0)
+		if (count >= 8)
 		{
 			NetManager.sendUdpMessage(outMessage, true);
 			outMessage = UDPMessage();
@@ -94,20 +94,34 @@ void InputModule::processWire(void)
 void InputModule::finishSetupWire(void)
 {
 	DEBUG_PRINT("InputModule::finishSetupWire  Module Address: %d\n", getAddress());
+
+	UDPMessage outMessage;
+	outMessage.setMessageID(DEVICE_STATUS);
+	outMessage.setID(getAddress());
+	byte count = 0;
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
+		if (count >= 8)
+		{
+			NetManager.sendUdpMessage(outMessage, true);
+			outMessage = UDPMessage();
+			outMessage.setMessageID(DEVICE_STATUS);
+			outMessage.setID(getAddress());
+			count = 0;
+		}
 		Device *device = getDevice(x);
 		if (device)
 		{
-			PinStateEnum pinState;
-			byte pin;
-			if (device->getPort() < 8)
-				pinState = (PinStateEnum)bitRead(m_inputA, device->getPort());
-			else
-				pinState = (PinStateEnum)bitRead(m_inputB, device->getPort() - 8);
+			byte input = m_expander.readA();
+			byte inputb = m_expander.readB();
 
-			device->processPin(device->getPort(), pinState);
+			ModuleData moduleData(input, inputb);
+			device->process(moduleData, outMessage, count);
 		}
+	}
+	if (count >= 8)
+	{
+		NetManager.sendUdpMessage(outMessage, true);
 	}
 }
 
@@ -162,7 +176,7 @@ void InputModule::processUDPMessageWire(const UDPMessage &message)
 
 void InputModule::sendStatusMessage(void)
 {
-//	DEBUG_PRINT("InputModule::sendStatusMessage  Module Address: %d\n\n", getAddress());
+	DEBUG_PRINT("InputModule::sendStatusMessage  Module Address: %d\n\n", getAddress());
 	UDPMessage outMessage;
 	outMessage.setMessageID(DEVICE_STATUS);
 	outMessage.setID(getAddress());
@@ -185,10 +199,12 @@ void InputModule::sendStatusMessage(void)
 			if (device->getDeviceType() == DeviceBlock)
 			{
 				outMessage.setDeviceID(count, device->getID());
-				outMessage.setDeviceStatus(count++, device->getCurrentStatus());
+				outMessage.setDeviceStatus(count, device->getCurrentStatus());
+				count++;
 			}
 		}
 	}
-	NetManager.sendUdpMessage(outMessage, true);
+	if (count > 0)
+		NetManager.sendUdpMessage(outMessage, true);
 //	DEBUG_PRINT("InputModule::sendStatusMessage  Module Address: %d DONE\n\n", getAddress());
 }

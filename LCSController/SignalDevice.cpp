@@ -7,7 +7,7 @@
 SignalDevice::SignalDevice()
 	: m_downloadConfig(false), m_lockout(false), m_updateValues(true), m_redMode(PinOn), 
 	m_greenMode(PinOff), m_yellowMode(PinOff), m_currentBlinkTimeout(0), m_blinkingTimeout(750), 
-	m_aspectCount(0), m_aspectDownload(NULL)
+	m_aspectCount(0), m_aspectDownload(NULL), m_callSetup(false)
 {
 	memset(m_deviceStates, 0, sizeof(DeviceStateStruct) * MAX_SIGNAL_DEVICES);
   m_aspectDownload = NULL;
@@ -22,8 +22,22 @@ SignalDevice::~SignalDevice()
 void SignalDevice::process(ModuleData &moduleData, UDPMessage &, byte &)
 {
 //	DEBUG_PRINT("SignalDevice::process: START\n");
+	if (m_callSetup)
+	{
+		m_aspectDownload = new  AspectDownloadStruct;
+		m_aspectDownload->aspectID = 0;
+		m_aspectDownload->next = NULL;
+
+		AspectDownloadStruct *hold = m_aspectDownload;
+		setup(getID(), getPort());
+		m_aspectDownload = hold;
+		m_callSetup = false;
+	}
+
 	if (m_aspectDownload != NULL)
+	{
 		downloadAspects();
+	}
 
 	byte dataA;
 	byte dataB;
@@ -420,9 +434,6 @@ void SignalDevice::setInvalidAspect(void)
 void SignalDevice::downloadConfig(void)
 {
 	DEBUG_PRINT("SignalDevice::downloadConfig DOWNLOADING!\n");
-	m_aspectDownload = new  AspectDownloadStruct;
-	m_aspectDownload->aspectID = 0;
-	m_aspectDownload->next = NULL;
 
 	String json = NetManager.getDeviceConfig(getID());
   DEBUG_PRINT("SignalDevice::downloadConfig SIZE %d!\n", json.length());
@@ -431,7 +442,7 @@ void SignalDevice::downloadConfig(void)
 		parseConfig(json, true);
 		saveConfig(json);
 		m_downloadConfig = false;
-		setup(getID(), getPort());
+		m_callSetup = true;
 	}
 }
 

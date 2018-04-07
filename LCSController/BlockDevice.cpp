@@ -3,7 +3,7 @@
 #include "UDPMessage.h"
 
 BlockDevice::BlockDevice()
-	: m_downloadConfig(false), m_last(0), m_current(0), m_currentState(BlockUnknown), m_currentTimeout(false)
+	: m_downloadConfig(false), m_last(0), m_current(1), m_currentState(BlockClear), m_currentTimeout(false)
 {
 }
 
