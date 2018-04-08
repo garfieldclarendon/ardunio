@@ -348,7 +348,11 @@ Rectangle {
                     CheckBox {
                         Layout.maximumWidth: 35
                         id: disableCheckBox
-                        checked: disable == 1
+                        checked: model.disable == 1
+                        onClicked: {
+                            console.debug("ControllerModule disable clicked!");
+                            model.disable = (checked ? 1 : 0);
+                        }
                     }
                     ToolButton {
                         id: deleteButton

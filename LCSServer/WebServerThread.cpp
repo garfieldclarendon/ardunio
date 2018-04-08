@@ -98,7 +98,11 @@ void WebServerThread::run(void)
     while(socket.flush())
             ;
     socket.disconnectFromHost();
-    socket.waitForDisconnected();
+    if(socket.state() == QAbstractSocket::ConnectedState ||
+            socket.state() == QAbstractSocket::ClosingState)
+    {
+        socket.waitForDisconnected();
+    }
     sleep(1);
 }
 
