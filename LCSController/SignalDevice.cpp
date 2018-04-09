@@ -223,6 +223,11 @@ void SignalDevice::setup(int deviceID, byte port)
 		m_downloadConfig = true;
 	else
 		m_downloadConfig = (parseConfig(json, false) == false);
+
+	if (m_downloadConfig == false)
+	{
+		m_aspectDownload = NULL;
+	}
 }
 
 void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message, UDPMessage &, byte &)

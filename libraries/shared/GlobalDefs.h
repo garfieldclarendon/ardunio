@@ -4,7 +4,7 @@
 
 const unsigned char MajorVersion = 3;
 const unsigned char MinorVersion = 0;
-const unsigned char BuildVersion = 27;
+const unsigned char BuildVersion = 28;
 
 /** When PROJECT_DEBUG is defined, DEBUG_PRINT will print output to the serial port.  Otherwise, DEBUG_PRINT does nothing (for release builds)  */
 #ifdef PROJECT_DEBUG
@@ -24,7 +24,7 @@ const unsigned char BuildVersion = 27;
 /** Maximum routes a turnout can belong to */
 #define MAX_ROUTE_ENTRIES 5
 /** Maximum devices (turnout and blocks) monitored by a Signal device */
-#define MAX_SIGNAL_DEVICES 10
+#define MAX_SIGNAL_DEVICES 20
 /** Maximum conditions per Signal aspect */
 #define MAX_SIGNAL_CONDITIONS 10
 

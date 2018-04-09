@@ -184,12 +184,12 @@ void InputModule::sendStatusMessage(void)
 	byte count = 0;
 	for (byte x = 0; x < MAX_DEVICES; x++)
 	{
-		if (count == 8)
+		if (count >= 8)
 		{
 			NetManager.sendUdpMessage(outMessage, true);
 			outMessage = UDPMessage();
 			outMessage.setMessageID(DEVICE_STATUS);
-			outMessage.setID(getAddress());
+			outMessage.setID(99 - getAddress());
 			count = 0;
 		}
 
