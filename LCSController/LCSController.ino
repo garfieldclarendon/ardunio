@@ -159,7 +159,7 @@ void serverFound(void)
 			byte count = 0;
 			for (byte index = 0; index < MAX_DEVICES; index++)
 			{
-				if (count > 0)
+				if (count >= 8)
 				{
 					NetManager.sendUdpMessage(outMessage, true);
 					outMessage = UDPMessage();
@@ -213,6 +213,7 @@ void networkConnected(bool connected)
 
 void udpMessageCallback(const UDPMessage &message)
 {
+	DEBUG_PRINT("udpMessageCallback: %d\n", message.getMessageID());
 	controller.processMessage(message);
 	for (byte x = 0; x < moduleCount; x++)
 	{

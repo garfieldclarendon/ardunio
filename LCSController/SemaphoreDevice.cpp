@@ -1,8 +1,9 @@
 #include "SemaphoreDevice.h"
 
 SemaphoreDevice::SemaphoreDevice()
-	: m_motorBA(0)
+	: SignalDevice(), m_motorBA(0)
 {
+	m_lockout = false;
 }
 
 
@@ -15,6 +16,7 @@ void SemaphoreDevice::process(ModuleData &moduleData, UDPMessage &, byte &)
 	UDPMessage outMessage;
 	outMessage.setMessageID(DEVICE_STATUS);
 	byte count = 0;
+	m_lockout = false;
 	SignalDevice::process(moduleData, outMessage, count);
 
 	byte data = moduleData.getByteA();

@@ -4,14 +4,14 @@
 
 /// Structure used to store the status of a device.
 struct MessageDeviceStruct {
-    uint32_t deviceID; ///< ID of the device
-    unsigned char status; ///< The device's current status
+    uint16_t deviceID; ///< ID of the device
+	uint16_t status; ///< The device's current status
 };
 typedef struct MessageDeviceStruct MessageDeviceStruct;
 
 /// Union used the by the UDPMessageStruct which contains an array of 8 device status entries.
 union PayloadUnion {
-    unsigned char buffer[24];  ///< 24 byte payload accessable as Field[0] to Field[23] through the getField() member.
+    unsigned char buffer[32];  ///< 32 byte payload accessable as Field[0] to Field[32] through the getField() member.
     MessageDeviceStruct deviceStatus[8]; ///< Array of 8 \ref MessageDeviceStruct "device status" entries
 } ;
 typedef union PayloadUnion PayloadUnion;
@@ -23,7 +23,7 @@ struct UDPMessageStruct
 	unsigned char messageID;  ///< The ID of the message.
 	long id; ///<  The ID of either the sender or the target of the message.  Could be the deviceID, controllerID, serialNumber or routeID.
     unsigned char transactionNumber; ///<  The message transaction number.  A unique number auto-generated for each message.
-    PayloadUnion payload;  ///< 24 byte payload accessable as Field[0] to Field[23] through the UDPMessage::getField() member and/or as \ref MessageDeviceStruct "device status" entries accesable through UDPMessage::getDeviceID() and UDPMessage::getDeviceStatus().
+    PayloadUnion payload;  ///< 32 byte payload accessable as Field[0] to Field[31] through the UDPMessage::getField() member and/or as \ref MessageDeviceStruct "device status" entries accesable through UDPMessage::getDeviceID() and UDPMessage::getDeviceStatus().
 	unsigned char endSig[2]; ///< 2 byte end-of-message signalture set to 0XEF 0XEE.
 };
 typedef struct UDPMessageStruct UDPMessageStruct;
@@ -71,7 +71,7 @@ class UDPMessage
     /// Setter function.  Sets the ID.
     /// @param value an long integer value that represents the controller's ID, serial number or a route ID depending on the \ref UDPMessageID "message".
     void setID(long value) { m_messageStruct.id = value; }
-    /// Setter function.  Sets one of the bytes in the 24 byte payload.
+    /// Setter function.  Sets one of the bytes in the 32 byte payload.
     /// @param fieldIndex index of the field to set
     /// @param value a byte containing the new value.
     void setField(unsigned char fieldIndex, unsigned char value) { m_messageStruct.payload.buffer[fieldIndex] = value; }
@@ -102,7 +102,7 @@ class UDPMessage
     /// Setter function.  Sets the transaction number overwriting the auto-generated number;
     /// @param value the new trasaction number.
     void setTransactionNumber(unsigned char value) { m_messageStruct.transactionNumber = value; }
-    /// Returns one of the bytes in the 24 byte payload.
+    /// Returns one of the bytes in the 32 byte payload.
     /// @param fieldIndex index of the field to retrieve.
     unsigned char getField(unsigned char fieldIndex) const
 	{

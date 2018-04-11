@@ -9,7 +9,7 @@ extern "C" {
 NetworkManager *NetworkManager::m_this = NULL;
 
 NetworkManager::NetworkManager(void)
-	: m_serverPort(-1), m_controllerID(0), m_serverAddress(0, 0, 0, 0), m_lastCheckTimeout(0), m_firstNotification(NULL), m_currentStruct(NULL), m_wifiStatus(WiFiDisconnected)
+	: m_serverPort(-1), m_controllerID(0), m_serverAddress(0, 0, 0, 0), m_lastCheckTimeout(0), m_idleTimeout(0), m_firstNotification(NULL), m_currentStruct(NULL), m_wifiStatus(WiFiDisconnected)
 {
 	m_this = this;
 	m_firstMessageQueue = new MessageQueueStruct;
@@ -38,9 +38,9 @@ void NetworkManager::init(int serverPort, int controllerID)
 	WiFi.mode(WIFI_STA);
 	WiFi.setAutoConnect(false);
 	WiFi.setAutoReconnect(true);
-	String name("LCS_Controller-");
-	name += ESP.getChipId();
-	wifi_station_set_hostname((char *)name.c_str());
+	//String name("LCS_Controller-");
+	//name += ESP.getChipId();
+	//wifi_station_set_hostname((char *)name.c_str());
 
 	processWiFi();
 
@@ -56,15 +56,26 @@ bool NetworkManager::process(void)
 	processUDP();
 	checkNotificationList();
 	checkMessageQueue();
-	return ret;
+	unsigned long t = millis();
+	if ((t - m_idleTimeout) >= (1000 * 120))
+	{
+		DEBUG_PRINT("SENDING IDLE ACK MESSAGE\n");
+		UDPMessage message;
+		message.setMessageID(SYS_ACK);
+		message.setTransactionNumber(0);
+		sendUdpBroadcastMessage(message);
+	}
 }
 
 bool NetworkManager::processWiFi(void)
 {
 	bool wiFiReconnected = false;
 	wl_status_t status = WiFi.status();
-	//	DEBUG_PRINT("[WIFI] process::status %d\n", status);
-	if (m_wifiStatus == WiFiDisconnected && (status == WL_DISCONNECTED || status == WL_IDLE_STATUS || status == WL_CONNECT_FAILED || WL_CONNECTION_LOST))
+	if (status != WL_CONNECTED)
+	{
+		DEBUG_PRINT("[WIFI] process::status %d\n", status);
+	}
+	if (m_wifiStatus == WiFiDisconnected && (status == WL_DISCONNECTED || status == WL_IDLE_STATUS || status == WL_CONNECT_FAILED || status == WL_CONNECTION_LOST))
 	{
 		WiFi.begin(ssid, password);
 		status = WiFi.status();
@@ -84,6 +95,10 @@ bool NetworkManager::processWiFi(void)
 			if (m_wifiConnectCallback)
 				m_wifiConnectCallback(status == WL_CONNECTED);
 		}
+	}
+	else if (m_wifiStatus != WiFiConnecting)
+	{
+		m_wifiStatus = WiFiDisconnected;
 	}
 
 	return wiFiReconnected;
@@ -257,10 +272,13 @@ bool NetworkManager::sendUdpMessage(const UDPMessage &message, IPAddress &addres
 		{
 			m_udp.flush();
 			ret = true;
+			m_idleTimeout = millis();
 		}
 	}
 	if (message.getMessageID() != SYS_ACK)
+	{
 		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+	}
 	yield();
 	return ret;
 }

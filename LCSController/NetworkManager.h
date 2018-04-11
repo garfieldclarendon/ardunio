@@ -89,6 +89,8 @@ private:
 	String m_controllerName;
 	int m_controllerID;
 	unsigned long m_lastCheckTimeout;
+	unsigned long m_idleTimeout;
+
 	NotificationStruct *m_firstNotification;
 	NotificationStruct *m_currentStruct;
 	MessageQueueStruct *m_firstMessageQueue;
