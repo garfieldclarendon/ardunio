@@ -24,6 +24,7 @@ QHash<int, QByteArray> DeviceModel::roleNames(void) const
     roleNames[Qt::UserRole + 6] = QByteArray("serialNumber");
     roleNames[Qt::UserRole + 7] = QByteArray("deviceState");
     roleNames[Qt::UserRole + 8] = QByteArray("controllerID");
+    roleNames[Qt::UserRole + 9] = QByteArray("labelName");
 
     return roleNames;
 }

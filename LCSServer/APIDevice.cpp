@@ -250,7 +250,7 @@ QJsonArray APIDevice::getDeviceList(long serialNumber, int controllerID, int mod
 {
     Database db;
 
-    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, deviceClass FROM device");
+    QString sql = QString("SELECT device.id as deviceID, deviceName, deviceDescription, deviceClass, labelName FROM device");
 
     QString where(" WHERE ");
     bool useAnd = false;

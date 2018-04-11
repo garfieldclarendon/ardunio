@@ -21,7 +21,7 @@ void LabelOutput::paintHeader(QRectF &rect, QPainter *painter)
     font.setPointSize(12);
     font.setBold(true);
     painter->setFont(font);
-    painter->drawText(rect, 0, "Output Module", &size);
+    painter->drawText(rect, 0, m_model->data(0, "moduleName").toString(), &size);
     rect.setTop(rect.top() + size.height() + m_padding);
     font.setBold(false);
     painter->setFont(font);

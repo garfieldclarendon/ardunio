@@ -20,7 +20,7 @@ void LabelInput::paintHeader(QRectF &rect, QPainter *painter)
     font.setPointSize(12);
     font.setBold(true);
     painter->setFont(font);
-    painter->drawText(rect, 0, "Input Module", &size);
+    painter->drawText(rect, 0, m_model->data(0, "moduleName").toString(), &size);
     rect.setTop(rect.top() + size.height() + m_padding);
     font.setBold(false);
     painter->setFont(font);

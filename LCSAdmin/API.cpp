@@ -438,6 +438,7 @@ QUrl API::buildUrl(const QString &path)
 
 QString API::sendToServer(const QUrl &url, const QString &json, NetActionType netAction)
 {
+    qDebug("sendToServer: %s", url.toString().toLatin1().data());
     QString ret;
     QNetworkRequest request;
     request.setUrl(url);
@@ -467,6 +468,7 @@ QString API::sendToServer(const QUrl &url, const QString &json, NetActionType ne
         ret = reply->readAll();
         reply->deleteLater();
     }
+    qDebug("sendToServer: %s COMPLETE", url.toString().toLatin1().data());
 
     return ret;
 }

@@ -58,6 +58,7 @@ Rectangle {
     {
         deviceEntity.setValue("deviceName", nameEdit.text);
         deviceEntity.setValue("deviceDescription", descriptionEdit.text);
+        deviceEntity.setValue("labelName", labelText.text);
         deviceModules.saveData();
     }
 
@@ -175,6 +176,24 @@ Rectangle {
             height: 10
         }
 // Fith Row
+        Text {
+            id: printLabel
+            text: "<b>Label As</b>"
+            font.bold: true
+            horizontalAlignment: Qt.AlignRight
+            Layout.fillWidth: true
+        }
+        TextField {
+            id: labelText
+            text: deviceEntity.data.labelName
+            placeholderText: nameEdit.text
+            Layout.fillWidth: true
+        }
+        Item {
+            width: 10
+            height: 10
+        }
+// Sixth Row
         DeviceModules {
             id: deviceModules
             deviceID: deviceEntity.data.deviceID

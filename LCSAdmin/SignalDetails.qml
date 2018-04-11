@@ -53,6 +53,7 @@ Rectangle {
             deviceEntity: main.deviceEntity
             Layout.columnSpan: 3
             Layout.fillWidth: true
+            Layout.minimumHeight: addButton.height * 10
             onSaveClicked: {
                 main.saveData();
                 main.saveClicked();
