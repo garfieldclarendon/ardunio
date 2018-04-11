@@ -114,10 +114,10 @@ void NetworkManager::processUDP(void)
 	else
 		packetSize = m_udp.parsePacket();
 
-	if (packetSize > 0)
-	{
-		DEBUG_PRINT("processUDP:  PACKET SIZE: %d\n", packetSize);
-	}
+	//if (packetSize > 0)
+	//{
+	//	DEBUG_PRINT("processUDP:  PACKET SIZE: %d\n", packetSize);
+	//}
 
 	// Find the start of a valid message.
 	// ...ignore everything else
@@ -140,7 +140,7 @@ void NetworkManager::processUDP(void)
 	if (signatureFound)
 	{
 		signatureFound = false;
-		DEBUG_PRINT("READING MESSAGE!\n");
+//		DEBUG_PRINT("READING MESSAGE!\n");
 		UDPMessage message;
 		byte size = sizeof(UDPMessageStruct);
 		char *ref = message.getRef();
@@ -204,8 +204,8 @@ void NetworkManager::sendUdpMessage(const UDPMessage &message, bool addToQueue)
 //	DEBUG_PRINT("SENDUDPMESSAGE: MessageID: %d  Transaction: %d\n",message.getMessageID(), message.getTransactionNumber());
 	NotificationStruct *current = m_firstNotification;
 
-//	if (getWiFiConnected())
-//	{
+	if (getWiFiConnected())
+	{
 		while (current)
 		{
 			if (current->address != (uint32_t)0)
@@ -225,7 +225,7 @@ void NetworkManager::sendUdpMessage(const UDPMessage &message, bool addToQueue)
 			if (sendUdpMessage(message, m_serverAddress, true) == false)
 				m_serverAddress = IPAddress();
 		}
-	//}
+	}
 
 	// Give other modules connected to this controller a chance to process the message too
 	if (m_udpMessageCallback)

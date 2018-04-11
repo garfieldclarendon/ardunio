@@ -213,6 +213,7 @@ bool SignalDevice::isNextConditionOR(SignalAspectStruct *aspect, byte nextIndex)
 
 void SignalDevice::setup(int deviceID, byte port)
 {
+	m_lockout = false;
 	m_updateValues = true;
 	setID(deviceID);
 	setPort(port);
@@ -278,6 +279,7 @@ void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &m
 
 void SignalDevice::handleLockoutMessage(const UDPMessage &message)
 {
+	DEBUG_PRINT("handleLockoutMessage\n");
 	// First field contains the the lock flag
 	controllerLockout(message.getField(0));
 	// If locked and field1 contains 1, then fields 2,3 and 4 contain the red, green and yellow settings respectively.

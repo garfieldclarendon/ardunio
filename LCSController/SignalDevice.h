@@ -60,6 +60,7 @@ public:
 protected:
 	bool parseConfig(String &jsonText, bool setVersion);
 	bool m_downloadConfig;
+	bool m_lockout;
 
 private:
 	void setPin(byte &data, byte pin, PinStateEnum state);
@@ -80,7 +81,6 @@ private:
 	PinStateEnum m_yellowMode;
 
 	bool m_updateValues;
-	bool m_lockout;
 	unsigned long m_currentBlinkTimeout;
 	int m_blinkingTimeout;
 	byte m_aspectCount;
