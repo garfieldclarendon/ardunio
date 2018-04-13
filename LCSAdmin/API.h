@@ -26,7 +26,7 @@ public:
     static API *instance(void);
 
     QString getServerAddress(void) const { return m_server; }
-    void setServerAddress(const QString &value) { m_server = value; emit serverAddressChanged(); emit apiReady(); }
+    void setServerAddress(const QString &value);
     int getServerPort(void) const { return m_port; }
     void setServerPort(int value) { m_port = value; emit serverPortChanged(); }
 

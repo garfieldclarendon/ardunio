@@ -50,6 +50,18 @@ API *API::instance()
     return m_instance;
 }
 
+void API::setServerAddress(const QString &value)
+{
+    if(m_server != value)
+    {
+        m_server = value;
+        emit serverAddressChanged();
+        setupNotificationSocket();
+    }
+    if(m_server.length() > 0)
+        emit apiReady();
+}
+
 void API::activateTurnout(int deviceID, int newState)
 {
     QUrl url(buildUrl(QString("activate_turnout?deviceID=%1&turnoutState=%2").arg(deviceID).arg(newState)));
@@ -379,10 +391,7 @@ void API::newUDPMessage(const UDPMessage &message)
         QString address = QString("%1.%2.%3.%4").arg(message.getField(0)).arg(message.getField(1)).arg(message.getField(2)).arg(message.getField(3));
         if(address != m_server)
         {
-            m_server = address;
-            emit serverAddressChanged();
-            setupNotificationSocket();
-            emit apiReady();
+            setServerAddress(address);
         }
     }
 }
