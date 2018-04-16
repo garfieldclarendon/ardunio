@@ -68,7 +68,7 @@ void LabelOutput::paintBody(QRectF &rect, QPainter *painter)
         }
     }
 
-    for(int x = 7; x >= 0; x--)
+    for(int x = 0; x < 8; x++)
     {
         paintOutput(rect, painter, list[x], x);
     }

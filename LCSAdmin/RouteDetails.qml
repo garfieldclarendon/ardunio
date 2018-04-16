@@ -137,6 +137,7 @@ Rectangle {
         }
         ToolButton {
             id: addButton
+            enabled: routeEntity.data.routeID > 0
             contentItem: Image {
                 source: "Images/add.png"
                 sourceSize.width: 18
@@ -148,9 +149,9 @@ Rectangle {
                 }
             }
             onClicked: {
-                var entity = moduleModel.getEntity(-1);
-                moduleModel.setEntity(-1, entity);
-                routeView.currentIndex = moduleModel.getRowCount() - 1
+                var entity = routeEntryModel.getEntity(-1);
+                routeEntryModel.setEntity(-1, entity);
+                routeView.currentIndex = routeEntryModel.getRowCount() - 1
             }
         }
         ListView {
@@ -180,7 +181,7 @@ Rectangle {
                         Layout.minimumWidth: comboMetrics.width
                         currentIndex: deviceModel.getDeviceRow(deviceID)
                         onActivated: {
-                            deviceID = deviceModel.data(currentIndex, "DeviceID");
+                            deviceID = deviceModel.data(currentIndex, "deviceID");
                         }
                     }
                     Label {
@@ -194,7 +195,7 @@ Rectangle {
                         Layout.minimumWidth: comboMetrics.width
                         currentIndex: getStateRow(turnoutState)
                         onActivated: {
-                            turnoutState = turnoutState.get(currentIndex).classID;
+                            turnoutState = model.get(currentIndex).classID;
                         }
                     }
                     ToolButton {
@@ -205,7 +206,7 @@ Rectangle {
                             sourceSize.height: 18
                         }
                         onClicked: {
-                            moduleModel.deleteRow(index);
+                            routeEntryModel.deleteRow(index);
                         }
                     }
                 }

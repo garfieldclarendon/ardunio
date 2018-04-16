@@ -49,7 +49,7 @@
         },
         {
             "name": "routeEntry",
-            "keyField": "id",
+            "keyField": "routeEntryID",
             "tableKeyField": "id",
             "tableName": "routeEntry"
         }

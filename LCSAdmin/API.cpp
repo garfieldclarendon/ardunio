@@ -19,7 +19,7 @@
 API *API::m_instance = NULL;
 
 API::API(const QString &server, const int port, QObject *parent)
-    : QObject(parent), m_connected (false), m_server(server), m_port(port), m_notificationSocket(NULL)
+    : QObject(parent), m_connected (false), m_server(server), m_port(port), m_notificationSocket(NULL), m_busy(false)
 {
     if(m_server.endsWith('/') || m_server.endsWith('\\'))
         m_server.chop(1);
@@ -60,6 +60,15 @@ void API::setServerAddress(const QString &value)
     }
     if(m_server.length() > 0)
         emit apiReady();
+}
+
+void API::setBusy(bool value)
+{
+    if(m_busy != value)
+    {
+        m_busy = value;
+        emit busyChanged();
+    }
 }
 
 void API::activateTurnout(int deviceID, int newState)
@@ -195,10 +204,12 @@ QString API::getSignalConditionList(int aspectID)
     return json;
 }
 
-QString API::getRouteList()
+QString API::getRouteList(int deviceID)
 {
     QString json;
     QString s("route_list");
+    if(deviceID > 0)
+        s += QString("?deviceID=%1").arg(deviceID);
     QUrl url(buildUrl(s));
 
     json = sendToServer(url, QString(), NetActionGet);
@@ -301,22 +312,85 @@ bool API::getApiReady()
 
 void API::restartController(int serialNumber)
 {
-    MessageBroadcaster::instance()->sendResetCommand(serialNumber);
+    QUrl url(buildUrl(QString("send_controller_reset?serialNumber=%1").arg(serialNumber)));
+
+    sendToServer(url, QString(), NetActionGet);
 }
 
 void API::sendControllerConfig(int serialNumber)
 {
-    MessageBroadcaster::instance()->sendResetConfigCommand(serialNumber);
+    QUrl url(buildUrl(QString("send_controller_reset_config?serialNumber=%1").arg(serialNumber)));
+
+    sendToServer(url, QString(), NetActionGet);
 }
 
 void API::sendControllerNotificationList(int serialNumber)
 {
-    MessageBroadcaster::instance()->sendResetNotificationListCommand(serialNumber);
+    QUrl url(buildUrl(QString("send_controller_reset_notification_list?serialNumber=%1").arg(serialNumber)));
+
+    sendToServer(url, QString(), NetActionGet);
 }
 
 void API::sendDeviceConfig(int deviceID)
 {
-    MessageBroadcaster::instance()->sendResetDeviceConfigCommand(deviceID);
+    QUrl url(buildUrl(QString("send_device_config?deviceID=%1").arg(deviceID)));
+
+    sendToServer(url, QString(), NetActionGet);
+}
+
+void API::sendFirmware(int serialNumber)
+{
+    QUrl url(buildUrl(QString("send_controller_firmware?serialNumber=%1").arg(serialNumber)));
+
+    sendToServer(url, QString(), NetActionGet);
+}
+
+QStringList API::getServerList() const
+{
+    QStringList list;
+    QSettings settings;
+
+    for(int x = 0; x < 5; x++)
+    {
+        QString key(QString("server%1").arg(x));
+        QString s = settings.value(key).toString();
+        if(s.length() > 0)
+            list << s;
+    }
+
+    list << "127.0.0.1";
+
+    return list;
+}
+
+void API::addServerToList(const QString &address)
+{
+    QStringList list = getServerList();
+
+    list.removeLast();
+
+    bool found = false;
+    for(int x = 0; x < list.count(); x++)
+    {
+        if(list.value(x) == address)
+        {
+            found = true;
+            break;
+        }
+    }
+
+    if(!found)
+    {
+        list << address;
+        QSettings settings;
+
+        for(int x = 0; x < 5; x++)
+        {
+            QString key(QString("server%1").arg(x));
+            settings.setValue(key, list.value(x));
+        }
+        emit serverListChanged();
+    }
 }
 
 void API::textMessageReceived(const QString &message)
@@ -327,13 +401,12 @@ void API::textMessageReceived(const QString &message)
 
     if(urlText == "/api/notification/controller")
     {
-        QString s = obj["serialNumber"].toString();
+        QString s = obj["serialNumber"].toVariant().toString();
         int serialNumber = s.toInt();
-        s = obj["status"].toString();
+        s = obj["status"].toVariant().toString();
+        QString version = obj["version"].toVariant().toString();
         ControllerStatusEnum status = (ControllerStatusEnum)s.toInt();
-        s = obj["pingLength"].toString();
-        quint64 pingLength = s.toInt();
-        emit controllerChanged(serialNumber, status, pingLength);
+        emit controllerChanged(serialNumber, status, version);
     }
     else if(urlText == "/api/notification/device")
     {
@@ -391,6 +464,7 @@ void API::newUDPMessage(const UDPMessage &message)
         QString address = QString("%1.%2.%3.%4").arg(message.getField(0)).arg(message.getField(1)).arg(message.getField(2)).arg(message.getField(3));
         if(address != m_server)
         {
+            addServerToList(address);
             setServerAddress(address);
         }
     }
@@ -447,6 +521,7 @@ QUrl API::buildUrl(const QString &path)
 
 QString API::sendToServer(const QUrl &url, const QString &json, NetActionType netAction)
 {
+    setBusy(true);
     qDebug("sendToServer: %s", url.toString().toLatin1().data());
     QString ret;
     QNetworkRequest request;
@@ -466,18 +541,30 @@ QString API::sendToServer(const QUrl &url, const QString &json, NetActionType ne
 
     if(reply)
     {
-        while (true)
-        {
-            QCoreApplication::processEvents();
-            QThread::currentThread()->msleep(50);
-            if(reply->isFinished() || reply->isRunning() == false)
-                break;
-        }
+        QEventLoop loop;
+        QTimer timer;
+        timer.setSingleShot(true);
+        connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+        connect(&manager, SIGNAL(finished(QNetworkReply*)),
+                &loop, SLOT(quit()));
 
-        ret = reply->readAll();
+        timer.start(5000); // 5 second timeout
+        loop.exec();
+
+        if(timer.isActive())
+        {
+            ret = reply->readAll();
+            timer.stop();
+        }
+        else
+        {
+            // timeout
+            qDebug("sendToServer: %s TIMEOUT", url.toString().toLatin1().data());
+        }
         reply->deleteLater();
     }
     qDebug("sendToServer: %s COMPLETE", url.toString().toLatin1().data());
+    setBusy(false);
 
     return ret;
 }

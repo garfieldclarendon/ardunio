@@ -57,7 +57,7 @@ void LabelInput::paintBody(QRectF &rect, QPainter *painter)
         list[port] = text;
     }
 
-    for(int x = 7; x >= 0; x--)
+    for(int x = 0; x < 8; x++)
     {
         paintInput(rect, painter, list[x], x);
     }

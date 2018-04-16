@@ -39,7 +39,7 @@ signals:
     /// Currently, this signal is not emitted as there is no way (currently) for the detection of a controller going offline.
     void controllerRemoved(long serialNumber);
     /// Emitted when a SYS_CONTROLLER_ONLINE and SYS_RESTARTING UDP messages are received.
-    void controllerStatusChanged(long serialNumber, ControllerStatusEnum newStatus);
+    void controllerStatusChanged(long serialNumber, ControllerStatusEnum newStatus, const QString &version);
 
 public slots:
     /// Returns the serial number for the given controllerID.

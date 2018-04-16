@@ -3,11 +3,21 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
 import Utils 1.0
 
-GroupBox {
+Rectangle {
     id: devicePropertyGroup
-    title: "<b>Additional Information</b>"
+    implicitHeight: listView.visible ? textMetrics.itemHeight * listView.count + textMetrics.itemHeight : textMetrics.itemHeight
+    border.color: "lightgrey"
+    border.width: 1
+    visible: listView.count > 0 ? true : false
+
     property int deviceID: -1
     property int deviceClass: 0
+
+    TextMetrics {
+        id: textMetrics
+        property int itemHeight: textMetrics.height + 35
+        text: "CLASS>MULTI-CONTROLLER"
+    }
 
     DevicePropertyModel {
         id: model
@@ -15,8 +25,33 @@ GroupBox {
         deviceClass: devicePropertyGroup.deviceClass
     }
 
-    ListView {
+    MouseArea {
         anchors.fill: parent
+        onClicked: {
+            listView.visible = !listView.visible;
+        }
+    }
+
+    Text {
+        id: titleText
+        text: "<b>Additional Information</b>"
+        height: implicitHeight
+        font.pixelSize: textMetrics.height + (textMetrics.height * 0.5)
+        font.bold: true
+        horizontalAlignment: Qt.AlignHCenter
+        anchors.topMargin: 5
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+    }
+
+    ListView {
+        id: listView
+        anchors.top: titleText.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 5
         clip: true
 
         Component {
@@ -24,7 +59,7 @@ GroupBox {
             RowLayout {
                 id: wrapper
                 width: parent.width
-                height: valueField.height + 12
+                height: textMetrics.itemHeight
                 Text {
                     id: keyText
                     text: "<b>" + key + ":</b>"

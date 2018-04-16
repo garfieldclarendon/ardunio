@@ -60,12 +60,20 @@ void APIRoute::handleLockRouteUrl(const APIRequest &request, APIResponse *)
     lockRoute(routeID, lock);
 }
 
-void APIRoute::handleGetRouteList(const APIRequest &, APIResponse *response)
+void APIRoute::handleGetRouteList(const APIRequest &request, APIResponse *response)
 {
     qDebug(QString("handleGetRouteList.").toLatin1());
+    QUrlQuery urlQuery(request.getUrl());
+    int deviceID = urlQuery.queryItemValue("deviceID").toInt();
     Database db;
 
-    QString sql = QString("SELECT ID as routeID, routeName, routeDescription FROM Route ORDER BY routeName");
+    QString sql = QString("SELECT ID as routeID, routeName, routeDescription FROM route");
+
+    if(deviceID > 0)
+        sql += QString(" WHERE id IN (select routeID FROM routeEntry WHERE deviceID = %1)").arg(deviceID);
+    else
+        sql +=  " ORDER BY routeName";
+
     QJsonArray jsonArray = db.fetchItems(sql);
 
     for(int x = 0; x < jsonArray.size(); x++)

@@ -7,7 +7,7 @@ ControllerModel::ControllerModel(QObject *parent)
     : EntityModel("controller", parent), m_class(ControllerUnknown)
 {
     connect(API::instance(), SIGNAL(apiReady()), this, SLOT(apiReady()));
-    connect(API::instance(), SIGNAL(controllerChanged(int,ControllerStatusEnum,quint64)), this, SLOT(controllerChanged(int,ControllerStatusEnum,quint64)));
+    connect(API::instance(), SIGNAL(controllerChanged(int,ControllerStatusEnum,QString)), this, SLOT(controllerChanged(int,ControllerStatusEnum,QString)));
     apiReady();
 }
 
@@ -83,7 +83,7 @@ void ControllerModel::apiReady()
     loadData();
 }
 
-void ControllerModel::controllerChanged(int serialNumber, ControllerStatusEnum status, quint64 pingLength)
+void ControllerModel::controllerChanged(int serialNumber, ControllerStatusEnum status, const QString &version)
 {
     bool found = false;
     for(int x = 0; x < m_jsonModel->rowCount(); x++)
@@ -92,7 +92,7 @@ void ControllerModel::controllerChanged(int serialNumber, ControllerStatusEnum s
         if(d == serialNumber)
         {
             m_jsonModel->setData(x, "status", status);
-            m_jsonModel->setData(x, "pingLength", pingLength);
+            m_jsonModel->setData(x, "version", version);
             found = true;
             break;
         }

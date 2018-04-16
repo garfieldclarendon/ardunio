@@ -243,6 +243,22 @@ Rectangle {
                 ui.printControllerLabel(controllerEntity.data.controllerID);
             }
         }
+        // Sixth Row
+        Item {
+            width: addButton.width
+            height: addButton.height
+        }
+        Item {
+            width: addButton.width
+            height: addButton.height
+        }
+        Button {
+            id: firmwareButton
+            text: "Send Firmware"
+            onClicked: {
+                api.sendFirmware(controllerEntity.data.serialNumber);
+            }
+        }
         Item {
             width: addButton.width
             height: addButton.height

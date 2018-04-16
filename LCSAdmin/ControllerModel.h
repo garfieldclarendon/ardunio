@@ -23,7 +23,7 @@ signals:
     void newController(int newSerialNumber);
 
 public slots:
-    void controllerChanged(int serialNumber, ControllerStatusEnum status, quint64 pingLength = 0);
+    void controllerChanged(int serialNumber, ControllerStatusEnum status, const QString &version);
     int getControllerRow(int controllerID);
     int getControllerClass(int controllerID);
     void setControllerID(int value);

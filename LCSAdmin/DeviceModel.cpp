@@ -1,3 +1,5 @@
+#include <QMessageBox>
+
 #include "DeviceModel.h"
 #include "GlobalDefs.h"
 #include "JSonModel.h"
@@ -171,6 +173,10 @@ void DeviceModel::loadData()
         QJsonDocument jsonDoc;
         QString json = API::instance()->getDeviceList(m_controllerID, m_controllerModuleID, DeviceUnknown);
         jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+        if(json.length() > 0 && jsonDoc.isNull())
+        {
+            QMessageBox::warning(NULL, "Device Load Error", "Download error.", QMessageBox::Ok);
+        }
         beginResetModel();
         m_jsonModel->setJson(jsonDoc, false);
         endResetModel();

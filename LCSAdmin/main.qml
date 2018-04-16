@@ -10,6 +10,11 @@ ApplicationWindow {
     height: 768
     title: qsTr("Layoutout Control System - Administration")
 
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: api.busy
+        z: 100
+    }
 
     SignalConditionModel{
         id: signalConditionModel
@@ -17,14 +22,11 @@ ApplicationWindow {
 
     header: Item{
             width: parent.width
-            height: 40
-                RowLayout {
+            height: serverStatus.implicitHeight
+                ServerStatus {
+                    id: serverStatus
                     anchors.fill: parent
                     anchors.margins: 5
-                    ServerStatus {
-                        id: serverStatus
-                        anchors.fill: parent
-                }
         }
     }
     StackLayout {

@@ -4,7 +4,7 @@
 #include "API.h"
 
 RouteModel::RouteModel(QObject *parent)
-    : EntityModel("route", parent)
+    : EntityModel("route", parent), m_deviceID(0)
 {
     connect(API::instance(), SIGNAL(apiReady()), this, SLOT(apiReady()));
     connect(API::instance(), SIGNAL(routeChanged(int,bool,bool,bool)), this, SLOT(routeChanged(int,bool,bool,bool)));
@@ -25,10 +25,38 @@ QHash<int, QByteArray> RouteModel::roleNames(void) const
     return roleNames;
 }
 
+void RouteModel::setDeviceID(int value)
+{
+    if(m_deviceID != value)
+    {
+        m_deviceID = value;
+        emit deviceIDChanged();
+        loadData();
+    }
+}
 
-bool RouteModel::filterAcceptsRow(int , const QModelIndex &) const
+void RouteModel::setFilterText(const QString &filterText)
+{
+    if(filterText != m_filterText)
+    {
+        m_filterText = filterText;
+        emit filterTextChanged();
+        invalidateFilter();
+    }
+}
+
+
+bool RouteModel::filterAcceptsRow(int source_row, const QModelIndex &) const
 {
     bool ret = true;
+
+    if(ret && m_filterText.length() > 0)
+    {
+        QString name = m_jsonModel->data(source_row, "routeName", Qt::EditRole).toString();
+        if(name.startsWith(m_filterText, Qt::CaseInsensitive) == false)
+            ret = false;
+    }
+
     return ret;
 }
 
@@ -73,7 +101,7 @@ void RouteModel::loadData()
     if(m_jsonModel && API::instance()->getApiReady())
     {
         QJsonDocument jsonDoc;
-        QString json = API::instance()->getRouteList();
+        QString json = API::instance()->getRouteList(m_deviceID);
         jsonDoc = QJsonDocument::fromJson(json.toLatin1());
         beginResetModel();
         m_jsonModel->setJson(jsonDoc, false);

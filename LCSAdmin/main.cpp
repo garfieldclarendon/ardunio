@@ -25,6 +25,10 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);
     QApplication app(argc, argv);
 
+    app.setOrganizationName("GCMRR");
+    app.setOrganizationDomain("garfieldcentral.org");
+    app.setApplicationName("LCS Admin");
+
     qRegisterMetaType<Entity>();
     qRegisterMetaType<ControllerStatusEnum>("ControllerStatusEnum");
     qRegisterMetaType<ControllerClassEnum>("ControllerClassEnum");

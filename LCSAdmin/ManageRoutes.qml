@@ -5,17 +5,17 @@ import QtQuick.Layouts 1.3
 import Utils 1.0
 
 Item {
+    implicitHeight: (textMetrics.itemHeight * (listView.count + 1)) + buttons.implicitHeight + 15
     property alias model: listView.model
+    property alias rowCount: listView.rowCount
     property alias currentIndex: listView.currentRow
+    property alias deviceID: routeModel.deviceID
 
     signal editClicked(int index, var entity);
     signal addClicked();
 
     TextMetrics {
         id: textMetrics
-//        font.family: "Courier New"
-//        font.pixelSize: 25
-//        font.pointSize: ui.baseFontSize
         font.bold: false
         text: "CLASS>MULTI-CONTROLLER"
     }
@@ -29,12 +29,19 @@ Item {
         anchors.margins: 5
         columns: 3
 
-        Item {
-            height: 10
-            Layout.columnSpan: 2
+
+        TextField {
+            id: searchText
+            placeholderText: "Enter Search Text"
+            text: routeModel.filterText
+            inputMethodHints: Qt.ImhNoPredictiveText
             Layout.fillWidth: true
+            Layout.columnSpan: 2
+            onTextChanged: {
+                routeModel.filterText = searchText.text;
+            }
         }
-        CRUDButtons {
+         CRUDButtons {
             id: buttons
             enableAdd: api.apiReady
             enableDelete: listView.currentRow >= 0 ? (api.apiReady ? true : false) : false

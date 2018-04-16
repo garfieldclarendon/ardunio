@@ -3,18 +3,19 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
 
 Rectangle {
+    id: mainRect
     property var deviceEntity
     property alias devicePropertiesVisible: deviceProperties.visible
 
     signal saveClicked();
     signal cancelClicked();
 
-    implicitHeight: saveButton.height * 8
+    implicitHeight: gridLayout.height + deviceModules.height + (deviceProperties.visible ? deviceProperties.height : 0)
     width: 400
 
 //    border.color: "red"
 //    border.width: 1
-    clip: true
+//    clip: true
 
     TextMetrics {
         id: comboMetrics
@@ -92,7 +93,10 @@ Rectangle {
         id: gridLayout
         columns: 3
         columnSpacing: 5
-        anchors.fill: parent
+        height: saveButton.height * 6
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
         anchors.margins: 2
 // First Row
         Label {
@@ -166,6 +170,7 @@ Rectangle {
             model: classModel
             textRole: "text"
             Layout.minimumWidth: comboMetrics.width
+            Layout.fillWidth: true
             currentIndex: getClassRow(deviceEntity.data.deviceClass)
             onActivated: {
                 deviceClass = classModel.get(currentIndex).classID;
@@ -193,23 +198,24 @@ Rectangle {
             width: 10
             height: 10
         }
-// Sixth Row
-        DeviceModules {
-            id: deviceModules
-            deviceID: deviceEntity.data.deviceID
-            deviceClass: deviceEntity.data.deviceClass
-            Layout.columnSpan: 3
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-        }
-// Last Row
-        DeviceProperties {
-            id: deviceProperties
-            deviceID: deviceEntity.data.deviceID
-            deviceClass: deviceEntity.data.deviceClass
-            Layout.columnSpan: 3
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-        }
+    }
+    // Sixth Row
+    DeviceModules {
+        id: deviceModules
+        expanded: deviceProperties.visible
+        deviceID: deviceEntity.data.deviceID
+        deviceClass: deviceEntity.data.deviceClass
+        anchors.top: gridLayout.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+    }
+    // Last Row
+    DeviceProperties {
+        id: deviceProperties
+        deviceID: deviceEntity.data.deviceID
+        deviceClass: deviceEntity.data.deviceClass
+        anchors.top: deviceModules.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
     }
 }

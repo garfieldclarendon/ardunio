@@ -31,5 +31,9 @@
         <file>NewDeviceDlg.qml</file>
         <file>ModuleDevices.qml</file>
         <file>ModuleDevicesPage.qml</file>
+        <file>Test.qml</file>
+        <file>TestForm.ui.qml</file>
+        <file>TurnoutRoutes.qml</file>
+        <file>TurnoutDetails.qml</file>
     </qresource>
 </RCC>

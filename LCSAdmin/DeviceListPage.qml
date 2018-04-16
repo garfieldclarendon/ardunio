@@ -110,6 +110,17 @@ Item {
                     panel.height = deviceStackView.height - 10;
                     deviceStackView.push(panel);
                 }
+                else if(deviceClass === 1)
+                {
+                    navigationBar.titleText = "Turnout Details";
+                    component = Qt.createComponent("TurnoutDetails.qml");
+                    panel = component.createObject(deviceStackView, {"deviceEntity": entity});
+                    panel.saveClicked.connect(detailSaveClicked);
+                    panel.cancelClicked.connect(detailCancelClicked);
+                    panel.width = deviceStackView.width - 10;
+                    panel.height = deviceStackView.height - 10;
+                    deviceStackView.push(panel);
+                }
                 else
                 {
                     navigationBar.titleText = "Device Details";

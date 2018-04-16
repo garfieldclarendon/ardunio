@@ -4,6 +4,7 @@ import QtQuick.Controls 2.2
 import QtGraphicalEffects 1.0
 
 Rectangle {
+    implicitHeight: addButton.contentItem.sourceSize.height + 15
     property bool enableAdd: false
     property bool enableUpdate: false
     property bool enableDelete: false
@@ -14,7 +15,7 @@ Rectangle {
 
     border.width: 1
     border.color: "lightgrey"
-    height: addButton.height + 10
+//    height: addButton.height + 10
     width: (addButton.width + 4) * 3 + 3
 
     GridLayout {

@@ -119,19 +119,21 @@ void ControllerManager::newUDPMessage(const UDPMessage &message)
         m_controllerMap[controllerID] = entry;
 
         emit controllerAdded(serialNumber);
-        emit controllerStatusChanged(serialNumber, ControllerStatusConected);
+        emit controllerStatusChanged(serialNumber, ControllerStatusConected, entry->getVersion());
     }
     else if(message.getMessageID() == SYS_RESTARTING)
     {
         long serialNumber = message.getID();
+        QString version("0.0.0");
         QList<ControllerEntry *> list = m_controllerMap.values();
         for(int x = 0; x < list.count(); x++)
         {
             if(list.value(x)->getSerialNumber() == serialNumber)
             {
                 list.value(x)->setStatus(ControllerStatusRestarting);
-                emit controllerStatusChanged(serialNumber, ControllerStatusRestarting);
+                version = list.value(x)->getVersion();
             }
         }
+        emit controllerStatusChanged(serialNumber, ControllerStatusRestarting, version);
     }
 }

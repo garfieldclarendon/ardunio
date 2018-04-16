@@ -302,7 +302,7 @@ public slots:
     ///Monitors the ControllerManager for controller status changes
     /// @param serialNumber long Serial number of the controller.
     /// @param newStatus ControllerStatusEnum The controller's new status.
-    void onControllerStatusChanged(long serialNumber, ControllerStatusEnum newStatus);
+    void onControllerStatusChanged(long serialNumber, ControllerStatusEnum newStatus, const QString &version);
 
     // Controller API Handlers
     /// API "/controller/config"
@@ -375,7 +375,7 @@ private:
     /// Creates the JSON notification message containing the serialNumber and the new status of the controller that changed.
     /// @param serialNumber long Serial number of the controller.
     /// @param status ControllerStatusEnum The controller's new status.
-    void createAndSendNotificationMessage(long serialNumber, ControllerStatusEnum status);
+    void createAndSendNotificationMessage(long serialNumber, ControllerStatusEnum status, const QString &version);
     /// Returns the contents of a file as a QByteArray
     /// @param fileName QString containing the file's name.
     QByteArray getFile(const QString &fileName);

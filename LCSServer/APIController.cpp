@@ -15,7 +15,7 @@
 APIController::APIController(QObject *parent) : QObject(parent)
 {
     connect(this, &APIController::sendNotificationMessage, NotificationServer::instance(), &NotificationServer::sendNotificationMessage);
-    connect(ControllerManager::instance(), SIGNAL(controllerStatusChanged(long,ControllerStatusEnum)), this, SLOT(onControllerStatusChanged(long,ControllerStatusEnum)));
+    connect(ControllerManager::instance(), SIGNAL(controllerStatusChanged(long,ControllerStatusEnum,QString)), this, SLOT(onControllerStatusChanged(long,ControllerStatusEnum,QString)));
 
     WebServer *webServer = WebServer::instance();
 
@@ -46,9 +46,9 @@ APIController::APIController(QObject *parent) : QObject(parent)
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleSendFirmware(APIRequest,APIResponse*)), Qt::DirectConnection);
 }
 
-void APIController::onControllerStatusChanged(long serialNumber, ControllerStatusEnum newStatus)
+void APIController::onControllerStatusChanged(long serialNumber, ControllerStatusEnum newStatus, const QString &version)
 {
-    createAndSendNotificationMessage(serialNumber, newStatus);
+    createAndSendNotificationMessage(serialNumber, newStatus, version);
 }
 
 void APIController::handleConfigUrl(const APIRequest &request, APIResponse *response)
@@ -255,12 +255,13 @@ QByteArray APIController::getFile(const QString &fileName)
     return fileData;
 }
 
-void APIController::createAndSendNotificationMessage(long serialNumber, ControllerStatusEnum status)
+void APIController::createAndSendNotificationMessage(long serialNumber, ControllerStatusEnum status, const QString &version)
 {
-    QString uri("/api/notification/controller");
+    QString url("/api/notification/controller");
     QJsonObject obj;
     obj["serialNumber"] = QString("%1").arg(serialNumber);
     obj["status"] = QString("%1").arg(status);
+    obj["version"] = version;
 
-    emit sendNotificationMessage(uri, obj);
+    emit sendNotificationMessage(url, obj);
 }

@@ -27,6 +27,7 @@ Rectangle {
         standardButtons: StandardButton.Yes | StandardButton.No
         title: "New Signal Aspect"
         text: "The new Signal Aspect needs to be saved before adding conditions.  Save now?"
+        visible: false
         onYes: {
             saveData();
             messageDialog.visible = false;
@@ -44,24 +45,30 @@ Rectangle {
         ListElement { text: "On"; mode: 1 }
         ListElement { text: "Flashing"; mode: 4 }
     }
+    GenericDeviceDetails {
+        id: genericDetails
+        devicePropertiesVisible: false
+        deviceEntity: main.deviceEntity
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+
+        onSaveClicked: {
+            main.saveData();
+            main.saveClicked();
+        }
+        onCancelClicked: {
+            main.cancelClicked();
+        }
+    }
 
     GridLayout {
-        anchors.fill: parent
         columns: 3
-        GenericDeviceDetails {
-            devicePropertiesVisible: false
-            deviceEntity: main.deviceEntity
-            Layout.columnSpan: 3
-            Layout.fillWidth: true
-            Layout.minimumHeight: addButton.height * 10
-            onSaveClicked: {
-                main.saveData();
-                main.saveClicked();
-            }
-            onCancelClicked: {
-                main.cancelClicked();
-            }
-        }
+        anchors.top: genericDetails.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
         Item {
             width: addButton.width
             height: addButton.height
@@ -198,6 +205,5 @@ Rectangle {
                 }
             }
         } //ListView
-
     }
 }
