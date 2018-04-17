@@ -358,7 +358,7 @@ QStringList API::getServerList() const
             list << s;
     }
 
-    list << "127.0.0.1";
+    list << "127.0.0.1" << "10.206.1.252";
 
     return list;
 }
