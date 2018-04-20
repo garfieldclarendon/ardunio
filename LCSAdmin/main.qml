@@ -331,10 +331,17 @@ ApplicationWindow {
 
         model = routeStackView.currentItem.model;
         var ret;
+        var index;
         if(entity.getValue("routeID") > 0)
+        {
             ret = api.saveEntity(entity);
+            index = routeStackView.currentItem.currentIndex;
+        }
         else
+        {
+            index = -1;
             ret = api.saveEntity(entity, true);
+        }
         if(ret.hasError())
         {
             console.debug("ERROR SAVING!!!!!! " + ret.errorText());
@@ -343,7 +350,9 @@ ApplicationWindow {
         }
         else
         {
-            model.setEntity(routeStackView.currentItem.currentIndex, entity);
+            model.setEntity(index, ret);
+            if(index < 0)
+                routeStackView.currentItem.currentIndex = model.rowCount - 1;
         }
     }
 
@@ -361,6 +370,11 @@ ApplicationWindow {
 
         model = controllerStackView.currentItem.model;
         var ret;
+        var index;
+        if(entity.data.controllerID < 1)
+            index = -1;
+        else
+            index = controllerStackView.currentItem.currentIndex;
         ret = api.saveEntity(entity, entity.data.controllerID < 1);
         if(ret.hasError())
         {
@@ -370,7 +384,9 @@ ApplicationWindow {
         }
         else
         {
-            model.setEntity(controllerStackView.currentItem.currentIndex, entity);
+            model.setEntity(controllerStackView.currentItem.currentIndex, ret);
+            if(index < 0)
+                routeStackView.currentItem.currentIndex = model.rowCount - 1;
         }
     }
 

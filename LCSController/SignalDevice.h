@@ -87,5 +87,6 @@ private:
 	DeviceStateStruct m_deviceStates[MAX_SIGNAL_DEVICES];
 	AspectDownloadStruct *m_aspectDownload;
 	bool m_callSetup;
+	byte m_onValue;
 };
 

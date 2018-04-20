@@ -7,7 +7,7 @@
 SignalDevice::SignalDevice()
 	: m_downloadConfig(false), m_lockout(false), m_updateValues(true), m_redMode(PinOn), 
 	m_greenMode(PinOff), m_yellowMode(PinOff), m_currentBlinkTimeout(0), m_blinkingTimeout(750), 
-	m_aspectCount(0), m_aspectDownload(NULL), m_callSetup(false)
+	m_aspectCount(0), m_aspectDownload(NULL), m_callSetup(false), m_onValue(LOW)
 {
 	memset(m_deviceStates, 0, sizeof(DeviceStateStruct) * MAX_SIGNAL_DEVICES);
   m_aspectDownload = NULL;
@@ -87,7 +87,8 @@ void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
 		p = pin - 8;
 	if (state == PinOn)
 	{
-		bitWrite(data, p, LOW);
+		// turn the LED on
+		bitWrite(data, p, m_onValue);
 	}
 	else if (state == PinFlashing)
 	{
@@ -105,7 +106,8 @@ void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
 	}
 	else
 	{
-		bitWrite(data, p, HIGH);
+		// turn the LED off
+		bitWrite(data, p, m_onValue == LOW ? HIGH : LOW);
 	}
 }
 
@@ -327,6 +329,9 @@ bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 		DEBUG_PRINT("parseConfig  WRONG VERSION.\n");
 		return false;
 	}
+
+	if (json.containsKey("ONVALUE"))
+		m_onValue = json["ONVALUE"];
 
 	JsonArray &aspects = json["aspects"];
 	m_aspectCount = aspects.size();

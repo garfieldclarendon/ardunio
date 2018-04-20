@@ -548,7 +548,7 @@ QString API::sendToServer(const QUrl &url, const QString &json, NetActionType ne
         connect(&manager, SIGNAL(finished(QNetworkReply*)),
                 &loop, SLOT(quit()));
 
-        timer.start(5000); // 5 second timeout
+        timer.start(60000); // 60 second timeout
         loop.exec();
 
         if(timer.isActive())

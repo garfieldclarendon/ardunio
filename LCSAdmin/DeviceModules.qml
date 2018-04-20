@@ -12,6 +12,11 @@ Rectangle {
     property int deviceClass: 0
     property bool expanded: true
 
+    function saveData()
+    {
+        model.save();
+    }
+
     TextMetrics {
         id: textMetrics
         property int itemHeight: Math.max(addButton.height, textMetrics.height + 35)
@@ -138,9 +143,5 @@ Rectangle {
                 focus: true
             }
 
-        function saveData()
-        {
-            model.save();
-        }
     }
 }
