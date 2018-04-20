@@ -82,7 +82,7 @@ void DeviceModuleModel::createEmptyObject(QJsonObject &obj)
         QVariant v;
         if(key == "deviceID")
             v = m_deviceID;
-        else if(key == "moduleID")
+        else if(key == "controllerModuleID")
             v = m_moduleID;
         else if(key == "port")
             v = 0;

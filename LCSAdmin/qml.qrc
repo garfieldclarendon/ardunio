@@ -33,5 +33,6 @@
         <file>ModuleDevicesPage.qml</file>
         <file>TurnoutRoutes.qml</file>
         <file>TurnoutDetails.qml</file>
+        <file>ControlComboBox.qml</file>
     </qresource>
 </RCC>

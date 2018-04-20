@@ -31,7 +31,7 @@ GroupBox {
 
     GridLayout {
         anchors.fill: parent
-        columns: 2
+        columns: 3
         Item {
             height: addButton.height
             Layout.fillWidth: true
@@ -44,9 +44,20 @@ GroupBox {
                 sourceSize.height: 18
             }
             onClicked: {
-//                var entity = model.getEntity(-1);
-//                model.setEntity(-1, entity);
-//                modulesList.currentIndex = modulesList.rowCount - 1
+                var entity = model.getEntity(-1);
+                model.setEntity(-1, entity);
+                modulesList.currentIndex = modulesList.rowCount - 1;
+            }
+        }
+        ToolButton {
+            id: saveButton
+            contentItem: Image {
+                source: "Images/save.png"
+                sourceSize.width: 18
+                sourceSize.height: 18
+            }
+            onClicked: {
+                model.save();
             }
         }
         ListView {
@@ -66,16 +77,15 @@ GroupBox {
                         text: "<b>ID:</b>"
                         horizontalAlignment: Text.AlignRight
                     }
-                    ComboBox {
+                    ControlComboBox {
                         id: deviceIDCombo
                         model: deviceModel
-                        textRole: "deviceName"
+                        lookupField: "deviceID"
+                        displayField: "deviceName"
                         currentIndex: deviceModel.getDeviceRow(deviceID);
                         Layout.minimumWidth: comboMetrics.width
                         Layout.fillWidth: true
-                        onActivated: {
-                            deviceID = deviceModel.data(deviceIDCombo.currentIndex, "deviceID");
-                        }
+                        dataValue: deviceID
                      }
                     Text {
                         id: portLabel
