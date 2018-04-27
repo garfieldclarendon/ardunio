@@ -86,6 +86,9 @@ GroupBox {
                         Layout.minimumWidth: comboMetrics.width
                         Layout.fillWidth: true
                         dataValue: deviceID
+                        onDataValueChanged: {
+                            deviceID = dataValue;
+                        }
                      }
                     Text {
                         id: portLabel

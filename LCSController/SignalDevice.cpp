@@ -88,7 +88,7 @@ void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
 	if (state == PinOn)
 	{
 		// turn the LED on
-		bitWrite(data, p, m_onValue);
+		bitWrite(data, p, LOW);
 	}
 	else if (state == PinFlashing)
 	{
@@ -107,7 +107,7 @@ void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
 	else
 	{
 		// turn the LED off
-		bitWrite(data, p, m_onValue == LOW ? HIGH : LOW);
+		bitWrite(data, p, HIGH);
 	}
 }
 
@@ -329,9 +329,6 @@ bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 		DEBUG_PRINT("parseConfig  WRONG VERSION.\n");
 		return false;
 	}
-
-	if (json.containsKey("ONVALUE"))
-		m_onValue = json["ONVALUE"];
 
 	JsonArray &aspects = json["aspects"];
 	m_aspectCount = aspects.size();

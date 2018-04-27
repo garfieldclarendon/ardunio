@@ -58,7 +58,7 @@ Rectangle {
     function modelLoadComplete()
     {
         table1.currentIndex = currentIndex;
-        label1.text = model.data(currentIndex, displayField);
+        label1.text = model.data(currentIndex, displayField) ? model.data(currentIndex, displayField): "";
     }
 
     Component.onCompleted: {
@@ -77,6 +77,7 @@ Rectangle {
             console.debug("onAccepted: " + contentItem.selectedIndex);
             label1.text = comboBox1.model.data(contentItem.selectedIndex, displayField);
             dataValue = comboBox1.model.data(contentItem.selectedIndex, lookupField);
+            console.debug("onAccepted: " + dataValue);
             filterText.text = "";
         }
 
