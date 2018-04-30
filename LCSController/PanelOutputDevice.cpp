@@ -77,10 +77,13 @@ void PanelOutputDevice::processUDPMessage(ModuleData &, const UDPMessage &messag
 PinStateEnum PanelOutputDevice::getPinState(void)
 {
 	PinStateEnum pinState(PinOff);
-	if (m_currentValue == m_onValue)
-		pinState = PinOn;
-	else if (m_currentValue == m_flashValue)
-		pinState = PinFlashing;
+	if (m_currentValue > 0)
+	{
+		if (m_currentValue == m_onValue)
+			pinState = PinOn;
+		else if (m_currentValue == m_flashValue)
+			pinState = PinFlashing;
+	}
 }
 
 bool PanelOutputDevice::parseConfig(String &jsonText, bool setVersion)

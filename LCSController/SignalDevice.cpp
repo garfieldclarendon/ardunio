@@ -88,7 +88,7 @@ void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
 	if (state == PinOn)
 	{
 		// turn the LED on
-		bitWrite(data, p, LOW);
+		bitWrite(data, p, m_onValue);
 	}
 	else if (state == PinFlashing)
 	{
@@ -107,7 +107,7 @@ void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
 	else
 	{
 		// turn the LED off
-		bitWrite(data, p, HIGH);
+		bitWrite(data, p, !m_onValue);
 	}
 }
 
