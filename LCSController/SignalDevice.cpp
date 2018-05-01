@@ -107,7 +107,10 @@ void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
 	else
 	{
 		// turn the LED off
-		bitWrite(data, p, !m_onValue);
+		if (m_onValue == 0)
+			bitWrite(data, p, HIGH);
+		else
+			bitWrite(data, p, LOW);
 	}
 }
 
