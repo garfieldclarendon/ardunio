@@ -16,7 +16,7 @@ void PanelOutputDevice::process(ModuleData &moduleData, UDPMessage &, byte &)
 	{
 		moduleData.writeBit(getPort(), HIGH);
 	}
-	else if (m_currentValue == m_flashValue)
+	else if (m_currentValue == m_flashValue && m_flashValue > 0)
 	{
 		moduleData.setFlashOn(getPort());
 	}
