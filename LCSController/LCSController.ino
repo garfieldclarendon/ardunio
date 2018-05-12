@@ -73,6 +73,7 @@ Controller controller(LocalServerPort);
 String jsonTextToSave;
 int nextModuleToNotify = -1;
 Module *modules[MAX_MODULES];
+StaticJsonBuffer<2048> jsonBuffer;
 
 void setup() 
 {
@@ -500,7 +501,7 @@ void downloadModuleConfigs(ControllerConfigStruct *config)
 bool parseControllerConfig(const String &jsonText, bool checkVersion, ControllerConfigStruct *config)
 {
 	DEBUG_PRINT("parseControllerConfig\n");
-	StaticJsonBuffer<1024> jsonBuffer;
+	jsonBuffer.clear();
 	JsonObject &json = jsonBuffer.parseObject(jsonText);
 
 	if (checkVersion && json["version"] != (int)CONFIG_VERSION)
@@ -542,7 +543,7 @@ bool parseControllerConfig(const String &jsonText, bool checkVersion, Controller
 void parseModuleConfig(const String &jsonText, ModuleConfigStruct *config)
 {
 	DEBUG_PRINT("parseModuleConfig\n");
-	StaticJsonBuffer<2048> jsonBuffer;
+	jsonBuffer.clear();
 	JsonObject &json = jsonBuffer.parseObject(jsonText);
 
 	JsonArray &devices = json["devices"];
@@ -563,7 +564,7 @@ void saveControllerConfig(const String &jsonText, bool addVersion)
 	String s;
 	if (addVersion)
 	{
-		StaticJsonBuffer<1024> jsonBuffer;
+		jsonBuffer.clear();
 		JsonObject &json = jsonBuffer.parseObject(jsonText);
 
 		json["version"] = (int)CONFIG_VERSION;
@@ -660,7 +661,7 @@ void sendStatusMessage(void)
 
 void notificationListChanged(const JsonArray &jsonArray)
 {
-	StaticJsonBuffer<1024> jsonBuffer;
+	jsonBuffer.clear();
 	JsonObject &json = jsonBuffer.parseObject(getConfiguration());
 
 	DEBUG_PRINT("notificationListChanged  New Count: %d\n", jsonArray.size());

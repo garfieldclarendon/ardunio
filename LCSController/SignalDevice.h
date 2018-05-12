@@ -10,13 +10,6 @@ struct AspectDownloadStruct
 };
 typedef struct AspectDownloadStruct AspectDownloadStruct;
 
-struct DeviceStateStruct
-{
-	int deviceID;
-	byte state;
-};
-typedef struct DeviceStateStruct DeviceStateStruct;
-
 struct SignalConditionStruct
 {
 	ConditionConnectionEnum connection;
@@ -57,6 +50,8 @@ public:
 	PinStateEnum getGreenMode(void) const { return m_greenMode; }
 	PinStateEnum getYellowMode(void) const { return m_yellowMode; }
 
+	void statusCallback(int deviceID, byte status);
+
 protected:
 	bool parseConfig(String &jsonText, bool setVersion);
 	bool m_downloadConfig;
@@ -65,7 +60,6 @@ protected:
 private:
 	void setPin(byte &data, byte pin, PinStateEnum state);
 	void updateValues(void);
-	byte getCurrentState(int deviceID) const;
 	bool loadAspect(byte index, SignalAspectStruct *aspect);
 	void saveAspect(byte index, const SignalAspectStruct *aspect);
 	String createFileName(byte index);
@@ -84,7 +78,6 @@ private:
 	unsigned long m_currentBlinkTimeout;
 	int m_blinkingTimeout;
 	byte m_aspectCount;
-	DeviceStateStruct m_deviceStates[MAX_SIGNAL_DEVICES];
 	AspectDownloadStruct *m_aspectDownload;
 	bool m_callSetup;
 	byte m_onValue;

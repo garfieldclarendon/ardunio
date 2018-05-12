@@ -1,9 +1,14 @@
+#include <FS.h>
+
 #include "PanelInputDevice.h"
 #include "NetworkManager.h"
 
+extern StaticJsonBuffer<2048> jsonBuffer;
+
 PanelInputDevice::PanelInputDevice()
-	: m_downloadConfig(false), m_routeID(-1)
+	: m_downloadConfig(false)
 {
+	m_data.m_routeID = -1;
 }
 
 
@@ -20,12 +25,12 @@ void PanelInputDevice::setup(int deviceID, byte port)
 	setID(deviceID);
 	setPort(port);
 
-	String json = loadConfig();
-	DEBUG_PRINT("%s\n", json.c_str());
-	if (json.length() == 0)
+	String txt = loadConfig();
+	if (txt.length() > 0)
+	{
 		m_downloadConfig = true;
-	else
-		m_downloadConfig = (parseConfig(json, false) == false);
+		DEBUG_PRINT("PanelOutputDevice::setup: setting m_downloadConfig to TRUE\n");
+	}
 }
 
 void PanelInputDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message, UDPMessage &, byte &)
@@ -45,12 +50,12 @@ void PanelInputDevice::processUDPMessage(ModuleData &moduleData, const UDPMessag
 
 void PanelInputDevice::processPin(byte pin, byte value)
 {
-	if (m_routeID > 0 && value == PinOff && pin == getPort())
+	if (m_data.m_routeID > 0 && value == PinOff && pin == getPort())
 	{
-		DEBUG_PRINT("PanelInputDevice::processPin PIN %d  VALUE %d  PORT %d  routeID %d\n", pin, value, getPort(), m_routeID);
+		DEBUG_PRINT("PanelInputDevice::processPin PIN %d  VALUE %d  PORT %d  routeID %d\n", pin, value, getPort(), m_data.m_routeID);
 		UDPMessage message;
 		message.setMessageID(TRN_ACTIVATE_ROUTE);
-		message.setID(m_routeID);
+		message.setID(m_data.m_routeID);
 		NetManager.sendUdpMessage(message, true);
 	}
 }
@@ -59,7 +64,7 @@ void PanelInputDevice::processPin(byte pin, byte value)
 bool PanelInputDevice::parseConfig(String &jsonText, bool setVersion)
 {
 	DEBUG_PRINT("PanelInputDevice::parseConfig\n");
-	StaticJsonBuffer<1024> jsonBuffer;
+	jsonBuffer.clear();
 	JsonObject &json = jsonBuffer.parseObject(jsonText);
 
 	if (setVersion)
@@ -72,7 +77,7 @@ bool PanelInputDevice::parseConfig(String &jsonText, bool setVersion)
 		return false;
 	}
 	
-	m_routeID = json["ROUTEID"];
+	m_data.m_routeID = json["ROUTEID"];
 
 	if (setVersion)
 	{
@@ -94,5 +99,54 @@ void PanelInputDevice::serverFound(UDPMessage &, byte &)
 			m_downloadConfig = false;
 			setup(getID(), getPort());
 		}
+	}
+}
+
+String PanelInputDevice::loadConfig(void)
+{
+	memset((void*)&m_data, 0, sizeof(PanelInputDataStruct));
+	bool ret = false;
+	String fileName("/Device_");
+	fileName += getID();
+	fileName += ".json";
+	DEBUG_PRINT("PanelInputDevice::loadConfig %s\n", fileName.c_str());
+
+	File f = SPIFFS.open(fileName, "r");
+
+	if (f)
+	{
+		f.read((uint8_t*)&m_data, sizeof(PanelInputDataStruct));
+		f.close();
+		if (m_data.m_version == CONFIG_VERSION)
+			ret = true;
+	}
+	else
+	{
+		DEBUG_PRINT("PanelInputDevice Config file %s is missing or can not be opened\n", fileName.c_str());
+	}
+	if (ret)
+		return "";
+	else
+		return "FAILED";
+}
+
+void PanelInputDevice::saveConfig(const String &)
+{
+	m_data.m_version = CONFIG_VERSION;
+	String fileName("/Device_");
+	fileName += getID();
+	fileName += ".json";
+	DEBUG_PRINT("SAVE PanelInputDevice Config %s\n", fileName.c_str());
+
+	File f = SPIFFS.open(fileName, "w");
+
+	if (f)
+	{
+		f.write((uint8_t*)&m_data, sizeof(PanelInputDataStruct));
+		f.close();
+	}
+	else
+	{
+		DEBUG_PRINT("Error saving PanelInputDevice Config file %s\n", fileName.c_str());
 	}
 }

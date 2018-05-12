@@ -1,12 +1,16 @@
+#include <FS.h>
+
 #include "TurnoutDevice.h"
 #include "TurnoutModule.h"
 #include "NetworkManager.h"
 
+extern StaticJsonBuffer<2048> jsonBuffer;
+
 TurnoutDevice::TurnoutDevice()
 	: m_lastState(TrnUnknown), m_currentState(TrnUnknown), m_currentTimeout(0), m_currentData(0),
-	m_lockedRoute(0), m_downloadConfig(false), m_motorBA(0), m_inputBA(false)
+	m_lockedRoute(0), m_downloadConfig(false)
 {
-	memset(m_routeMap, 0, sizeof(TurnoutRouteStruct) * MAX_ROUTE_ENTRIES);
+	memset((void*)&m_data, 0, sizeof(TurnoutConfigStruct));
 }
 
 TurnoutDevice::~TurnoutDevice()
@@ -55,33 +59,30 @@ void TurnoutDevice::setup(int deviceID, byte port)
 	setPort(port);
 
 	m_lockedRoute = 0;
-	String json = loadConfig();
-	DEBUG_PRINT("%s\n", json.c_str());
-	if (json.length() == 0)
+	String txt = loadConfig();
+	if (txt.length() > 0)
 		m_downloadConfig = true;
-	else
-		m_downloadConfig = (parseConfig(json, false) == false);
 
 	if (port == 0)
 	{
-		m_motorA = m_motorBA == 1 ? 1 : 0;
-		m_motorB = m_motorBA == 1 ? 0 : 1;
-		m_feedbackPinA = m_inputBA ? 3 : 2;
-		m_feedbackPinB = m_inputBA ? 2 : 3;
+		m_motorA = m_data.motorBA == 1 ? 1 : 0;
+		m_motorB = m_data.motorBA == 1 ? 0 : 1;
+		m_feedbackPinA = m_data.inputBA ? 3 : 2;
+		m_feedbackPinB = m_data.inputBA ? 2 : 3;
 	}
 	else
 	{
-		m_motorA = m_motorBA == 1 ? 5 : 4;
-		m_motorB = m_motorBA == 1 ? 4 : 5;
-		m_feedbackPinA =  m_inputBA ? 7 : 6;
-		m_feedbackPinB = m_inputBA ? 6 : 7;
+		m_motorA = m_data.motorBA == 1 ? 5 : 4;
+		m_motorB = m_data.motorBA == 1 ? 4 : 5;
+		m_feedbackPinA = m_data.inputBA ? 7 : 6;
+		m_feedbackPinB = m_data.inputBA ? 6 : 7;
 	}
 }
 
 bool TurnoutDevice::parseConfig(String &jsonText, bool setVersion)
 {
 	DEBUG_PRINT("TurnoutDevice::parseConfig\n");
-	StaticJsonBuffer<1024> jsonBuffer;
+	jsonBuffer.clear();
 	JsonObject &json = jsonBuffer.parseObject(jsonText);
 
 	if (setVersion)
@@ -95,25 +96,25 @@ bool TurnoutDevice::parseConfig(String &jsonText, bool setVersion)
 	}
 
 	if (json.containsKey("MOTORPIN"))
-		m_motorBA = (int)json["MOTORPIN"];
+		m_data.motorBA = (int)json["MOTORPIN"];
 	// Reverse the input pins if the motor pins are reversed
-	m_inputBA = m_motorBA == 1;
+	m_data.inputBA = m_data.motorBA == 1;
 	// Allow the configuration to override the above change
 	if (json.containsKey("INPUTPIN"))
-		m_inputBA = json["INPUTPIN"] == 1;
+		m_data.inputBA = json["INPUTPIN"] == 1;
 
 	JsonArray &routes = json["routes"];
 	for (byte x = 0; x < routes.size(); x++)
 	{
-		m_routeMap[x].routeID = routes[x]["routeID"];
-		m_routeMap[x].state = (TurnoutState)(int)routes[x]["turnoutState"];
+		m_data.routes[x].routeID = routes[x]["routeID"];
+		m_data.routes[x].state = (TurnoutState)(int)routes[x]["turnoutState"];
 	}
 	if (setVersion)
 	{
 		jsonText = "";
 		json.printTo(jsonText);
 	}
-	DEBUG_PRINT("TurnoutDevice::parseConfig: %d INPUTFLAG: %d MOTORPIN %d\n", getID(), m_inputBA, m_motorBA);
+	DEBUG_PRINT("TurnoutDevice::parseConfig: %d INPUTFLAG: %d MOTORPIN %d\n", getID(), m_data.inputBA, m_data.motorBA);
 	return true;
 }
 
@@ -221,9 +222,9 @@ TurnoutState TurnoutDevice::getTurnoutStateForRoute(int routeID)
 
 	for (byte x = 0; x < MAX_ROUTE_ENTRIES; x++)
 	{
-		if (m_routeMap[x].routeID == routeID)
+		if (m_data.routes[x].routeID == routeID)
 		{
-			state = m_routeMap[x].state;
+			state = m_data.routes[x].state;
 			break;
 		}
 	}
@@ -284,4 +285,54 @@ void TurnoutDevice::setTurnout(byte &data, TurnoutState newState)
 	}
 	m_currentData = data;
 //	DEBUG_PRINT("SETTING TURNOUT A: %d B: %d DATA: %d\n", m_motorA, m_motorB, data);
+}
+
+String TurnoutDevice::loadConfig(void)
+{
+	memset((void*)&m_data, 0, sizeof(TurnoutConfigStruct));
+	bool ret = false;
+	String fileName("/Device_");
+	fileName += getID();
+	fileName += ".json";
+	DEBUG_PRINT("TurnoutDevice::loadConfig %s\n", fileName.c_str());
+
+	File f = SPIFFS.open(fileName, "r");
+
+	if (f)
+	{
+		f.read((uint8_t*)&m_data, sizeof(TurnoutConfigStruct));
+		f.close();
+		if (m_data.version == CONFIG_VERSION)
+		{
+			ret = true;
+		}
+	}
+	else
+	{
+		DEBUG_PRINT("TurnoutDevice Config file %s is missing or can not be opened\n", fileName.c_str());
+	}
+	if (ret)
+		return "";
+	else
+		return "FAILED";
+}
+
+void TurnoutDevice::saveConfig(const String &json)
+{
+	String fileName("/Device_");
+	fileName += getID();
+	fileName += ".json";
+	DEBUG_PRINT("SAVE TurnoutDevice Config %s\n", fileName.c_str());
+
+	File f = SPIFFS.open(fileName, "w");
+
+	if (f)
+	{
+		f.write((uint8_t*)&m_data, sizeof(TurnoutConfigStruct));
+		f.close();
+	}
+	else
+	{
+		DEBUG_PRINT("Error saving TurnoutDevice Config file %s\n", fileName.c_str());
+	}
 }

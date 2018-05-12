@@ -6,7 +6,9 @@
 extern "C" {
 #include "user_interface.h"
 }
+
 NetworkManager *NetworkManager::m_this = NULL;
+extern StaticJsonBuffer<2048> jsonBuffer;
 
 NetworkManager::NetworkManager(void)
 	: m_serverPort(-1), m_controllerID(0), m_serverAddress(0, 0, 0, 0), m_lastCheckTimeout(0), m_idleTimeout(0), m_firstNotification(NULL), m_currentStruct(NULL), m_wifiStatus(WiFiDisconnected)
@@ -479,7 +481,7 @@ void NetworkManager::setNotificationList(const String &jsonText)
 {
 	DEBUG_PRINT("NetworkManager::setNotificationList:\n%s\n", jsonText.c_str());
 	clearNotificationList();
-	StaticJsonBuffer<1024> jsonBuffer;
+	jsonBuffer.clear();
 	JsonArray &json = jsonBuffer.parseArray(jsonText);
 
 	for (byte x = 0; x < json.size(); x++)

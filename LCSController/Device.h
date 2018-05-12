@@ -28,7 +28,7 @@ public:
 	virtual void networkOffline(void)  { }
 	virtual void networkOnline(void)  { }
 	virtual void processPin(byte pin, byte value) { }
-	virtual String loadConfig(void) const;
+	virtual String loadConfig(void);
 	virtual void downloadConfig(void);
 	virtual void saveConfig(const String &json);
 	virtual void serverFound(UDPMessage &outMessage, byte &messageIndex) { }

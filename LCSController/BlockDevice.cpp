@@ -2,6 +2,8 @@
 #include "NetworkManager.h"
 #include "UDPMessage.h"
 
+extern StaticJsonBuffer<2048> jsonBuffer;
+
 BlockDevice::BlockDevice()
 	: m_downloadConfig(false), m_last(0), m_current(1), m_currentState(BlockClear), m_currentTimeout(false)
 {
@@ -85,7 +87,7 @@ void BlockDevice::processPin(byte pin, byte value)
 bool BlockDevice::parseConfig(String &jsonText, bool setVersion)
 {
 	DEBUG_PRINT("BlockDevice::parseConfig\n");
-	StaticJsonBuffer<1024> jsonBuffer;
+	jsonBuffer.clear();
 	JsonObject &json = jsonBuffer.parseObject(jsonText);
 
 	if (setVersion)

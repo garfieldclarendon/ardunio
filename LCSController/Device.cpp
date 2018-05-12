@@ -12,7 +12,7 @@ Device::~Device()
 {
 }
 
-String Device::loadConfig(void) const
+String Device::loadConfig(void)
 {
 	DEBUG_PRINT("LOAD DEVICE CONFIGURATION\n");
 	String json;
@@ -55,6 +55,7 @@ void Device::saveConfig(const String &json)
 	if (f)
 	{
 		DEBUG_PRINT("Saving Device config: %s\n", fileName.c_str());
+		DEBUG_PRINT("Saving Device config DATA: \n%s\n", json.c_str());
 
 		f.write((const uint8_t *)json.c_str(), json.length());
 		f.close();

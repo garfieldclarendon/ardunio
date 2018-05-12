@@ -10,9 +10,18 @@ struct TurnoutRouteStruct
 };
 typedef struct TurnoutRouteStruct TurnoutRouteStruct;
 
+struct TurnoutConfigStruct
+{
+	byte version;
+	byte motorBA;
+	byte inputBA;
+	TurnoutRouteStruct routes[MAX_ROUTE_ENTRIES];
+};
+typedef struct TurnoutConfigStruct TurnoutConfigStruct;
+
 class TurnoutDevice : public Device
 {
-	const byte CONFIG_VERSION = 2;
+	const byte CONFIG_VERSION = 3;
 public:
 	TurnoutDevice();
 	~TurnoutDevice();
@@ -28,6 +37,9 @@ public:
 	void serverFound(UDPMessage &outMessage, byte &messageIndex) override;
 	void setTurnout(byte &data, TurnoutState newState);
 	byte getCurrentStatus(void) override { return m_currentState;  }
+
+	String loadConfig(void);
+	void saveConfig(const String &json);
 
 private:
 	void setLockoutRoute(int value) { m_lockedRoute = value; }
@@ -46,8 +58,6 @@ private:
 	byte m_motorA;
 	byte m_motorB;
 	bool m_downloadConfig;
-	byte m_motorBA;
-	bool m_inputBA;
-	TurnoutRouteStruct m_routeMap[MAX_ROUTE_ENTRIES];
+	TurnoutConfigStruct m_data;
 };
 

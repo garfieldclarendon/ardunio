@@ -3,9 +3,18 @@
 #include "Device.h"
 #include "GlobalDefs.h"
 
+struct PanelOutputDataStruct
+{
+	byte m_version;
+	int m_itemID;
+	byte m_onValue;
+	byte m_flashValue;
+};
+typedef struct PanelOutputDataStruct PanelOutputDataStruct;
+
 class PanelOutputDevice : public Device
 {
-	const byte CONFIG_VERSION = 2;
+	const byte CONFIG_VERSION = 3;
 public:
 	PanelOutputDevice();
 	~PanelOutputDevice();
@@ -17,15 +26,14 @@ public:
 	DeviceClassEnum getDeviceType(void) const { return DevicePanelOutput; }
 
 	void serverFound(UDPMessage &outMessage, byte &messageIndex) override;
+	String loadConfig(void);
+	void saveConfig(const String &json);
 
 private:
 	bool parseConfig(String &jsonText, bool setVersion);
 	PinStateEnum getPinState(void);
 
 	bool m_downloadConfig;
-	int m_itemID;
-	byte m_onValue;
-	byte m_flashValue;
-	byte m_currentValue;
+	PanelOutputDataStruct m_data;
 };
 

@@ -3,17 +3,18 @@
 
 #include "SignalDevice.h"
 #include "NetworkManager.h"
+#include "DeviceMonitor.h"
+
+extern StaticJsonBuffer<2048> jsonBuffer;
 
 SignalDevice::SignalDevice()
-	: m_downloadConfig(false), m_lockout(false), m_updateValues(true), m_redMode(PinOn), 
-	m_greenMode(PinOff), m_yellowMode(PinOff), m_currentBlinkTimeout(0), m_blinkingTimeout(750), 
+	: m_downloadConfig(false), m_lockout(false), m_updateValues(true), m_redMode(PinOn),
+	m_greenMode(PinOff), m_yellowMode(PinOff), m_currentBlinkTimeout(0), m_blinkingTimeout(750),
 	m_aspectCount(0), m_aspectDownload(NULL), m_callSetup(false), m_onValue(LOW)
 {
-	memset(m_deviceStates, 0, sizeof(DeviceStateStruct) * MAX_SIGNAL_DEVICES);
-  m_aspectDownload = NULL;
-  m_aspectCount = 0;
+	m_aspectDownload = NULL;
+	m_aspectCount = 0;
 }
-
 
 SignalDevice::~SignalDevice()
 {
@@ -21,7 +22,7 @@ SignalDevice::~SignalDevice()
 
 void SignalDevice::process(ModuleData &moduleData, UDPMessage &, byte &)
 {
-//	DEBUG_PRINT("SignalDevice::process: START\n");
+	//	DEBUG_PRINT("SignalDevice::process: START\n");
 	if (m_callSetup)
 	{
 		m_aspectDownload = new  AspectDownloadStruct;
@@ -75,7 +76,7 @@ void SignalDevice::process(ModuleData &moduleData, UDPMessage &, byte &)
 
 	moduleData.setByteA(dataA);
 	moduleData.setByteB(dataB);
-//	DEBUG_PRINT("SignalDevice::process: DONE PIN: %d MODES: %d %d %d\n", getPort(), m_redMode, m_greenMode, m_yellowMode);
+	//	DEBUG_PRINT("SignalDevice::process: DONE PIN: %d MODES: %d %d %d\n", getPort(), m_redMode, m_greenMode, m_yellowMode);
 }
 
 void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
@@ -117,7 +118,7 @@ void SignalDevice::setPin(byte &data, byte pin, PinStateEnum state)
 void SignalDevice::updateValues(void)
 {
 	DEBUG_PRINT("SignalDevice::updateValues(%d): START  TOTAL ASPECTS: %d\n", getID(), m_aspectCount);
-	SignalAspectStruct aspect;
+	static SignalAspectStruct aspect;
 
 	m_redMode = PinOn;
 	m_greenMode = PinOff;
@@ -133,7 +134,7 @@ void SignalDevice::updateValues(void)
 			bool valid = aspect.conditionCount > 0;
 			for (int index = 0; index < aspect.conditionCount; index++)
 			{
-				byte state = getCurrentState(aspect.conditions[index].deviceID);
+				byte state = Devices.getDeviceStatus(aspect.conditions[index].deviceID);
 				DEBUG_PRINT("SignalDevice::updateValues(%d): deviceID %d status %d == %d\n", getID(), aspect.conditions[index].deviceID, state, aspect.conditions[index].deviceState);
 				if (state > 0)
 				{
@@ -208,7 +209,7 @@ bool SignalDevice::isNextConditionOR(SignalAspectStruct *aspect, byte nextIndex)
 {
 	bool ret = false;
 
-	if(nextIndex < aspect->conditionCount)
+	if (nextIndex < aspect->conditionCount)
 	{
 		ret = aspect->conditions[nextIndex].connection == ConnectionOR;
 	}
@@ -240,14 +241,9 @@ void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &m
 {
 	if (message.getMessageID() == TRN_STATUS || message.getMessageID() == BLK_STATUS)
 	{
-		for (byte x = 0; x < MAX_SIGNAL_DEVICES; x++)
+		if (Devices.setDeviceStatus(message.getID(), message.getField(0)))
 		{
-			if (m_deviceStates[x].deviceID == message.getID())
-			{
-				m_deviceStates[x].state = message.getField(0);
-				m_updateValues = true;
-				break;
-			}
+			m_updateValues = true;
 		}
 	}
 	else if (message.getMessageID() == DEVICE_STATUS)
@@ -255,14 +251,9 @@ void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &m
 		byte index = 0;
 		while (message.getDeviceID(index) > 0)
 		{
-			for (byte x = 0; x < MAX_SIGNAL_DEVICES; x++)
+			if (Devices.setDeviceStatus(message.getDeviceID(index), message.getDeviceStatus(index)))
 			{
-				if (m_deviceStates[x].deviceID == message.getDeviceID(index))
-				{
-					m_deviceStates[x].state = message.getDeviceStatus(index);
-					m_updateValues = true;
-					break;
-				}
+				m_updateValues = true;
 			}
 			index++;
 		}
@@ -297,30 +288,14 @@ void SignalDevice::handleLockoutMessage(const UDPMessage &message)
 	}
 
 	// If locked is false, force the signal to re-canculate the proper aspect.
-	if(m_lockout == false)
+	if (m_lockout == false)
 		m_updateValues = true;
-}
-
-byte SignalDevice::getCurrentState(int deviceID) const
-{
-	byte state = 0;
-
-	for (byte x = 0; x < MAX_SIGNAL_DEVICES; x++)
-	{
-		if (m_deviceStates[x].deviceID == deviceID)
-		{
-			state = m_deviceStates[x].state;
-			break;
-		}
-	}
-
-	return state;
 }
 
 bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 {
 	DEBUG_PRINT("SignalDevice::parseConfig LENGTH: %d\n", jsonText.length());
-	StaticJsonBuffer<1024> jsonBuffer;
+	jsonBuffer.clear();
 	JsonObject &json = jsonBuffer.parseObject(jsonText);
 
 	if (setVersion)
@@ -335,6 +310,7 @@ bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 
 	JsonArray &aspects = json["aspects"];
 	m_aspectCount = aspects.size();
+	DEBUG_PRINT("parseConfig  SET VERSION %d  ASPECT COUNT: %d.\n", setVersion, m_aspectCount);
 	byte deviceIndex = 0;
 	if (setVersion == false)
 	{
@@ -362,8 +338,8 @@ bool SignalDevice::parseConfig(String &jsonText, bool setVersion)
 	JsonArray &devices = json["devices"];
 	for (byte x = 0; x < devices.size(); x++)
 	{
-		m_deviceStates[x].deviceID = devices[x]["id"];
-		DEBUG_PRINT("parseConfig  ADDING DEVICE: %d.\n", m_deviceStates[x].deviceID);
+		Devices.addDevice(devices[x]["id"]);
+		DEBUG_PRINT("parseConfig  ADDING DEVICE: %d.\n", devices[x]["id"]);
 	}
 
 	if (setVersion)
@@ -448,7 +424,7 @@ void SignalDevice::downloadConfig(void)
 	DEBUG_PRINT("SignalDevice::downloadConfig DOWNLOADING!\n");
 
 	String json = NetManager.getDeviceConfig(getID());
-  DEBUG_PRINT("SignalDevice::downloadConfig SIZE %d!\n", json.length());
+	DEBUG_PRINT("SignalDevice::downloadConfig SIZE %d!\n", json.length());
 	if (json.length() > 0)
 	{
 		parseConfig(json, true);
@@ -460,20 +436,20 @@ void SignalDevice::downloadConfig(void)
 
 void SignalDevice::downloadAspects(void)
 {
-  if(NetManager.getServerAddress() != (uint32_t)0)
-  {
-  	DEBUG_PRINT("SignalDevice::downloadAspects: TOTAL %d\n", m_aspectCount);
-  	AspectDownloadStruct *download = m_aspectDownload;
-  	byte x = 0;
-  	while (download)
-  	{
-  		downloadAspect(download->aspectID, x++);
-  		AspectDownloadStruct *toDelete = download;
-  		download = download->next;
-  		delete toDelete;
-  	}
-  	m_aspectDownload = NULL;
-  }
+	if (NetManager.getServerAddress() != (uint32_t)0)
+	{
+		DEBUG_PRINT("SignalDevice::downloadAspects: TOTAL %d\n", m_aspectCount);
+		AspectDownloadStruct *download = m_aspectDownload;
+		byte x = 0;
+		while (download)
+		{
+			downloadAspect(download->aspectID, x++);
+			AspectDownloadStruct *toDelete = download;
+			download = download->next;
+			delete toDelete;
+		}
+		m_aspectDownload = NULL;
+	}
 }
 
 void SignalDevice::downloadAspect(int aspectID, byte index)
@@ -481,10 +457,10 @@ void SignalDevice::downloadAspect(int aspectID, byte index)
 	String json = NetManager.getSignalAspect(aspectID);
 	DEBUG_PRINT("SignalDevice::downloadAspect: %d\n", aspectID);
 
-	StaticJsonBuffer<2048> jsonBuffer;
+	jsonBuffer.clear();
 	JsonObject &aspectObj = jsonBuffer.parseObject(json);
 
-	SignalAspectStruct aspect;
+	static SignalAspectStruct aspect;
 
 	memset(&aspect, 0, sizeof(SignalAspectStruct));
 	aspect.redMode = (PinStateEnum)(int)aspectObj["redMode"];
@@ -501,4 +477,9 @@ void SignalDevice::downloadAspect(int aspectID, byte index)
 		DEBUG_PRINT("parseConfig  CONDITION %d. DEVICEID %d\n", x, aspect.conditions[x].deviceID);
 	}
 	saveAspect(index, &aspect);
+}
+
+void SignalDevice::statusCallback(int deviceID, byte status)
+{
+
 }

@@ -1,9 +1,17 @@
+#include <FS.h>
+
 #include "PanelOutputDevice.h"
 #include "NetworkManager.h"
+#include "DeviceMonitor.h"
+
+extern StaticJsonBuffer<2048> jsonBuffer;
 
 PanelOutputDevice::PanelOutputDevice()
-	: m_downloadConfig(false), m_itemID(-1), m_onValue(0), m_flashValue(0), m_currentValue(0)
+	: m_downloadConfig(false)
 {
+	m_data.m_itemID = -1;
+	m_data.m_onValue = 0;
+	m_data.m_flashValue = 0;
 }
 
 PanelOutputDevice::~PanelOutputDevice()
@@ -12,11 +20,12 @@ PanelOutputDevice::~PanelOutputDevice()
 
 void PanelOutputDevice::process(ModuleData &moduleData, UDPMessage &, byte &)
 {
-	if (m_currentValue == m_onValue)
+	byte status = Devices.getDeviceStatus(m_data.m_itemID);
+	if (status == m_data.m_onValue)
 	{
 		moduleData.writeBit(getPort(), HIGH);
 	}
-	else if (m_currentValue == m_flashValue && m_flashValue > 0)
+	else if (status == m_data.m_flashValue && m_data.m_flashValue > 0)
 	{
 		moduleData.setFlashOn(getPort());
 	}
@@ -32,21 +41,21 @@ void PanelOutputDevice::setup(int deviceID, byte port)
 	setID(deviceID);
 	setPort(port);
 
-	String json = loadConfig();
-	DEBUG_PRINT("%s\n", json.c_str());
-	if (json.length() == 0)
+	String txt = loadConfig();
+	if (txt.length() > 0)
+	{
 		m_downloadConfig = true;
-	else
-		m_downloadConfig = (parseConfig(json, false) == false);
+		DEBUG_PRINT("PanelOutputDevice::setup: setting m_downloadConfig to TRUE\n");
+	}
 }
 
 void PanelOutputDevice::processUDPMessage(ModuleData &, const UDPMessage &message, UDPMessage &, byte &)
 {
 	if (message.getMessageID() == TRN_STATUS || message.getMessageID() == BLK_STATUS)
 	{
-		if (m_itemID == message.getID())
+		if (m_data.m_itemID == message.getID())
 		{
-			m_currentValue = message.getField(0);
+			Devices.setDeviceStatus(m_data.m_itemID, message.getField(0));
 		}
 	}
 	if (message.getMessageID() == DEVICE_STATUS)
@@ -54,9 +63,9 @@ void PanelOutputDevice::processUDPMessage(ModuleData &, const UDPMessage &messag
 		byte index = 0;
 		while (message.getDeviceID(index) > 0)
 		{
-			if (m_itemID == message.getDeviceID(index))
+			if (m_data.m_itemID == message.getDeviceID(index))
 			{
-				m_currentValue = message.getDeviceStatus(index);
+				Devices.setDeviceStatus(m_data.m_itemID, message.getDeviceStatus(index));
 			}
 			index++;
 		}
@@ -77,11 +86,13 @@ void PanelOutputDevice::processUDPMessage(ModuleData &, const UDPMessage &messag
 PinStateEnum PanelOutputDevice::getPinState(void)
 {
 	PinStateEnum pinState(PinOff);
-	if (m_currentValue > 0)
+	byte status = Devices.getDeviceStatus(m_data.m_itemID);
+
+	if (status > 0)
 	{
-		if (m_currentValue == m_onValue)
+		if (status == m_data.m_onValue)
 			pinState = PinOn;
-		else if (m_currentValue == m_flashValue)
+		else if (status == m_data.m_flashValue)
 			pinState = PinFlashing;
 	}
 }
@@ -89,7 +100,7 @@ PinStateEnum PanelOutputDevice::getPinState(void)
 bool PanelOutputDevice::parseConfig(String &jsonText, bool setVersion)
 {
 	DEBUG_PRINT("PanelOutputDevice::parseConfig\n");
-	StaticJsonBuffer<1024> jsonBuffer;
+	jsonBuffer.clear();
 	JsonObject &json = jsonBuffer.parseObject(jsonText);
 
 	if (setVersion)
@@ -102,9 +113,9 @@ bool PanelOutputDevice::parseConfig(String &jsonText, bool setVersion)
 		return false;
 	}
 
-	m_itemID = json["ITEMID"];
-	m_onValue = json["ONVALUE"];
-	m_flashValue = json["FLASHINGVALUE"];
+	m_data.m_itemID = json["ITEMID"];
+	m_data.m_onValue = json["ONVALUE"];
+	m_data.m_flashValue = json["FLASHINGVALUE"];
 
 	if (setVersion)
 	{
@@ -126,5 +137,54 @@ void PanelOutputDevice::serverFound(UDPMessage &, byte &)
 			m_downloadConfig = false;
 			setup(getID(), getPort());
 		}
+	}
+}
+
+String PanelOutputDevice::loadConfig(void)
+{
+	memset((void*)&m_data, 0, sizeof(PanelOutputDataStruct));
+	bool ret = false;
+	String fileName("/Device_");
+	fileName += getID();
+	fileName += ".json";
+	DEBUG_PRINT("PanelOutputDevice::loadConfig %s\n", fileName.c_str());
+
+	File f = SPIFFS.open(fileName, "r");
+
+	if (f)
+	{
+		f.read((uint8_t*)&m_data, sizeof(PanelOutputDataStruct));
+		f.close();
+		if (m_data.m_version == CONFIG_VERSION)
+			ret = true;
+	}
+	else
+	{
+		DEBUG_PRINT("PanelOutputDevice Config file %s is missing or can not be opened\n", fileName.c_str());
+	}
+	if (ret)
+		return "";
+	else
+		return "FAILED";
+}
+
+void PanelOutputDevice::saveConfig(const String &)
+{
+	m_data.m_version = CONFIG_VERSION;
+	String fileName("/Device_");
+	fileName += getID();
+	fileName += ".json";
+	DEBUG_PRINT("SAVE PanelOutputDevice Config %s\n", fileName.c_str());
+
+	File f = SPIFFS.open(fileName, "w");
+
+	if (f)
+	{
+		f.write((uint8_t*)&m_data, sizeof(PanelOutputDataStruct));
+		f.close();
+	}
+	else
+	{
+		DEBUG_PRINT("Error saving PanelOutputDevice Config file %s\n", fileName.c_str());
 	}
 }
