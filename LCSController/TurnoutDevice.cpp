@@ -319,6 +319,7 @@ String TurnoutDevice::loadConfig(void)
 
 void TurnoutDevice::saveConfig(const String &json)
 {
+	m_data.version = CONFIG_VERSION;
 	String fileName("/Device_");
 	fileName += getID();
 	fileName += ".json";

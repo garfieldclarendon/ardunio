@@ -47,6 +47,10 @@ void PanelOutputDevice::setup(int deviceID, byte port)
 		m_downloadConfig = true;
 		DEBUG_PRINT("PanelOutputDevice::setup: setting m_downloadConfig to TRUE\n");
 	}
+	else
+	{
+		Devices.addDevice(m_data.m_itemID);
+	}
 }
 
 void PanelOutputDevice::processUDPMessage(ModuleData &, const UDPMessage &message, UDPMessage &, byte &)

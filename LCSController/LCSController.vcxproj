@@ -82,6 +82,7 @@
     <ClInclude Include="BlockDevice.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="Device.h" />
+    <ClInclude Include="DeviceMonitor.h" />
     <ClInclude Include="Expander8Bit.h" />
     <ClInclude Include="Expander16Bit.h" />
     <ClInclude Include="InputModule.h" />
@@ -104,6 +105,7 @@
     <ClCompile Include="BlockDevice.cpp" />
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Device.cpp" />
+    <ClCompile Include="DeviceMonitor.cpp" />
     <ClCompile Include="Expander8Bit.cpp" />
     <ClCompile Include="Expander16Bit.cpp" />
     <ClCompile Include="InputModule.cpp" />
@@ -127,7 +129,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties arduino.build.auto_discover_includes="0" custom_esp8266_generic_FlashSize="4M1M" arduino.upload.port="COM4" />
+      <UserProperties arduino.build.auto_discover_includes="0" custom_esp8266_generic_FlashSize="4M1M" arduino.upload.port="COM5" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
