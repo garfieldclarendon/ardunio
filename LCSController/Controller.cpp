@@ -108,6 +108,13 @@ void Controller::downloadFirmwareUpdate(void)
 
 	if (WiFi.status() == WL_CONNECTED && port > 0)
 	{
+		// ControllerStatusFirmwareUpdate
+		UDPMessage message;
+		message.setMessageID(SYS_FIRMWARE_UPDATING);
+		message.setID(ESP.getChipId());
+
+		NetManager.sendUdpBroadcastMessage(message);
+		delay(250);
 		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 		String updateUrl("/controller/firmware?ControllerType=");
 		updateUrl += m_class;

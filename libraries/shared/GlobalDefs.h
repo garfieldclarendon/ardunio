@@ -40,7 +40,8 @@ enum ControllerStatusEnum
     ControllerStatusOffline, ///< The controller is offline.
     ControllerStatusOnline, ///< The controller is online (replaces ControllerStatusConnected).
     ControllerStatusRestarting, ///< The controller is restarting.
-    ControllerStatusConected ///< No longer used.  Kept for backward compatability.
+    ControllerStatusConected, ///< No longer used.  Kept for backward compatability.
+	ControllerStatusFirmwareUpdate ///< Controller is downloading and updating its firmware.
 };
 
 	/// This enum describes the connection between two condition compares
@@ -246,6 +247,12 @@ const unsigned int LocalServerPort = 45455;
 /**
 * \ingroup UDPMessageID
 * Controller Keep-alive message.  No longer used.  Keeping for future use if needed
+*
+*/
+#define SYS_FIRMWARE_UPDATING 17
+/**
+* \ingroup UDPMessageID
+* Controller Firmware upgrade message. The controller is downloading and updating its firmware.
 *
 */
 #define SYS_KEEP_ALIVE 18
