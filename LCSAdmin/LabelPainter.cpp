@@ -21,7 +21,17 @@ void LabelPainter::printerPaintRequested(QPrinter *printer)
     painter.setPen(pen);
 
     paintHeader(r, &painter);
+    if(r.y() + 100 >= printer->height())
+    {
+        printer->newPage();
+        r = printer->pageRect();
+    }
     paintBody(r, &painter);
+    if(r.y() + 100 >= printer->height())
+    {
+        printer->newPage();
+        r = printer->pageRect();
+    }
 }
 
 QString LabelPainter::getDeviceTypeName(int deviceType)

@@ -4,7 +4,7 @@
 #include "API.h"
 
 DeviceModuleModel::DeviceModuleModel(QObject *parent)
-    : EntityModel("moduleDevicePort", parent), m_deviceID(0), m_moduleID(0)
+    : EntityModel("moduleDevicePort", parent), m_deviceID(0), m_moduleID(0), m_controllerID(0)
 {
     connect(API::instance(), SIGNAL(apiReady()), this, SLOT(apiReady()));
     apiReady();
@@ -38,7 +38,7 @@ void DeviceModuleModel::setDeviceID(int value)
         QJsonDocument jsonDoc;
         if(API::instance()->getApiReady())
         {
-            QString json = API::instance()->getModuleDevicePortList(m_deviceID, m_moduleID);
+            QString json = API::instance()->getModuleDevicePortList(m_deviceID, m_moduleID, m_controllerID);
             jsonDoc = QJsonDocument::fromJson(json.toLatin1());
             beginResetModel();
             m_jsonModel->setJson(jsonDoc, false);
@@ -57,7 +57,26 @@ void DeviceModuleModel::setModuleID(int value)
         QJsonDocument jsonDoc;
         if(API::instance()->getApiReady())
         {
-            QString json = API::instance()->getModuleDevicePortList(m_deviceID, m_moduleID);
+            QString json = API::instance()->getModuleDevicePortList(m_deviceID, m_moduleID, m_controllerID);
+            jsonDoc = QJsonDocument::fromJson(json.toLatin1());
+            beginResetModel();
+            m_jsonModel->setJson(jsonDoc, false);
+            endResetModel();
+            emit rowCountChanged();
+        }
+    }
+}
+
+void DeviceModuleModel::setControllerID(int value)
+{
+    if(m_controllerID != value)
+    {
+        m_controllerID = value;
+        emit controllerIDChanged();
+        QJsonDocument jsonDoc;
+        if(API::instance()->getApiReady())
+        {
+            QString json = API::instance()->getModuleDevicePortList(m_deviceID, m_moduleID, m_controllerID);
             jsonDoc = QJsonDocument::fromJson(json.toLatin1());
             beginResetModel();
             m_jsonModel->setJson(jsonDoc, false);
@@ -95,7 +114,7 @@ void DeviceModuleModel::loadData()
     if(m_jsonModel && API::instance()->getApiReady() && (m_deviceID > 0 || m_moduleID > 0))
     {
         QJsonDocument jsonDoc;
-        QString json = API::instance()->getModuleDevicePortList(m_deviceID, m_moduleID);
+        QString json = API::instance()->getModuleDevicePortList(m_deviceID, m_moduleID, m_controllerID);
         jsonDoc = QJsonDocument::fromJson(json.toLatin1());
         beginResetModel();
         m_jsonModel->setJson(jsonDoc, false);

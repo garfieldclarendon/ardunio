@@ -17,7 +17,7 @@ signals:
 public slots:
 
 protected slots:
-    void printerPaintRequested(QPrinter *printer);
+    virtual void printerPaintRequested(QPrinter *printer);
 
     virtual void paintHeader(QRectF &rect, QPainter *painter) = 0;
     virtual void paintBody(QRectF &rect, QPainter *painter) = 0;

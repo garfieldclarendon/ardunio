@@ -13,6 +13,7 @@
 #include "LabelInput.h"
 #include "LabelOutput.h"
 #include "LabelController.h"
+#include "ReportController.h"
 #include "ControllerModel.h"
 #include "DeviceModuleModel.h"
 
@@ -92,6 +93,21 @@ void UI::printControllerLabel(int controllerID)
 
     QPrintPreviewDialog dlg(&printer, QApplication::focusWidget());
     LabelController *painter = new LabelController(&model, &dlg);
+    painter->setParent(&dlg);
+    connect(&dlg, SIGNAL(paintRequested(QPrinter*)), painter, SLOT(printerPaintRequested(QPrinter*)));
+
+    dlg.exec();
+}
+
+void UI::printControllerReport(int controllerID)
+{
+    ControllerModel model;
+    model.setControllerID(controllerID);
+
+    QPrinter printer(QPrinter::HighResolution);
+
+    QPrintPreviewDialog dlg(&printer, QApplication::focusWidget());
+    ReportController *painter = new ReportController(&model, &dlg);
     painter->setParent(&dlg);
     connect(&dlg, SIGNAL(paintRequested(QPrinter*)), painter, SLOT(printerPaintRequested(QPrinter*)));
 

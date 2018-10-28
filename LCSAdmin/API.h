@@ -53,7 +53,7 @@ public slots:
     QString getControllerModuleListByModuleID(int controllerModuleID);
     QString getControllerModuleListByClass(ModuleClassEnum moduleClass);
     QString getDeviceList(int controllerID, int moduleID, DeviceClassEnum deviceType = DeviceUnknown, int deviceID = -1);
-    QString getModuleDevicePortList(int deviceID, int moduleID);
+    QString getModuleDevicePortList(int deviceID, int moduleID, int controllerID);
     QString getSignalAspectList(int deviceID);
     QString getSignalConditionList(int aspectID);
     QString getRouteList(int deviceID);

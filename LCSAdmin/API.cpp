@@ -163,7 +163,7 @@ QString API::getDeviceList(int controllerID, int moduleID, DeviceClassEnum devic
     return json;
 }
 
-QString API::getModuleDevicePortList(int deviceID, int moduleID)
+QString API::getModuleDevicePortList(int deviceID, int moduleID, int controllerID)
 {
     QString json;
     QString s("module_device_port_list");
@@ -171,6 +171,8 @@ QString API::getModuleDevicePortList(int deviceID, int moduleID)
         s.append(QString("?deviceID=%1").arg(deviceID));
     else if(moduleID > 0)
         s.append(QString("?moduleID=%1").arg(moduleID));
+    else if(controllerID > 0)
+        s.append(QString("?controllerID=%1").arg(controllerID));
     QUrl url(buildUrl(s));
 
     json = sendToServer(url, QString(), NetActionGet);

@@ -41,7 +41,7 @@ enum ControllerStatusEnum
     ControllerStatusOnline, ///< The controller is online (replaces ControllerStatusConnected).
     ControllerStatusRestarting, ///< The controller is restarting.
     ControllerStatusConected, ///< No longer used.  Kept for backward compatability.
-	ControllerStatusFirmwareUpdate ///< Controller is downloading and updating its firmware.
+    ControllerStatusFirmwareUpdate ///< Controller is downloading and updating its firmware.
 };
 
 	/// This enum describes the connection between two condition compares

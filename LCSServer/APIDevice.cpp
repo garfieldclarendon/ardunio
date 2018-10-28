@@ -80,6 +80,7 @@ void APIDevice::handleGetModuleDevicePortList(const APIRequest &request, APIResp
     QUrlQuery urlQuery(request.getUrl());
     int deviceID = urlQuery.queryItemValue("deviceID").toInt();
     int moduleID = urlQuery.queryItemValue("moduleID").toInt();
+    int controllerID = urlQuery.queryItemValue("controllerID").toInt();
     qDebug(QString("handleGetDevicePropertyList.  deviceID = %1").arg(deviceID).toLatin1());
     Database db;
 
@@ -90,6 +91,8 @@ void APIDevice::handleGetModuleDevicePortList(const APIRequest &request, APIResp
         sql += QString(" WHERE moduleDevicePort.controllerModuleID = %1 ORDER BY port").arg(moduleID);
     else if(deviceID > 0)
         sql += QString(" WHERE moduleDevicePort.deviceID = %1").arg(deviceID);
+    else if(controllerID > 0)
+        sql += QString(" WHERE controllerModule.controllerID = %1 ORDER BY controllerModule.address").arg(controllerID);
 
     QJsonArray jsonArray = db.fetchItems(sql);
 

@@ -40,6 +40,7 @@ public slots:
     int applyRatio(const int value);
     void printModuleLabel(int moduleID);
     void printControllerLabel(int controllerID);
+    void printControllerReport(int controllerID);
 
 protected slots:
 

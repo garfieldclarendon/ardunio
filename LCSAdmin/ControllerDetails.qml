@@ -237,13 +237,29 @@ Rectangle {
             Layout.fillWidth: true
         }
         Button {
-            id: printButton
-            text: "Print"
+            id: printLabelButton
+            text: "Print Label"
             onClicked: {
                 ui.printControllerLabel(controllerEntity.data.controllerID);
             }
         }
         // Sixth Row
+        Item {
+            width: addButton.width
+            height: addButton.height
+        }
+        Item {
+            width: addButton.width
+            height: addButton.height
+        }
+        Button {
+            id: printReportButton
+            text: "Print Report"
+            onClicked: {
+                ui.printControllerReport(controllerEntity.data.controllerID);
+            }
+        }
+        // Seventh Row
         Item {
             width: addButton.width
             height: addButton.height

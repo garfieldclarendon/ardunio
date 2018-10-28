@@ -136,4 +136,19 @@ void ControllerManager::newUDPMessage(const UDPMessage &message)
         }
         emit controllerStatusChanged(serialNumber, ControllerStatusRestarting, version);
     }
+    else if(message.getMessageID() == SYS_FIRMWARE_UPDATING)
+    {
+        long serialNumber = message.getID();
+        QString version("0.0.0");
+        QList<ControllerEntry *> list = m_controllerMap.values();
+        for(int x = 0; x < list.count(); x++)
+        {
+            if(list.value(x)->getSerialNumber() == serialNumber)
+            {
+                list.value(x)->setStatus(ControllerStatusFirmwareUpdate);
+                version = list.value(x)->getVersion();
+            }
+        }
+        emit controllerStatusChanged(serialNumber, ControllerStatusFirmwareUpdate, version);
+    }
 }

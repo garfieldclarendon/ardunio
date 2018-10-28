@@ -98,6 +98,8 @@ Item {
                     return "Restarting";
                 else if(currentState == "4")
                     return "Connected";
+                else if(currentState == "5")
+                    return "Updating Firmware";
                 return "Unknown";
             }
 
