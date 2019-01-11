@@ -13,21 +13,21 @@ LabelController::LabelController(EntityModel *model, QObject *parent)
 
 }
 
-void LabelController::paintHeader(QRectF &rect, QPainter *painter)
+void LabelController::paintHeader(QRectF &rect, QPainter *painter, const QFont &font)
 {
     QRectF size;
 
     QPen pen = painter->pen();
 
-    QFont font = painter->font();
-    font.setPointSize(16);
-    font.setBold(true);
-    painter->setFont(font);
+    QFont f(font);
+    f.setPointSize(font.pointSize() + 3);
+    f.setBold(true);
+    painter->setFont(f);
     painter->drawText(rect, 0, "LCS Controller", &size);
     rect.setTop(rect.top() + size.height() + (m_padding * 10));
-    font.setPointSize(12);
-    font.setBold(false);
-    painter->setFont(font);
+    f.setPointSize(font.pointSize());
+    f.setBold(false);
+    painter->setFont(f);
     QString text = QString("%1").arg(m_model->data(0, "controllerName").toString());
     painter->drawText(rect, 0, text, &size);
     rect.setTop(rect.top() + size.height() + (m_padding * 5));
@@ -45,7 +45,7 @@ void LabelController::paintHeader(QRectF &rect, QPainter *painter)
     rect.setTop(rect.top() + (m_padding * 10));
 }
 
-void LabelController::paintBody(QRectF &rect, QPainter *painter)
+void LabelController::paintBody(QRectF &rect, QPainter *painter, const QFont &font)
 {
     ControllerClassEnum c = (ControllerClassEnum)m_model->data(0, "controllerClass").toInt();
 
@@ -55,6 +55,6 @@ void LabelController::paintBody(QRectF &rect, QPainter *painter)
         DeviceModel m;
         m.setControllerID(controllerID);
         LabelTurnout tp(&m);
-        tp.paintBody(rect, painter);
+        tp.paintBody(rect, painter, font);
     }
 }

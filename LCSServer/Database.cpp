@@ -238,9 +238,22 @@ QString Database::getDeviceConfig(int deviceID)
         getTurnoutConfig(deviceID, obj);
     else if(deviceClass == DeviceSignal || deviceClass == DeviceSemaphore)
         getSignalConfig(deviceID, obj);
+    else if(deviceClass == DevicePanelOutput)
+        getPanelOutputRoute(obj);
 
     doc.setObject(obj);
     return doc.toJson();
+}
+
+void Database::getPanelOutputRoute(QJsonObject &obj)
+{
+    int routeID = obj["ROUTEID"].toVariant().toInt();
+
+    if(routeID > 0)
+    {
+        QJsonArray a = fetchItems(QString("SELECT deviceID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID));
+        obj["turnouts"] = a;
+    }
 }
 
 void Database::getDeviceProperties(int deviceID, QJsonObject &device)
@@ -983,6 +996,10 @@ void Database::createDevicePropertyEntries(int deviceID, DeviceClassEnum deviceC
         }
         {
             QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ONVALUE', 0)").arg(deviceID);
+            executeQuery(sql);
+        }
+        {
+            QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ROUTEID', 0)").arg(deviceID);
             executeQuery(sql);
         }
         QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'FLASHINGVALUE', 0)").arg(deviceID);

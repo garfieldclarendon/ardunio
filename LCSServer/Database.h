@@ -82,6 +82,7 @@ private:
     void updateDatabaseSchema(int currentVersion);
     void upgradeToVersion5(void);
     void createDevicePropertyEntries(int deviceID, DeviceClassEnum deviceClass);
+    void getPanelOutputRoute(QJsonObject &obj);
 
     static QString fullPathAndFile;
     QSqlDatabase db;

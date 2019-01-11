@@ -11,20 +11,20 @@ LabelOutput::LabelOutput(EntityModel *model, QObject *parent)
 
 }
 
-void LabelOutput::paintHeader(QRectF &rect, QPainter *painter)
+void LabelOutput::paintHeader(QRectF &rect, QPainter *painter, const QFont &font)
 {
     QRectF size;
 
     QPen pen = painter->pen();
 
-    QFont font = painter->font();
-    font.setPointSize(12);
-    font.setBold(true);
-    painter->setFont(font);
+    QFont f(font);
+    f.setPointSize(font.pointSize());
+    f.setBold(true);
+    painter->setFont(f);
     painter->drawText(rect, 0, m_model->data(0, "moduleName").toString(), &size);
     rect.setTop(rect.top() + size.height() + m_padding);
-    font.setBold(false);
-    painter->setFont(font);
+    f.setBold(false);
+    painter->setFont(f);
     QString address = QString("Address: %1").arg(m_model->data(0, "address").toInt());
     painter->drawText(rect, 0, address, &size);
     rect.setTop(rect.top() + size.height() + (m_padding * 5));
@@ -36,15 +36,15 @@ void LabelOutput::paintHeader(QRectF &rect, QPainter *painter)
     rect.setTop(rect.top() + (m_padding * 10));
 }
 
-void LabelOutput::paintBody(QRectF &rect, QPainter *painter)
+void LabelOutput::paintBody(QRectF &rect, QPainter *painter, const QFont &font)
 {
     QPen pen = painter->pen();
-    QFont font = painter->font();
-    font.setFamily("Courier New");
-    font.setPointSize(10);
+    QFont f(font);
+    f.setFamily("Courier New");
+    f.setPointSize(font.pointSize() - 2);
 
-    font.setBold(false);
-    painter->setFont(font);
+    f.setBold(false);
+    painter->setFont(f);
 
     QString list[16];
 
@@ -114,7 +114,11 @@ void LabelOutput::paintOutput(QRectF &rect, QPainter *painter, const QString &te
     QRectF size;
     if(port > 7)
         port = port - 8;
-    QString t = QString("%1 - %2").arg(port).arg(text);
+    QString t;
+    if(text.length() > 0)
+        t = QString("%1 - %2").arg(port).arg(text);
+    else
+        t = QString("%1 - (open)").arg(port).arg(text);
     painter->drawText(rect, 0, t, &size);
     rect.setTop(rect.top() + size.height());
 

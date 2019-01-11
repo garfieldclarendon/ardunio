@@ -1,5 +1,6 @@
 #include <QPrinter>
 #include <QPainter>
+#include <QApplication>
 
 #include "LabelPainter.h"
 #include "EntityModel.h"
@@ -8,7 +9,19 @@
 LabelPainter::LabelPainter(EntityModel *model, QObject *parent)
     : QObject(parent), m_model(model), m_padding(5)
 {
+    QFont f = QApplication::font();
 
+    f.setPointSize(14);
+    setFont(f);
+}
+
+void LabelPainter::setFont(const QFont &font)
+{
+    if(m_font != font)
+    {
+        m_font = font;
+        emit fontChanged();
+    }
 }
 
 void LabelPainter::printerPaintRequested(QPrinter *printer)
@@ -20,14 +33,14 @@ void LabelPainter::printerPaintRequested(QPrinter *printer)
     pen.setColor(Qt::black);
     painter.setPen(pen);
 
-    paintHeader(r, &painter);
-    if(r.y() + 100 >= printer->height())
+    paintHeader(r, &painter, getFont());
+    if(r.y()  > printer->height())
     {
         printer->newPage();
         r = printer->pageRect();
     }
-    paintBody(r, &painter);
-    if(r.y() + 100 >= printer->height())
+    paintBody(r, &painter, getFont());
+    if(r.y()  > printer->height())
     {
         printer->newPage();
         r = printer->pageRect();

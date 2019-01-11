@@ -94,6 +94,7 @@
     <ClInclude Include="PanelInputDevice.h" />
     <ClInclude Include="PanelOutputDevice.h" />
     <ClInclude Include="PinFlasher.h" />
+    <ClInclude Include="RouteMonitor.h" />
     <ClInclude Include="SemaphoreDevice.h" />
     <ClInclude Include="SignalDevice.h" />
     <ClInclude Include="Structures.h" />
@@ -116,6 +117,7 @@
     <ClCompile Include="PanelInputDevice.cpp" />
     <ClCompile Include="PanelOutputDevice.cpp" />
     <ClCompile Include="PinFlasher.cpp" />
+    <ClCompile Include="RouteMonitor.cpp" />
     <ClCompile Include="SemaphoreDevice.cpp" />
     <ClCompile Include="SignalDevice.cpp" />
     <ClCompile Include="TurnoutDevice.cpp" />

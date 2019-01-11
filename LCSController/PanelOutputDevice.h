@@ -9,12 +9,13 @@ struct PanelOutputDataStruct
 	int m_itemID;
 	byte m_onValue;
 	byte m_flashValue;
+	byte m_itemIsRoute;
 };
 typedef struct PanelOutputDataStruct PanelOutputDataStruct;
 
 class PanelOutputDevice : public Device
 {
-	const byte CONFIG_VERSION = 3;
+	const byte CONFIG_VERSION = 4;
 public:
 	PanelOutputDevice();
 	~PanelOutputDevice();
@@ -32,8 +33,10 @@ public:
 private:
 	bool parseConfig(String &jsonText, bool setVersion);
 	PinStateEnum getPinState(void);
+	void updateCurrentStatus(void);
 
 	bool m_downloadConfig;
 	PanelOutputDataStruct m_data;
+	byte m_currentStatus;
 };
 

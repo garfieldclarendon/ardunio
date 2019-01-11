@@ -1,6 +1,7 @@
 #include <QFont>
 #include <QPrinter>
 #include <QPainter>
+#include <QApplication>
 
 #include "ReportController.h"
 #include "EntityModel.h"
@@ -14,23 +15,26 @@
 ReportController::ReportController(EntityModel *model, QObject *parent)
     : LabelPainter(model, parent)
 {
+    QFont f = QApplication::font();
 
+    f.setPointSize(21);
+    setFont(f);
 }
 
-void ReportController::paintHeader(QRectF &rect, QPainter *painter)
+void ReportController::paintHeader(QRectF &rect, QPainter *painter, const QFont &font)
 {
     QRectF size;
 
     QPen pen = painter->pen();
 
-    QFont font = painter->font();
-    font.setPointSize(16);
-    font.setBold(true);
+    QFont f(font);
+    f.setPointSize(font.pointSize() + 4);
+    f.setBold(true);
     painter->setFont(font);
     painter->drawText(rect, 0, "LCS Controller", &size);
     rect.setTop(rect.top() + size.height() + (m_padding * 10));
-    font.setPointSize(12);
-    font.setBold(false);
+    f.setPointSize(font.pointSize());
+    f.setBold(false);
     painter->setFont(font);
     QString text = QString("%1").arg(m_model->data(0, "controllerName").toString());
     painter->drawText(rect, 0, text, &size);
@@ -49,7 +53,7 @@ void ReportController::paintHeader(QRectF &rect, QPainter *painter)
     rect.setTop(rect.top() + (m_padding * 10));
 }
 
-void ReportController::paintBody(QRectF &rect, QPainter *painter)
+void ReportController::paintBody(QRectF &rect, QPainter *painter, const QFont &font)
 {
     ControllerClassEnum c = (ControllerClassEnum)m_model->data(0, "controllerClass").toInt();
 
@@ -59,7 +63,7 @@ void ReportController::paintBody(QRectF &rect, QPainter *painter)
         DeviceModel m;
         m.setControllerID(controllerID);
         LabelTurnout tp(&m);
-        tp.paintBody(rect, painter);
+        tp.paintBody(rect, painter, font);
     }
     else if(c == ControllerMulti)
     {
@@ -76,20 +80,20 @@ void ReportController::paintBody(QRectF &rect, QPainter *painter)
             if(moduleClass == ModuleInput)
             {
                 LabelInput label(&model);
-                label.paintHeader(rect, painter);
-                label.paintBody(rect, painter);
+                label.paintHeader(rect, painter, font);
+                label.paintBody(rect, painter, font);
             }
             else if(moduleClass == ModuleOutput)
             {
                 LabelOutput label(&model);
-                label.paintHeader(rect, painter);
-                label.paintBody(rect, painter);
+                label.paintHeader(rect, painter, font);
+                label.paintBody(rect, painter, font);
             }
             else if(moduleClass == ModuleTurnout)
             {
                 LabelTurnout label(&model);
-                label.paintHeader(rect, painter);
-                label.paintBody(rect, painter);
+                label.paintHeader(rect, painter, font);
+                label.paintBody(rect, painter, font);
             }
         }
     }
@@ -105,8 +109,8 @@ void ReportController::printerPaintRequested(QPrinter *printer)
     pen.setColor(Qt::black);
     painter.setPen(pen);
 
-    paintHeader(r, &painter);
-    if(r.y() + 20 >= printer->height())
+    paintHeader(r, &painter, getFont());
+    if(r.y() >= printer->height())
     {
         printer->newPage();
         r = printer->pageRect();
@@ -119,7 +123,7 @@ void ReportController::printerPaintRequested(QPrinter *printer)
         DeviceModel m;
         m.setControllerID(controllerID);
         LabelTurnout tp(&m);
-        tp.paintBody(r, &painter);
+        tp.paintBody(r, &painter, getFont());
     }
     else if(c == ControllerMulti)
     {
@@ -151,19 +155,19 @@ void ReportController::paintModule(QRectF &rect, QPainter *painter, ModuleClassE
     if(moduleClass == ModuleInput)
     {
         LabelInput label(&model);
-        label.paintHeader(rect, painter);
-        label.paintBody(rect, painter);
+        label.paintHeader(rect, painter, getFont());
+        label.paintBody(rect, painter, getFont());
     }
     else if(moduleClass == ModuleOutput)
     {
         LabelOutput label(&model);
-        label.paintHeader(rect, painter);
-        label.paintBody(rect, painter);
+        label.paintHeader(rect, painter, getFont());
+        label.paintBody(rect, painter, getFont());
     }
     else if(moduleClass == ModuleTurnout)
     {
         LabelTurnout label(&model);
-        label.paintHeader(rect, painter);
-        label.paintBody(rect, painter);
+        label.paintHeader(rect, painter, getFont());
+        label.paintBody(rect, painter, getFont());
     }
 }

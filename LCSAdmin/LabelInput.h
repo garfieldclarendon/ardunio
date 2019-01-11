@@ -11,8 +11,8 @@ public:
     LabelInput(EntityModel *model, QObject *parent = nullptr);
 
     // LabelPainter interface
-    void paintHeader(QRectF &rect, QPainter *painter) override;
-    void paintBody(QRectF &rect, QPainter *painter) override;
+    void paintHeader(QRectF &rect, QPainter *painter, const QFont &font) override;
+    void paintBody(QRectF &rect, QPainter *painter, const QFont &font) override;
 
 private:
     void paintInput(QRectF &rect, QPainter *painter, const QString &text, int port);

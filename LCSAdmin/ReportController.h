@@ -9,8 +9,8 @@ class ReportController : public LabelPainter
 public:
     ReportController(EntityModel *model, QObject *parent = nullptr);
     // LabelPainter interface
-    void paintHeader(QRectF &rect, QPainter *painter) override;
-    void paintBody(QRectF &rect, QPainter *painter) override;
+    void paintHeader(QRectF &rect, QPainter *painter, const QFont &font) override;
+    void paintBody(QRectF &rect, QPainter *painter, const QFont &font) override;
 
 protected slots:
     virtual void printerPaintRequested(QPrinter *printer);
