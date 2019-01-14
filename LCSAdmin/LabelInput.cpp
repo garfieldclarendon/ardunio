@@ -45,7 +45,6 @@ void LabelInput::paintBody(QRectF &rect, QPainter *painter, const QFont &font)
     f.setBold(false);
     painter->setFont(f);
 
-
     QString list[16];
 
     for(int x = 0; x < m_model->getRowCount(); x++)
