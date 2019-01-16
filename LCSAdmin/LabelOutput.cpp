@@ -33,7 +33,7 @@ void LabelOutput::paintHeader(QRectF &rect, QPainter *painter, const QFont &font
     painter->drawLine(rect.topLeft(), rect.topRight());
     pen.setWidth(1);
     painter->setPen(pen);
-    rect.setTop(rect.top() + (m_padding * 10));
+    rect.setTop(rect.top() + (m_padding));
 }
 
 void LabelOutput::paintBody(QRectF &rect, QPainter *painter, const QFont &font)

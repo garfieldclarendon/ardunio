@@ -11,7 +11,7 @@ LabelPainter::LabelPainter(EntityModel *model, QObject *parent)
 {
     QFont f = QApplication::font();
 
-    f.setPointSize(14);
+    f.setPointSize(12);
     setFont(f);
 }
 

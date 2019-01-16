@@ -71,7 +71,7 @@ void UI::printModuleLabel(int moduleID)
     ModuleClassEnum moduleClass = (ModuleClassEnum)model.data(0, "moduleClass").toInt();
 
     QPrinter printer(QPrinter::HighResolution);
-    QPageSize pageSize(QSizeF(58.0, 100.0), QPageSize::Millimeter, QString(), QPageSize::ExactMatch);
+    QPageSize pageSize(QSizeF(58.7375, 101.6), QPageSize::Millimeter, QString(), QPageSize::ExactMatch);
     printer.setPageSize(pageSize);
 
     QPrintPreviewDialog dlg(&printer, QApplication::focusWidget());
@@ -88,7 +88,7 @@ void UI::printControllerLabel(int controllerID)
     model.setControllerID(controllerID);
 
     QPrinter printer(QPrinter::HighResolution);
-    QPageSize pageSize(QSizeF(58.0, 100.0), QPageSize::Millimeter, QString(), QPageSize::ExactMatch);
+    QPageSize pageSize(QSizeF(54.0, 100.0), QPageSize::Millimeter, QString(), QPageSize::ExactMatch);
     printer.setPageSize(pageSize);
 
     QPrintPreviewDialog dlg(&printer, QApplication::focusWidget());
