@@ -22,7 +22,7 @@ const unsigned char BuildVersion = 32;
 /** Total devices per module */
 #define MAX_DEVICES 16
 /** Maximum routes a turnout can belong to */
-#define MAX_ROUTE_ENTRIES 5
+#define MAX_ROUTE_ENTRIES 10
 /** Maximum devices (turnout and blocks) monitored by a Signal device */
 #define MAX_SIGNAL_DEVICES 20
 /** Maximum conditions per Signal aspect */

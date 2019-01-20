@@ -108,6 +108,7 @@ bool TurnoutDevice::parseConfig(String &jsonText, bool setVersion)
 	{
 		m_data.routes[x].routeID = routes[x]["routeID"];
 		m_data.routes[x].state = (TurnoutState)(int)routes[x]["turnoutState"];
+		DEBUG_PRINT("TurnoutDevice::parseConfig: ADDING ROUTE %d  STATE FOR ROUTE %d\n", m_data.routes[x].routeID, m_data.routes[x].state);
 	}
 	if (setVersion)
 	{
@@ -225,6 +226,7 @@ TurnoutState TurnoutDevice::getTurnoutStateForRoute(int routeID)
 		if (m_data.routes[x].routeID == routeID)
 		{
 			state = m_data.routes[x].state;
+			DEBUG_PRINT("getTurnoutStateForRoute FOUND ROUTE ENTRY %d  NEW STATE %d\n", routeID, state);
 			break;
 		}
 	}

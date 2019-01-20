@@ -77,10 +77,7 @@ void PanelOutputDevice::processUDPMessage(ModuleData &, const UDPMessage &messag
 		updateStatus = true;
 		while (message.getDeviceID(index) > 0)
 		{
-			if (m_data.m_itemID == message.getDeviceID(index))
-			{
-				Devices.setDeviceStatus(m_data.m_itemID, message.getDeviceStatus(index));
-			}
+			Devices.setDeviceStatus(message.getDeviceID(index), message.getDeviceStatus(index));
 			index++;
 		}
 	}
