@@ -8,6 +8,8 @@ The code running on the ESP8266 is developed using the Arduino IDE
 
 The LCSServer application running on the Raspberry Pi makes use of the Qt framework.  The ESP8266 uses http calls to communicate with the LCSServer application  and UDP unicast messages to communicate with other ESP8266 controllers on the layout.  A separate RESTful API provides access to commands to activate routes, set turnouts and update data in the configuration database.
 
+[Layout Control System Overview](https://github.com/garfieldclarendon/garfieldclarendon.github.io/blob/master/html/Documents/LCSOverview.pdf)
+
 [Source Code Documentation](https://garfieldclarendon.github.io/html/index.html)
 
 [API Documentation](https://garfieldclarendon.github.io/apidoc/index.html)
