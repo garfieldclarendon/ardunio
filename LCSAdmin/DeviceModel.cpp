@@ -70,9 +70,9 @@ void DeviceModel::setControllerID(int value)
 
 void DeviceModel::setClass(int value)
 {
-    if(m_class != (DeviceClassEnum)value)
+    if(m_class != value)
     {
-        m_class = (DeviceClassEnum)value;
+        m_class = value;
         if(m_class != 0)
             setFilterText(QString());
         emit classChanged();
@@ -86,8 +86,17 @@ bool DeviceModel::filterAcceptsRow(int source_row, const QModelIndex &) const
 
     if(m_class != DeviceUnknown)
     {
-        if(m_jsonModel->data(source_row, "deviceClass", Qt::EditRole).toInt() != (int)m_class)
-            ret = false;
+        if(m_class == 99)
+        {
+            int c = m_jsonModel->data(source_row, "deviceClass", Qt::EditRole).toInt();
+            if(c != DeviceBlock && c!= DeviceTurnout)
+                ret = false;
+        }
+        else
+        {
+            if(m_jsonModel->data(source_row, "deviceClass", Qt::EditRole).toInt() != m_class)
+                ret = false;
+        }
     }
 
     if(ret && m_filterText.length() > 0)

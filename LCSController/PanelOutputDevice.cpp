@@ -130,11 +130,18 @@ void PanelOutputDevice::updateCurrentStatus(void)
 		}
 		else
 		{
-			// m_data.m_onValue == 0 means turn the LED on if the route is not active.  In this case, ignore the flashing state
+			// m_data.m_onValue == 0 means turn the LED on if the route is not active.
 			if (routeState == PinOn)
+			{
 				m_currentStatus = PinOff;
+			}
 			else
-				m_currentStatus = PinOn;
+			{
+				if(routeState == PinFlashing)
+					m_currentStatus = PinOff;
+				else
+					m_currentStatus = PinOn;
+			}
 		}
 	}
 	else

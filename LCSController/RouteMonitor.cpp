@@ -53,6 +53,7 @@ void RouteMonitor::addRoute(int routeID, const JsonArray &turnouts)
 		JsonObject &obj = turnouts[x].asObject();
 		m_route.m_entries[x].m_turnoutID = obj["deviceID"];
 		m_route.m_entries[x].m_turnoutState = obj["turnoutState"];
+		Devices.addDevice(m_route.m_entries[x].m_turnoutID);
 	}
 	String fileName(createFileName(routeID));
 	DEBUG_PRINT("SAVE RouteMonitor::addRoute file %s\n", fileName.c_str());

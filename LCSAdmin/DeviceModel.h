@@ -59,7 +59,7 @@ private:
     void createEmptyObject(QJsonObject &obj) override;
     int m_controllerModuleID;
     int m_controllerID;
-    DeviceClassEnum m_class;
+    int m_class;
     QString m_filterText;
 };
 

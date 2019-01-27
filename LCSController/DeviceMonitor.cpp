@@ -33,17 +33,20 @@ void DeviceMonitor::processMessage(const UDPMessage & message)
 
 void DeviceMonitor::addDevice(int deviceID)
 {
-	for (byte x = 0; x < TOTAL_DEVICES; x++)
+	if (deviceID > 0)
 	{
-		if (m_device[x] == deviceID)
+		for (byte x = 0; x < TOTAL_DEVICES; x++)
 		{
-			break;
-		}
-		else if (m_device[x] == 0)
-		{
-			m_device[x] = deviceID;
-			m_status[x] = 0;
-			break;
+			if (m_device[x] == deviceID)
+			{
+				break;
+			}
+			else if (m_device[x] == 0)
+			{
+				m_device[x] = deviceID;
+				m_status[x] = 0;
+				break;
+			}
 		}
 	}
 }

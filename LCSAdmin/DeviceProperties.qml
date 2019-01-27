@@ -13,6 +13,15 @@ Rectangle {
     property int deviceID: -1
     property int deviceClass: 0
 
+    RouteModel{
+        id: routeModel
+    }
+
+    DeviceModel {
+        id: deviceModel
+        deviceClass: devicePropertyGroup.deviceClass == 3 ? 99 : 0
+    }
+
     TextMetrics {
         id: textMetrics
         property int itemHeight: textMetrics.height + 35
@@ -52,11 +61,12 @@ Rectangle {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.margins: 5
+        spacing: 3
         clip: true
 
         Component {
             id: detialDelegate
-            RowLayout {
+            Item {
                 id: wrapper
                 width: parent.width
                 height: textMetrics.itemHeight
@@ -64,10 +74,52 @@ Rectangle {
                     id: keyText
                     text: "<b>" + key + ":</b>"
                     horizontalAlignment: Text.AlignRight
-                    Layout.fillWidth: true
+                    verticalAlignment: Text.AlignVCenter
+                    anchors.left: parent.left
+                    width: parent.width * .75
+                    height: parent.height
+//                    Layout.fillWidth: true
                 }
+                ControlComboBox {
+                    id: deviceCombo
+                    visible: key === "ITEMID"
+                    model: deviceModel
+                    lookupField: "deviceID"
+                    displayField: "deviceName"
+                    currentIndex: deviceModel.getDeviceRow(value);
+                    height: parent.height
+                    dataValue: value
+                    onDataValueChanged: {
+                        value = dataValue;
+                    }
+                    anchors.leftMargin: 5
+                    anchors.left: keyText.right
+                    anchors.right: parent.right
+                }
+                ControlComboBox {
+                    id: routeCombo
+                    visible: key.startsWith("ROUTEID")
+                    model: routeModel
+                    lookupField: "routeID"
+                    displayField: "routeName"
+                    currentIndex: routeModel.getRouteRow(value);
+                    height: parent.height
+                    dataValue: value
+                    onDataValueChanged: {
+                        value = dataValue;
+                    }
+                    anchors.leftMargin: 5
+                    anchors.left: keyText.right
+                    anchors.right: parent.right
+                }
+
                 TextField {
                     id: valueField
+                    visible: !deviceCombo.visible && !routeCombo.visible
+                    anchors.leftMargin: 5
+                    anchors.left: keyText.right
+                    anchors.right: parent.right
+                    height: parent.height
                     text: value ? value : ""
                     onTextChanged: {
                         value = valueField.text

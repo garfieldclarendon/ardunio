@@ -1,5 +1,7 @@
 import QtQuick 2.9
+import QtQuick.Controls 2.2 as Controls2
 import QtQuick.Controls 1.4
+import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.2
 import Utils 1.0
@@ -183,7 +185,7 @@ Item {
     GridLayout {
         anchors.fill: parent
         anchors.margins: 5
-        columns: 3
+        columns: 4
         Text {
             id: name
             text: qsTr("Controller Type:")
@@ -226,6 +228,30 @@ Item {
                 updateClicked(listView.model.data(listView.currentIndex, "controllerClass"), listView.currentIndex);
             }
         }
+        Controls2.ToolButton {
+            id: sendFirmwareButton
+            hoverEnabled: true
+
+            Controls2.ToolTip.delay: 1000
+            Controls2.ToolTip.timeout: 5000
+            Controls2.ToolTip.visible: hovered
+            Controls2.ToolTip.text: qsTr("Send firmware to all controllers")
+            contentItem: Image {
+                source: "Images/arrow_down.png"
+                sourceSize.width: 24
+                sourceSize.height: 24
+                fillMode: Image.Pad
+                layer.enabled: true
+                layer.effect: Desaturate {
+                    desaturation: parent.enabled ? 0 : 1
+                    Behavior on desaturation { NumberAnimation { easing.type: Easing.InOutQuad } }
+                }
+            }
+            enabled: buttons.enableAdd
+            onClicked: {
+                api.sendFirmware(0);
+            }
+        }
 
         ListView {
             id: listView
@@ -234,7 +260,7 @@ Item {
             delegate: modelDelegate
             focus: true
             clip: true
-            Layout.columnSpan: 3
+            Layout.columnSpan: 4
             Layout.fillHeight: true
             Layout.fillWidth: true
         }
