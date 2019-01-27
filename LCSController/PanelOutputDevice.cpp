@@ -8,7 +8,7 @@
 extern StaticJsonBuffer<2048> jsonBuffer;
 
 PanelOutputDevice::PanelOutputDevice()
-	: m_downloadConfig(false), m_currentStatus(PinOff)
+	: m_downloadConfig(false), m_currentStatus(PinOff), m_routeList(nullptr)
 {
 	m_data.m_itemID = -1;
 	m_data.m_onValue = 0;
@@ -62,26 +62,13 @@ void PanelOutputDevice::setup(int deviceID, byte port)
 
 void PanelOutputDevice::processUDPMessage(ModuleData &, const UDPMessage &message, UDPMessage &, byte &)
 {
-	bool updateStatus = false;
-	if (message.getMessageID() == TRN_STATUS || message.getMessageID() == BLK_STATUS)
+	if (message.getMessageID() == TRN_STATUS || 
+		message.getMessageID() == BLK_STATUS || 
+		message.getMessageID() == DEVICE_STATUS)
 	{
-		updateStatus = true;
-		if (m_data.m_itemID == message.getID())
-		{
-			Devices.setDeviceStatus(m_data.m_itemID, message.getField(0));
-		}
+		updateCurrentStatus();
 	}
-	if (message.getMessageID() == DEVICE_STATUS)
-	{
-		byte index = 0;
-		updateStatus = true;
-		while (message.getDeviceID(index) > 0)
-		{
-			Devices.setDeviceStatus(message.getDeviceID(index), message.getDeviceStatus(index));
-			index++;
-		}
-	}
-	else if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG)
+	else if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG || message.getMessageID() == SYS_DEVICE_CONFIG_CHANGED)
 	{
 		if (message.getID() == getID())
 		{
@@ -91,11 +78,6 @@ void PanelOutputDevice::processUDPMessage(ModuleData &, const UDPMessage &messag
 			saveConfig(json);
 			setup(getID(), getPort());
 		}
-	}
-
-	if (updateStatus)
-	{
-		updateCurrentStatus();
 	}
 }
 
@@ -115,19 +97,32 @@ PinStateEnum PanelOutputDevice::getPinState(void)
 
 void PanelOutputDevice::updateCurrentStatus(void)
 {
-	// Panel LED's run in two modes.  If the ROUTEID entry is set in the configuration data (as indicated by m_itemIsRoute entry being set to true), 
-	// then the LED follows the current state of the route.  In this case the m_onValue member contains either a 1 or a 0:
-	//		1:  Turn the LED ON when the route is ACTIVE.  If any of the turnouts in the route are in the process of throwing, set the LED to flashing
-	//		0:	Turn the LED ON when the route is NOT ACTIVE.  If any of the turnouts in the route are in the process of throwing, set the LED to ON
+	// Panel LED's run in two modes.  If the ROUTEID, ROUTEID2, ROUTEID3... entries are set in the configuration data (as indicated by m_routeCount entry being greater than 0), 
+	// then the LED follows the current state of one or more routes.  In this case the m_onValue member contains either a 1 or a 0:
+	//		1:  Turn the LED ON when ANY specified route is ACTIVE.  If any of the turnouts in the route are in the process of throwing, set the LED to flashing
+	//		0:	Turn the LED ON when ALL of the routes are NOT ACTIVE.  If any of the turnouts in the route(s) are in the process of throwing, set the LED to ON
 	//
 	// If ROUTEID is not set, then the panel LED follows the state of a particular device (usually a turnout or a block occupancy detector).  In this case,
 	// the ID of the device to monitor is in the m_itemID and should operate as follows:
 	//		1.  If m_onValue matches the current state of the device, set the LED to ON
 	//		2.  If m_flashValue matches the current state of the device, set the LED to FLASHING
 	//		3.  Otherwise, the LED should be OFF.
-	if (m_data.m_itemIsRoute == 1)
+	if (m_data.m_routeCount > 0)
 	{
-		PinStateEnum routeState = Routes.getRouteState(m_data.m_itemID);
+		DEBUG_PRINT("PanelOutputDevice::updateCurrentStatus device: %d  ROUTE COUNT: %d\n", getID(), m_data.m_routeCount);
+		PinStateEnum routeState;
+		for (byte x = 0; x < m_data.m_routeCount; x++)
+		{
+			routeState = Routes.getRouteState(*m_routeList + x);
+			DEBUG_PRINT("PanelOutputDevice::updateCurrentStatus device: %d  ROUTE PIN STATE: %d FOR ROUTE: %d\n", getID(), routeState, *m_routeList + x);
+			// if onValue is 1 and the route is ACTIVE, break.
+			// In this case, if the route is active or in the process of being active
+			// we don't need to check the remaining routes.
+			if (routeState != PinOff)
+			{
+				break;
+			}
+		}
 		// Turn the LED on if the route is active
 		if (m_data.m_onValue == 1)
 		{
@@ -182,11 +177,38 @@ bool PanelOutputDevice::parseConfig(String &jsonText, bool setVersion)
 	int routeID = json["ROUTEID"];
 	if (routeID > 0)
 	{
-		m_data.m_itemID = routeID;
-		m_data.m_itemIsRoute = 1;
-		JsonArray &turnouts = json["turnouts"].asArray();
+		DEBUG_PRINT("parseConfig  ID: %d  FOUND ROUTES!  ROUTEID: %d.\n", getID(), routeID);
+		int newRoutes[5];
+		newRoutes[0] = routeID;
+		m_data.m_routeCount = 1;
+		JsonArray &turnouts = json["turnouts1"].asArray();
 		Routes.addRoute(routeID, turnouts);
-
+		byte counter = 2;
+		byte routeCount = 1;
+		String key;
+		key = "ROUTEID";
+		key += counter;
+		DEBUG_PRINT("parseConfig  ID: %d  KEY: %s.\n", getID(), key.c_str());
+		while (json.containsKey(key))
+		{
+			routeID = json[key];
+			if (routeID > 0)
+			{
+				newRoutes[routeCount] = routeID;
+				key = "turnouts";
+				key += routeCount + 1;
+				JsonArray &turnouts = json[key].asArray();
+				DEBUG_PRINT("parseConfig  ID: %d  KEY: %s.\n", getID(), key.c_str());
+				Routes.addRoute(routeID, turnouts);
+				routeCount++;
+			}
+			counter++;
+			key = "ROUTEID";
+			key += counter;
+		}
+		m_data.m_routeCount = routeCount;
+		m_routeList = new int[routeCount];
+		memcpy(m_routeList, &newRoutes, routeCount);
 	}
 
 	if (setVersion)
@@ -235,6 +257,27 @@ String PanelOutputDevice::loadConfig(void)
 		DEBUG_PRINT("PanelOutputDevice Config file %s is missing or can not be opened\n", fileName.c_str());
 	}
 
+	if (ret == true && m_data.m_routeCount > 0)
+	{
+		m_routeList = new int[m_data.m_routeCount];
+		String fileName("/Device_");
+		fileName += getID();
+		fileName += "_routes.json";
+		DEBUG_PRINT("PanelOutputDevice::loadConfig routes %s\n", fileName.c_str());
+
+		File f = SPIFFS.open(fileName, "r");
+
+		if (f)
+		{
+			f.read((uint8_t*)m_routeList, m_data.m_routeCount);
+			f.close();
+		}
+		else
+		{
+			DEBUG_PRINT("PanelOutputDevice route list file %s is missing or can not be opened\n", fileName.c_str());
+		}
+	}
+
 	updateCurrentStatus();
 
 	if (ret)
@@ -261,5 +304,26 @@ void PanelOutputDevice::saveConfig(const String &)
 	else
 	{
 		DEBUG_PRINT("Error saving PanelOutputDevice Config file %s\n", fileName.c_str());
+	}
+
+	// Load routes if they exist
+	if (m_data.m_routeCount > 0)
+	{
+		String fileName("/Device_");
+		fileName += getID();
+		fileName += "_routes.json";
+		DEBUG_PRINT("SAVE PanelOutputDevice Route List %s\n", fileName.c_str());
+
+		File f = SPIFFS.open(fileName, "w");
+
+		if (f)
+		{
+			f.write((uint8_t*)m_routeList, m_data.m_routeCount);
+			f.close();
+		}
+		else
+		{
+			DEBUG_PRINT("Error saving PanelOutputDevice route list file %s\n", fileName.c_str());
+		}
 	}
 }

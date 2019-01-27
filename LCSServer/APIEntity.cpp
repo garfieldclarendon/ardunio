@@ -10,6 +10,8 @@
 #include "Database.h"
 #include "WebServer.h"
 #include "EntityMetadata.h"
+#include "MessageBroadcaster.h"
+#include "APIRoute.h"
 
 APIEntity::APIEntity(QObject *parent) : QObject(parent)
 {
@@ -37,6 +39,8 @@ void APIEntity::handleClient(const APIRequest &request, APIResponse *response)
         data = fetchEntity(entityName, url);
 
     response->setPayload(data);
+    if(request.getNetActionType() != NetActionGet)
+        handleTriggers(entityName, data);
 }
 
 QByteArray APIEntity::fetchEntity(const QString &name, const QUrl &url)
@@ -79,6 +83,49 @@ QString APIEntity::buildWhere(const QUrl &url)
     }
 
     return where;
+}
+
+void APIEntity::handleTriggers(const QString &entityName, const QByteArray &jsonData)
+{
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    QJsonObject obj = doc.object();
+
+    if(entityName == "routeEntry")
+    {
+        int routeID = obj["routeID"].toVariant().toInt();
+        if(routeID > 0)
+        {
+            APIRoute::instance()->routeUpdated(routeID);
+        }
+    }
+    else if(entityName == "deviceProperty" ||
+            entityName == "signalAspect")
+    {
+        int deviceID = obj["deviceID"].toVariant().toInt();
+        if(deviceID > 0)
+        {
+            UDPMessage message;
+            message.setMessageID(SYS_DEVICE_CONFIG_CHANGED);
+            message.setID(deviceID);
+
+            MessageBroadcaster::instance()->sendUDPMessage(message);
+        }
+    }
+    else if(entityName == "signalCondition")
+    {
+        int aspectID = obj["signalAspectID"].toVariant().toInt();
+        Database db;
+        QJsonObject obj = db.fetchItem(QString("SELECT * FROM signalAspect WHERE id = %1").arg(aspectID));
+        int deviceID = obj["deviceID"].toVariant().toInt();
+        if(deviceID > 0)
+        {
+            UDPMessage message;
+            message.setMessageID(SYS_DEVICE_CONFIG_CHANGED);
+            message.setID(deviceID);
+
+            MessageBroadcaster::instance()->sendUDPMessage(message);
+        }
+    }
 }
 
 QByteArray APIEntity::saveEntity(const QString &name, const QString &jsonText)

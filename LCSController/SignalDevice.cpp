@@ -239,30 +239,17 @@ void SignalDevice::setup(int deviceID, byte port)
 
 void SignalDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message, UDPMessage &, byte &)
 {
-	if (message.getMessageID() == TRN_STATUS || message.getMessageID() == BLK_STATUS)
+	if (message.getMessageID() == TRN_STATUS || 
+		message.getMessageID() == BLK_STATUS || 
+		message.getMessageID() == DEVICE_STATUS)
 	{
-		if (Devices.setDeviceStatus(message.getID(), message.getField(0)))
-		{
-			m_updateValues = true;
-		}
-	}
-	else if (message.getMessageID() == DEVICE_STATUS)
-	{
-		byte index = 0;
-		while (message.getDeviceID(index) > 0)
-		{
-			if (Devices.setDeviceStatus(message.getDeviceID(index), message.getDeviceStatus(index)))
-			{
-				m_updateValues = true;
-			}
-			index++;
-		}
+		m_updateValues = true;
 	}
 	else if (message.getMessageID() == SYS_LOCK_DEVICE && message.getID() == getID())
 	{
 		handleLockoutMessage(message);
 	}
-	else if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG)
+	else if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG || message.getMessageID() == SYS_DEVICE_CONFIG_CHANGED)
 	{
 		if (message.getID() == getID())
 		{

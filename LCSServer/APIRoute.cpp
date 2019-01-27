@@ -3,6 +3,7 @@
 #include <QSqlQuery>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QThread>
 
 #include "APIRoute.h"
 
@@ -40,6 +41,29 @@ void APIRoute::activateRoute(int routeID)
     UDPMessage message;
     message.setMessageID(TRN_ACTIVATE_ROUTE);
     message.setID(routeID);
+    MessageBroadcaster::instance()->sendUDPMessage(message);
+}
+
+void APIRoute::routeUpdated(int routeID)
+{
+    Database db;
+
+    QString sql = QString("SELECT deviceID FROM routeEntry WHERE routeID = %1").arg(routeID);
+    QJsonArray jsonArray = db.fetchItems(sql);
+
+    UDPMessage message;
+    message.setMessageID(SYS_ROUTE_CONFIG_CHANGED);
+    message.setID(routeID);
+
+    for(unsigned char x = 0; x < jsonArray.size(); x++)
+    {
+        QJsonObject obj = jsonArray[x].toObject();
+        int deviceID = obj["deviceID"].toVariant().toInt();
+
+        if(x < UDP_MESSAGE_DEVICE_COUNT)
+            message.setDeviceID(x, deviceID);
+    }
+
     MessageBroadcaster::instance()->sendUDPMessage(message);
 }
 

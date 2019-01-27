@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include "GlobalDefs.h"
+
 /// Structure used to store the status of a device.
 struct MessageDeviceStruct {
     uint16_t deviceID; ///< ID of the device
@@ -12,7 +14,7 @@ typedef struct MessageDeviceStruct MessageDeviceStruct;
 /// Union used the by the UDPMessageStruct which contains an array of 8 device status entries.
 union PayloadUnion {
     unsigned char buffer[32];  ///< 32 byte payload accessable as Field[0] to Field[32] through the getField() member.
-    MessageDeviceStruct deviceStatus[8]; ///< Array of 8 \ref MessageDeviceStruct "device status" entries
+    MessageDeviceStruct deviceStatus[UDP_MESSAGE_DEVICE_COUNT]; ///< Array of 8 \ref MessageDeviceStruct "device status" entries
 } ;
 typedef union PayloadUnion PayloadUnion;
 

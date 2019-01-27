@@ -1,4 +1,6 @@
 #pragma once
+#include "UDPMessage.h"
+
 #include <Arduino.h>
 
 #define TOTAL_DEVICES 128
@@ -9,6 +11,7 @@ public:
 	DeviceMonitor();
 	~DeviceMonitor();
 
+	void processMessage(const UDPMessage &message);
 	void addDevice(int deviceID);
 	bool setDeviceStatus(int deviceID, byte status);
 

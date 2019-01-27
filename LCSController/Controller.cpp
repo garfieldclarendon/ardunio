@@ -2,12 +2,13 @@
 #include "GlobalDefs.h"
 #include "NetworkManager.h"
 #include "Local.h"
+#include "DeviceMonitor.h"
+#include "RouteMonitor.h"
 
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
 #include <FS.h>
-
 #define blinkingTimeout 200
 
 Controller::Controller(int localServerPort)
@@ -39,6 +40,11 @@ void Controller::process(void)
 void Controller::processMessage(const UDPMessage &message)
 {
 //	DEBUG_PRINT("NEW MESSAGE! MessageID %d  ID %d\n", message.getMessageID(), message.getID());
+
+	// Let global objects process the message first
+	Devices.processMessage(message);
+	Routes.processMessage(message);
+
 	if (message.getMessageID() == SYS_REBOOT_CONTROLLER && (message.getID() == 0 || message.getID() == ESP.getChipId()))
 	{
 		DEBUG_PRINT("REBOOT MESSAGE! Controller restarting.\n");
@@ -84,6 +90,12 @@ void Controller::processMessage(const UDPMessage &message)
 		sendControllerOnlineMessage(to);
 		if (m_sendStatusCallback)
 			m_sendStatusCallback();
+	}
+	else if (message.getMessageID() == SYS_DEVICE_CONFIG_CHANGED)
+	{
+		DEBUG_PRINT("SYS_DEVICE_CONFIG_CHANGED. RESETTING NOTIFICATION LIST\n");
+		String json = NetManager.getNotificationList();
+		NetManager.setNotificationList(json);
 	}
 	else if (message.getMessageID() == SYS_SERVER_HEARTBEAT)
 	{

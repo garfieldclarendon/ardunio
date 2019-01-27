@@ -659,14 +659,18 @@ void sendStatusMessage(void)
 	nextModuleToNotify = 0;
 }
 
-void notificationListChanged(const JsonArray &jsonArray)
+void notificationListChanged(const String &jsonText)
 {
+	StaticJsonBuffer<256> jsonBufferLocal;
+	JsonArray &jsonArray = jsonBufferLocal.parseArray(jsonText);
+
 	jsonBuffer.clear();
 	JsonObject &json = jsonBuffer.parseObject(getConfiguration());
 
 	DEBUG_PRINT("notificationListChanged  New Count: %d\n", jsonArray.size());
 	json["controllersToNotify"] = jsonArray;
 	json.printTo(jsonTextToSave);
+	DEBUG_PRINT("NEW CONFIGURATION FILE:\n%s\n", jsonTextToSave.c_str());
 }
 
 void setStatusIndicator(void)

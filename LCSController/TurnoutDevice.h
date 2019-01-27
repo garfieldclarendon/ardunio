@@ -3,11 +3,6 @@
 #include "Device.h"
 #include "GlobalDefs.h"
 
-struct TurnoutRouteStruct
-{
-	int routeID;
-	TurnoutState state;
-};
 typedef struct TurnoutRouteStruct TurnoutRouteStruct;
 
 struct TurnoutConfigStruct
@@ -15,13 +10,12 @@ struct TurnoutConfigStruct
 	byte version;
 	byte motorBA;
 	byte inputBA;
-	TurnoutRouteStruct routes[MAX_ROUTE_ENTRIES];
 };
 typedef struct TurnoutConfigStruct TurnoutConfigStruct;
 
 class TurnoutDevice : public Device
 {
-	const byte CONFIG_VERSION = 3;
+	const byte CONFIG_VERSION = 4;
 public:
 	TurnoutDevice();
 	~TurnoutDevice();
@@ -46,7 +40,7 @@ private:
 	void sendStatusMessage(TurnoutState newState);
 	bool parseConfig(String &jsonText, bool setVersion);
 	TurnoutState readCurrentState(byte data);
-	TurnoutState getTurnoutStateForRoute(int routeID);
+	void resetConfig(void);
 
 	TurnoutState m_lastState;
 	TurnoutState m_currentState;

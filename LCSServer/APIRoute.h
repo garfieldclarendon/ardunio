@@ -143,6 +143,10 @@ public:
     /// @param int id fo the route to activate.
     void activateRoute(int routeID);
 
+    /// Route updated.  Based on the routeID, force all turouts in the route to re-download their configuration data.
+    /// @param int id fo the route that's either new, updated or deleted.
+    void routeUpdated(int routeID);
+
 signals:
     ///Notifies interested parties that a route's status or lock state has changed.
     void sendNotificationMessage(const QString &url, const QJsonObject &obj);

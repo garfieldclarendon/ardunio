@@ -335,6 +335,12 @@ public slots:
     /// @param response APIResponse not used.
     void handleDownloadFirmwareUrl(const APIRequest &request, APIResponse *response);
 
+    /// API "/controller/route_list"
+    /// Downloads a controller's firmware.
+    /// @param request APIRequest containing the url of the request including the route's id.
+    /// @param response APIResponse with the payload set to the route's turnout list in JSON format.
+    void handleGetRouteList(const APIRequest &request, APIResponse *response);
+
     /// API "/api/controller_list"
     /// Downloads a list of all controllers.
     /// @param request APIRequest containing the url of the request including the controller's serial number.

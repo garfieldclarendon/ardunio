@@ -327,6 +327,14 @@ String NetworkManager::getNotificationList(void)
 	return json;
 }
 
+String NetworkManager::getRouteList(int routeID)
+{
+	String url("/controller/route_list?routeID=");
+	url += routeID;
+	String json = httpGet(url);
+	return json;
+}
+
 String NetworkManager::httpGet(const String &url)
 {
 	HTTPClient http;
@@ -492,7 +500,7 @@ void NetworkManager::setNotificationList(const String &jsonText)
 	}
 
 	if (m_notificationListChangedCallback)
-		m_notificationListChangedCallback(json);
+		m_notificationListChangedCallback(jsonText);
 }
 
 void NetworkManager::addMessageToQueue(const UDPMessage &message, const IPAddress &address)

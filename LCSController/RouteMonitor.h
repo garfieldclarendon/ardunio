@@ -1,6 +1,8 @@
 #pragma once
 
 #include "GlobalDefs.h"
+#include "UDPMessage.h"
+
 #include <ArduinoJson.h>
 
 struct RouteEntry
@@ -23,13 +25,20 @@ public:
 	RouteMonitor();
 	~RouteMonitor();
 	PinStateEnum getRouteState(int routeID);
+	TurnoutState getTurnoutStateForRoute(int deviceID, int routeID);
+
 	void addRoute(int routeID, const JsonArray &turnouts);
+	void addRoute(int routeID);
+	void processMessage(const UDPMessage &message);
 
 private:
 	void reset(void);
 	void loadRoute(int routeID);
+	void removeRoute(int routeID);
+	String createFileName(int routeID);
 
 	Route m_route;
+	int m_currentRoute;
 };
 
 

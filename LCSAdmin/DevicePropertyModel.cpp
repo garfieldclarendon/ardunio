@@ -15,7 +15,7 @@ QHash<int, QByteArray> DevicePropertyModel::roleNames(void) const
     QHash<int, QByteArray> roleNames;
 
     roleNames[Qt::UserRole + 0] = QByteArray("deviceID");
-    roleNames[Qt::UserRole + 1] = QByteArray("ID");
+    roleNames[Qt::UserRole + 1] = QByteArray("id");
     roleNames[Qt::UserRole + 2] = QByteArray("key");
     roleNames[Qt::UserRole + 3] = QByteArray("value");
 

@@ -35,7 +35,7 @@ void PanelInputDevice::setup(int deviceID, byte port)
 
 void PanelInputDevice::processUDPMessage(ModuleData &moduleData, const UDPMessage &message, UDPMessage &, byte &)
 {
-	if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG)
+	if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG || message.getMessageID() == SYS_DEVICE_CONFIG_CHANGED)
 	{
 		if (message.getID() == getID())
 		{

@@ -4,7 +4,7 @@
 
 const unsigned char MajorVersion = 3;
 const unsigned char MinorVersion = 0;
-const unsigned char BuildVersion = 32;
+const unsigned char BuildVersion = 34;
 
 /** When PROJECT_DEBUG is defined, DEBUG_PRINT will print output to the serial port.  Otherwise, DEBUG_PRINT does nothing (for release builds)  */
 #ifdef PROJECT_DEBUG
@@ -32,6 +32,9 @@ const unsigned char BuildVersion = 32;
 #define TIMEOUT_INTERVAL 200
 /** One minute heatbeat broadcast message interval */
 #define HEARTBEAT_INTERVAL 60000
+
+/** Total number of device slots available in a UDP message */
+#define UDP_MESSAGE_DEVICE_COUNT 8
 
     /// This enum describes the current status of a controller
 enum ControllerStatusEnum
@@ -304,5 +307,17 @@ const unsigned int LocalServerPort = 45455;
 * turnout will ignore all #TRN_ACTIVATE and #TRN_ACTIVATE_ROUTE commands until it receives a corresponding #SYS_LOCK_ROUTE command with its field[0] set to 0 (unlock).
 */
 #define SYS_LOCK_ROUTE 24
+/**
+* \ingroup UDPMessageID
+* A Route's definition/configration has changed.  ID property contains the routeID of the route that's been modified.  This causes the RouteMonitor in each controller
+* to download the new configuration for the route.
+*/
+#define SYS_ROUTE_CONFIG_CHANGED 25
+/**
+* \ingroup UDPMessageID
+* A Device's configration has changed.  ID property contains the deviceID of the device that's been modified.  This causes the Devices in each controller
+* to download the new configuration for the device.
+*/
+#define SYS_DEVICE_CONFIG_CHANGED 25
 
 /**@}*/

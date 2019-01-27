@@ -31,6 +31,8 @@ APIController::APIController(QObject *parent) : QObject(parent)
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleGetNotificationListUrl(APIRequest,APIResponse*)), Qt::DirectConnection);
     handler = webServer->createUrlHandler("/controller/firmware");
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleDownloadFirmwareUrl(APIRequest,APIResponse*)), Qt::DirectConnection);
+    handler = webServer->createUrlHandler("/controller/route_list");
+    connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleGetRouteList(APIRequest,APIResponse*)), Qt::DirectConnection);
 
     handler = webServer->createUrlHandler("/api/controller_list");
     connect(handler, SIGNAL(handleUrl(APIRequest,APIResponse*)), this, SLOT(handleGetControllerList(APIRequest,APIResponse*)), Qt::DirectConnection);
@@ -140,6 +142,23 @@ void APIController::handleDownloadFirmwareUrl(const APIRequest &, APIResponse *r
 
     response->setPayload(fileData);
     response->setContenetType("application/octet-stream");
+}
+
+void APIController::handleGetRouteList(const APIRequest &request, APIResponse *response)
+{
+    qDebug(QString("handleGetRouteList.").toLatin1());
+    QUrlQuery urlQuery(request.getUrl());
+
+    int routeID = urlQuery.queryItemValue("routeID").toInt();
+    Database db;
+
+    QJsonArray a = db.fetchItems(QString("SELECT deviceID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID));
+
+    QJsonDocument doc;
+    doc.setArray(a);
+    QByteArray data(doc.toJson());
+
+    response->setPayload(data);
 }
 
 void APIController::handleGetControllerList(const APIRequest &request, APIResponse *response)

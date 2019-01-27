@@ -38,7 +38,7 @@ public:
 	};
 	typedef std::function<void(const UDPMessage &message)> TUDPMessageCallback;
 	typedef std::function<void(bool connected)> TWIFIConnectionCallback;
-	typedef std::function<void(const JsonArray &array)> TNotificationListChangedCallback;
+	typedef std::function<void(const String &jsonText)> TNotificationListChangedCallback;
 
 	NetworkManager(void);
 	~NetworkManager(void);
@@ -54,11 +54,13 @@ public:
 	void sendUdpBroadcastMessage(const UDPMessage &message);
 	void sendUdpMessage(const UDPMessage &message, bool addToQueue);
 	bool sendUdpMessage(const UDPMessage &message, IPAddress &address, bool addToQueue);
+
 	String getControllerConfig(unsigned int serialNumber);
 	String getModuleConfig(unsigned int serialNumber, byte address);
 	String getDeviceConfig(int deviceID);
 	String getSignalAspect(int aspectID);
 	String getNotificationList(void);
+	String getRouteList(int routeID);
 
 	void setUdpMessageCallback(TUDPMessageCallback value) { m_udpMessageCallback = value;  }
 	void setWIFIConnectCallback(TWIFIConnectionCallback value) { m_wifiConnectCallback = value; }

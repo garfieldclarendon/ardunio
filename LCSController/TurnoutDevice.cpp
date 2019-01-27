@@ -3,6 +3,7 @@
 #include "TurnoutDevice.h"
 #include "TurnoutModule.h"
 #include "NetworkManager.h"
+#include "RouteMonitor.h"
 
 extern StaticJsonBuffer<2048> jsonBuffer;
 
@@ -104,14 +105,26 @@ bool TurnoutDevice::parseConfig(String &jsonText, bool setVersion)
 		m_data.inputBA = json["INPUTPIN"] == 1;
 
 	JsonArray &routes = json["routes"];
+	int routeIDs[MAX_ROUTE_ENTRIES];
+	byte count = routes.size();
+	DEBUG_PRINT("TurnoutDevice::parseConfig: TOTAL ROUTES %d\n", count);
 	for (byte x = 0; x < routes.size(); x++)
 	{
-		m_data.routes[x].routeID = routes[x]["routeID"];
-		m_data.routes[x].state = (TurnoutState)(int)routes[x]["turnoutState"];
-		DEBUG_PRINT("TurnoutDevice::parseConfig: ADDING ROUTE %d  STATE FOR ROUTE %d\n", m_data.routes[x].routeID, m_data.routes[x].state);
+		int routeID = routes[x]["routeID"];
+		routeIDs[x] = routeID;
+		DEBUG_PRINT("TurnoutDevice::parseConfig: ADDING ROUTE %d\n", routeID);
 	}
+	for (byte x = 0; x < count; x++)
+	{
+		Routes.addRoute(routeIDs[x]);
+	}
+	DEBUG_PRINT("TurnoutDevice::parseConfig: DONE ADDING ROUTES\n");
 	if (setVersion)
 	{
+		jsonBuffer.clear();
+		JsonObject &json = jsonBuffer.parseObject(jsonText);
+		json["version"] = CONFIG_VERSION;
+
 		jsonText = "";
 		json.printTo(jsonText);
 	}
@@ -156,19 +169,14 @@ void TurnoutDevice::processUDPMessage(ModuleData &data, const UDPMessage &messag
 	else if (message.getMessageID() == TRN_ACTIVATE_ROUTE)
 	{
 		DEBUG_PRINT("processUDPMessage deviceID: %d setTurnout for routeID: %d\n", getID(), message.getID());
-		newState = getTurnoutStateForRoute(message.getID());
+		newState = Routes.getTurnoutStateForRoute(getID(), message.getID());
 	}
-	else if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG)
+	else if (message.getMessageID() == SYS_RESET_DEVICE_CONFIG || message.getMessageID() == SYS_DEVICE_CONFIG_CHANGED)
 	{
+		DEBUG_PRINT("processUDPMessage deviceID: %d SYS_RESET_DEVICE_CONFIG or SYS_RESET_DEVICE_CONFIG MESSAGE RECEIVED\n", getID(), message.getID());
 		if (message.getID() == getID())
 		{
-			DEBUG_PRINT("processUDPMessage RESET DEVICE CONFIG\n", message.getID());
-			String json = NetManager.getDeviceConfig(getID());
-			parseConfig(json, true);
-			saveConfig(json);
-			setup(getID(), getPort());
-			byte data = 0;
-			setTurnout(data, TrnNormal);
+			resetConfig();
 		}
 	}
 	else if (message.getMessageID() == SYS_LOCK_DEVICE && message.getID() == getID())
@@ -177,7 +185,7 @@ void TurnoutDevice::processUDPMessage(ModuleData &data, const UDPMessage &messag
 	}
 	else if (message.getMessageID() == SYS_LOCK_ROUTE)
 	{
-		newState = getTurnoutStateForRoute(message.getID());
+		newState = Routes.getTurnoutStateForRoute(getID(), message.getID());
 		if (newState != TrnUnknown)
 		{
 			if (message.getField(0) == 0)
@@ -195,6 +203,17 @@ void TurnoutDevice::processUDPMessage(ModuleData &data, const UDPMessage &messag
 				// This turnout is included in the locked route.  NOTE:  Only set newLockoutRoute if the turnout is not currently locked to
 				//  a different route
 				newLockoutRoute = message.getID();
+			}
+		}
+	}
+	else if (message.getMessageID() == SYS_ROUTE_CONFIG_CHANGED)
+	{
+		for (byte x = 0; x < UDP_MESSAGE_DEVICE_COUNT; x++)
+		{
+			if (message.getDeviceID(x) == getID())
+			{
+				resetConfig();
+				break;
 			}
 		}
 	}
@@ -216,23 +235,6 @@ void TurnoutDevice::processUDPMessage(ModuleData &data, const UDPMessage &messag
 	if (m_lockedRoute == 0)
 		setLockoutRoute(newLockoutRoute);
 }
-
-TurnoutState TurnoutDevice::getTurnoutStateForRoute(int routeID)
-{
-	TurnoutState state(TrnUnknown);
-
-	for (byte x = 0; x < MAX_ROUTE_ENTRIES; x++)
-	{
-		if (m_data.routes[x].routeID == routeID)
-		{
-			state = m_data.routes[x].state;
-			DEBUG_PRINT("getTurnoutStateForRoute FOUND ROUTE ENTRY %d  NEW STATE %d\n", routeID, state);
-			break;
-		}
-	}
-	return state;
-}
-
 
 void TurnoutDevice::serverFound(UDPMessage &outMessage, byte &messageIndex)
 {
@@ -268,6 +270,17 @@ TurnoutState TurnoutDevice::readCurrentState(byte data)
 	}
 
 	return current;
+}
+
+void TurnoutDevice::resetConfig(void)
+{
+	DEBUG_PRINT("processUDPMessage RESET DEVICE CONFIG\n");
+	String json = NetManager.getDeviceConfig(getID());
+	parseConfig(json, true);
+	saveConfig(json);
+	setup(getID(), getPort());
+	byte data = 0;
+	setTurnout(data, TrnNormal);
 }
 
 void TurnoutDevice::setTurnout(byte &data, TurnoutState newState)

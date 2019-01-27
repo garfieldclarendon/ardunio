@@ -19,7 +19,7 @@ Rectangle {
     function saveData()
     {
         console.debug("TurnoutDetails::saveData!!!!");
-        aspectModel.save();
+        deviceProperties.saveData();
     }
     MessageDialog {
         id: messageDialog
@@ -51,6 +51,15 @@ Rectangle {
             main.cancelClicked();
         }
     }
+    DeviceProperties {
+        id: deviceProperties
+        deviceID: deviceEntity.data.deviceID
+        deviceClass: deviceEntity.data.deviceClass
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: genericDetails.bottom
+    }
 
     TurnoutRoutes {
         id: routeList
@@ -58,7 +67,7 @@ Rectangle {
 
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: genericDetails.bottom
+        anchors.top: deviceProperties.bottom
         anchors.bottom: parent.bottom
         onAddClicked: {
             var routeEntity;

@@ -252,7 +252,19 @@ void Database::getPanelOutputRoute(QJsonObject &obj)
     if(routeID > 0)
     {
         QJsonArray a = fetchItems(QString("SELECT deviceID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID));
-        obj["turnouts"] = a;
+        obj["turnouts1"] = a;
+        int counter = 2;
+        QString key;
+        key = QString("ROUTEID%1").arg(counter);
+        while(obj.contains(key))
+        {
+            routeID = obj[key].toVariant().toInt();
+            QJsonArray a = fetchItems(QString("SELECT deviceID, turnoutState FROM routeEntry WHERE routeID = %1").arg(routeID));
+            key = QString("turnouts%1").arg(counter);
+            obj[key] = a;
+            counter++;
+            key = QString("ROUTEID%1").arg(counter);
+        }
     }
 }
 
@@ -271,7 +283,7 @@ void Database::getDeviceProperties(int deviceID, QJsonObject &device)
 
 void Database::getTurnoutConfig(int deviceID, QJsonObject &device)
 {
-    QJsonArray routes = fetchItems(QString("SELECT routeID, turnoutState FROM routeEntry WHERE deviceID = %1").arg(deviceID));
+    QJsonArray routes = fetchItems(QString("SELECT routeID FROM routeEntry WHERE deviceID = %1").arg(deviceID));
     device["routes"] = routes;
 }
 
@@ -1000,6 +1012,14 @@ void Database::createDevicePropertyEntries(int deviceID, DeviceClassEnum deviceC
         }
         {
             QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ROUTEID', 0)").arg(deviceID);
+            executeQuery(sql);
+        }
+        {
+            QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ROUTEID2', 0)").arg(deviceID);
+            executeQuery(sql);
+        }
+        {
+            QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'ROUTEID3', 0)").arg(deviceID);
             executeQuery(sql);
         }
         QString sql = QString("INSERT INTO deviceProperty (deviceID, key, value) VALUES(%1, 'FLASHINGVALUE', 0)").arg(deviceID);

@@ -141,6 +141,10 @@ private:
     /// Builds the where clause.
     /// @param url QUrl containing field/value pairs used in the WHERE clause.
     QString buildWhere(const QUrl &url);
+    /// Handles additional processing after a successful data modification transaction.
+    /// @param entityName QString containing the name of the entity that changed.
+    /// @param jsonData QByteArra containing the data of the entity that changed.
+    void handleTriggers(const QString &entityName, const QByteArray &jsonData);
 
 };
 
