@@ -72,6 +72,8 @@ public:
 	bool updateNotificationList(int controllerID, const IPAddress &address);
 	void setNotificationList(const String &jsonText);
 	void clearNotificationList(void);
+	void stopUDP(void);
+	void resumeUDP(void);
 
 private:
 	bool processWiFi(void);

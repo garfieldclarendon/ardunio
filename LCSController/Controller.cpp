@@ -128,15 +128,24 @@ void Controller::downloadFirmwareUpdate(void)
 		NetManager.sendUdpBroadcastMessage(message);
 		delay(250);
 		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-		String updateUrl("/controller/firmware?ControllerType=");
+		String updateUrl("http://");
+		updateUrl += address.toString();
+		updateUrl += ":8080/control/firmware?ControllerType=";
 		updateUrl += m_class;
 		DEBUG_PRINT("Checking for firmware update at: %s\n", updateUrl.c_str());
 		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-		ESPhttpUpdate.update(address.toString(), port, updateUrl);
+
+		NetManager.stopUDP();
+		ESPhttpUpdate.update(updateUrl, String());
+		NetManager.resumeUDP();
 
 		if (ESPhttpUpdate.getLastError() != 0)
 		{
-			DEBUG_PRINT("%s\n", ESPhttpUpdate.getLastErrorString().c_str());
+			// Print directly to the output since this is a critical error
+			Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+			Serial.println(updateUrl.c_str());
+			Serial.printf("\nFIRMWARE UPDATE FAILED:  %s\n\n", ESPhttpUpdate.getLastErrorString().c_str());
+			Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			restart();
 		}
 	}

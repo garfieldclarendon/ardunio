@@ -339,7 +339,7 @@ String NetworkManager::httpGet(const String &url)
 {
 	HTTPClient http;
 
-	m_udp.stop();
+	stopUDP();
 	http.setReuse(false);
 
 	// Build the full url including the port number
@@ -374,7 +374,7 @@ String NetworkManager::httpGet(const String &url)
 
 	http.end();
 	yield();
-	m_udp.begin(UdpPort);
+	resumeUDP();
 	return payload;
 }
 
@@ -483,6 +483,16 @@ void NetworkManager::clearNotificationList(void)
 		m_firstNotification = n->next;
 		delete n;
 	}
+}
+
+void NetworkManager::stopUDP(void)
+{
+	m_udp.stop();
+}
+
+void NetworkManager::resumeUDP(void)
+{
+	m_udp.begin(UdpPort);
 }
 
 void NetworkManager::setNotificationList(const String &jsonText)

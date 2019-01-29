@@ -27,11 +27,10 @@ public:
 	void restart(void);
 	void networkOnline(void);
 	void networkOffline(void);
+	void resetConfiguration(void);
 
 private:
 	void downloadFirmwareUpdate(void);
-	void getServerAddress(IPAddress &address, int &port);
-	void resetConfiguration(void);
 	void sendControllerOnlineMessage(IPAddress &address);
 
 	ControllerClassEnum m_class;
