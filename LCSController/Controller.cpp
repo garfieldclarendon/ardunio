@@ -130,7 +130,7 @@ void Controller::downloadFirmwareUpdate(void)
 		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 		String updateUrl("http://");
 		updateUrl += address.toString();
-		updateUrl += ":8080/control/firmware?ControllerType=";
+		updateUrl += ":8080/controller/firmware?ControllerType=";
 		updateUrl += m_class;
 		DEBUG_PRINT("Checking for firmware update at: %s\n", updateUrl.c_str());
 		DEBUG_PRINT("+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
