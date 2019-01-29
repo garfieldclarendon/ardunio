@@ -131,7 +131,10 @@ void APIController::handleDownloadFirmwareUrl(const APIRequest &, APIResponse *r
     QString fileName;
     QString path = QCoreApplication::applicationDirPath();
     QDir::setCurrent(path);
-    path += "/Builds/";
+    if(path.endsWith("\\") || path.endsWith("/"))
+        path += "Builds/";
+    else
+        path += "/Builds";
     fileName = path + "LCSController.ino.bin";
 
     qDebug(fileName.toLatin1());
