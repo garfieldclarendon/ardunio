@@ -93,8 +93,6 @@ void setup()
 	Serial.println(ESP.getFreeHeap());
 	Serial.printf("Serial Number: %d\n\n", ESP.getChipId());
 	Serial.println("-------------------------------------------------");
-	Serial.flush();
-	Serial.end();
 #endif
 	DEBUG_PRINT("setup\n");
 	EEPROM.begin(128);

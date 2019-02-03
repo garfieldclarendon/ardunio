@@ -43,6 +43,7 @@ void DeviceMonitor::addDevice(int deviceID)
 			}
 			else if (m_device[x] == 0)
 			{
+				DEBUG_PRINT("DeviceMonitor::addDevice: ADDING DEVICE %d\n", deviceID);
 				m_device[x] = deviceID;
 				m_status[x] = 0;
 				break;

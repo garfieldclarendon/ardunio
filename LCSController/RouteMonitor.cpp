@@ -43,6 +43,14 @@ void RouteMonitor::addRoute(int routeID)
 			addRoute(routeID, a);
 		}
 	}
+	else
+	{
+		loadRoute(routeID);
+		for (byte x = 0; x < MAX_ROUTE_ENTRIES; x++)
+		{
+			Devices.addDevice(m_route.m_entries[x].m_turnoutID);
+		}
+	}
 }
 
 void RouteMonitor::addRoute(int routeID, const JsonArray &turnouts)

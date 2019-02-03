@@ -278,6 +278,10 @@ String PanelOutputDevice::loadConfig(void)
 		{
 			f.read((uint8_t*)m_routeList, m_data.m_routeCount);
 			f.close();
+			for (byte x = 0; x < m_data.m_routeCount; x++)
+			{
+				Routes.addRoute(m_routeList[x]);
+			}
 		}
 		else
 		{

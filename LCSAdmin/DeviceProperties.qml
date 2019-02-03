@@ -82,7 +82,7 @@ Rectangle {
                 }
                 ControlComboBox {
                     id: deviceCombo
-                    visible: key === "ITEMID"
+                    visible: false //key === "ITEMID"
                     model: deviceModel
                     lookupField: "deviceID"
                     displayField: "deviceName"
