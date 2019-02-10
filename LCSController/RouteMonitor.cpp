@@ -96,7 +96,7 @@ void RouteMonitor::loadRoute(int routeID)
 		reset();
 
 		String fileName(createFileName(routeID));
-		DEBUG_PRINT("RouteMonitor::loadConfig %s\n", fileName.c_str());
+//		DEBUG_PRINT("RouteMonitor::loadConfig %s\n", fileName.c_str());
 
 		File f = SPIFFS.open(fileName, "r");
 
@@ -124,7 +124,7 @@ PinStateEnum RouteMonitor::getRouteState(int routeID)
 			if (m_route.m_entries[x].m_turnoutID > 0)
 			{
 				byte status = Devices.getDeviceStatus(m_route.m_entries[x].m_turnoutID);
-				DEBUG_PRINT("RouteMonitor::getRouteState Turnout: %d  Current State: %d  TargetState: %d\n", m_route.m_entries[x].m_turnoutID, status, m_route.m_entries[x].m_turnoutState);
+//				DEBUG_PRINT("RouteMonitor::getRouteState Turnout: %d  Current State: %d  TargetState: %d\n", m_route.m_entries[x].m_turnoutID, status, m_route.m_entries[x].m_turnoutState);
 				if (status != m_route.m_entries[x].m_turnoutState)
 				{
 					if (status == TrnToDiverging || status == TrnToNormal)

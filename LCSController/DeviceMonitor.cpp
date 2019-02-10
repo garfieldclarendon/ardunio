@@ -16,6 +16,7 @@ DeviceMonitor::~DeviceMonitor()
 
 void DeviceMonitor::processMessage(const UDPMessage & message)
 {
+//	DEBUG_PRINT("DeviceMonitor1:  NEW MESSAGE! MessageID %d  ID %d\n", message.getMessageID(), message.getID());
 	if (message.getMessageID() == TRN_STATUS || message.getMessageID() == BLK_STATUS)
 	{
 		setDeviceStatus(message.getMessageID(), message.getField(0));
@@ -62,7 +63,7 @@ bool DeviceMonitor::setDeviceStatus(int deviceID, byte status)
 		{
 			m_status[x] = status;
 			ret = true;
-			DEBUG_PRINT("DeviceMonitor::setDeviceStatus DEVICEID %d NEW STATUS: %d\n", deviceID, status);
+//			DEBUG_PRINT("DeviceMonitor::setDeviceStatus2 DEVICEID %d NEW STATUS: %d\n", deviceID, status);
 			break;
 		}
 		else if (m_device[x] == 0)
@@ -73,7 +74,7 @@ bool DeviceMonitor::setDeviceStatus(int deviceID, byte status)
 	return ret;
 }
 
-byte DeviceMonitor::getDeviceStatus(int deviceID) const
+byte DeviceMonitor::getDeviceStatus(int deviceID) 
 {
 	byte status(0);
 	bool found = false;
@@ -94,6 +95,7 @@ byte DeviceMonitor::getDeviceStatus(int deviceID) const
 
 	if (!found)
 	{
+		addDevice(deviceID);
 		DEBUG_PRINT("DeviceMonitor::getDeviceStatus DEVICEID %d NOT FOUND!!!!!!!!!!!!!!!!!!!!!\n", deviceID);
 	}
 	return status;

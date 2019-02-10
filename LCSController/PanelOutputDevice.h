@@ -10,13 +10,14 @@ struct PanelOutputDataStruct
 	byte m_onValue;
 	byte m_flashValue;
 	byte m_routeCount;
+	int m_routeList[5];
 };
 
 typedef struct PanelOutputDataStruct PanelOutputDataStruct;
 
 class PanelOutputDevice : public Device
 {
-	const byte CONFIG_VERSION = 5;
+	const byte CONFIG_VERSION = 6;
 public:
 	PanelOutputDevice();
 	~PanelOutputDevice();
@@ -39,6 +40,5 @@ private:
 	bool m_downloadConfig;
 	PanelOutputDataStruct m_data;
 	byte m_currentStatus;
-	int *m_routeList;
 };
 

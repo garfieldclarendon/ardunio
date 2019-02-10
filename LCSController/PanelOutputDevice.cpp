@@ -8,8 +8,9 @@
 extern StaticJsonBuffer<2048> jsonBuffer;
 
 PanelOutputDevice::PanelOutputDevice()
-	: m_downloadConfig(false), m_currentStatus(PinOff), m_routeList(nullptr)
+	: m_downloadConfig(false), m_currentStatus(PinOff)
 {
+	memset(&m_data, 0, sizeof(PanelOutputDataStruct));
 	m_data.m_itemID = -1;
 	m_data.m_onValue = 0;
 	m_data.m_flashValue = 0;
@@ -109,17 +110,22 @@ void PanelOutputDevice::updateCurrentStatus(void)
 	//		3.  Otherwise, the LED should be OFF.
 	if (m_data.m_routeCount > 0)
 	{
-		DEBUG_PRINT("PanelOutputDevice::updateCurrentStatus device: %d  ROUTE COUNT: %d\n", getID(), m_data.m_routeCount);
+//		DEBUG_PRINT("PanelOutputDevice::updateCurrentStatus device: %d  ROUTE COUNT: %d\n", getID(), m_data.m_routeCount);
 		PinStateEnum routeState;
 		for (byte x = 0; x < m_data.m_routeCount; x++)
 		{
-			routeState = Routes.getRouteState(*m_routeList + x);
-			DEBUG_PRINT("PanelOutputDevice::updateCurrentStatus device: %d  ROUTE PIN STATE: %d FOR ROUTE: %d\n", getID(), routeState, *m_routeList + x);
+			routeState = Routes.getRouteState(m_data.m_routeList[x]);
+//			DEBUG_PRINT("PanelOutputDevice::updateCurrentStatus device: %d  ROUTE PIN STATE: %d FOR ROUTE: %d\n", getID(), routeState, m_data.m_routeList[x]);
 			// if onValue is 1 and the route is ACTIVE, break.
-			// In this case, if the route is active or in the process of being active
+			// In this case, if the route is active
 			// we don't need to check the remaining routes.
-			if (routeState != PinOff)
+			if (routeState == PinOn)
 			{
+				break;
+			}
+			else if (routeState == PinFlashing && m_data.m_onValue == 1)
+			{
+				routeState = PinOff;
 				break;
 			}
 		}
@@ -137,10 +143,10 @@ void PanelOutputDevice::updateCurrentStatus(void)
 			}
 			else
 			{
-				if(routeState == PinFlashing)
-					m_currentStatus = PinOff;
-				else
+				if (routeState == PinOff)
 					m_currentStatus = PinOn;
+				else
+					m_currentStatus = PinFlashing;
 			}
 		}
 	}
@@ -185,9 +191,7 @@ bool PanelOutputDevice::parseConfig(String &jsonText, bool setVersion)
 	if (routeID > 0)
 	{
 		DEBUG_PRINT("parseConfig  ID: %d  FOUND ROUTES!  ROUTEID: %d.\n", getID(), routeID);
-		int newRoutes[5];
-		newRoutes[0] = routeID;
-		m_data.m_routeCount = 1;
+		m_data.m_routeList[0] = routeID;
 		JsonArray &turnouts = json["turnouts1"].asArray();
 		Routes.addRoute(routeID, turnouts);
 		byte counter = 2;
@@ -201,9 +205,9 @@ bool PanelOutputDevice::parseConfig(String &jsonText, bool setVersion)
 			routeID = json[key];
 			if (routeID > 0)
 			{
-				newRoutes[routeCount] = routeID;
+				m_data.m_routeList[routeCount] = routeID;
 				key = "turnouts";
-				key += routeCount + 1;
+				key += counter;
 				JsonArray &turnouts = json[key].asArray();
 				DEBUG_PRINT("parseConfig  ID: %d  KEY: %s.\n", getID(), key.c_str());
 				Routes.addRoute(routeID, turnouts);
@@ -214,8 +218,6 @@ bool PanelOutputDevice::parseConfig(String &jsonText, bool setVersion)
 			key += counter;
 		}
 		m_data.m_routeCount = routeCount;
-		m_routeList = new int[routeCount];
-		memcpy(m_routeList, &newRoutes, routeCount);
 	}
 
 	if (setVersion)
@@ -264,31 +266,6 @@ String PanelOutputDevice::loadConfig(void)
 		DEBUG_PRINT("PanelOutputDevice Config file %s is missing or can not be opened\n", fileName.c_str());
 	}
 
-	if (ret == true && m_data.m_routeCount > 0)
-	{
-		m_routeList = new int[m_data.m_routeCount];
-		String fileName("/Device_");
-		fileName += getID();
-		fileName += "_routes.json";
-		DEBUG_PRINT("PanelOutputDevice::loadConfig routes %s\n", fileName.c_str());
-
-		File f = SPIFFS.open(fileName, "r");
-
-		if (f)
-		{
-			f.read((uint8_t*)m_routeList, m_data.m_routeCount);
-			f.close();
-			for (byte x = 0; x < m_data.m_routeCount; x++)
-			{
-				Routes.addRoute(m_routeList[x]);
-			}
-		}
-		else
-		{
-			DEBUG_PRINT("PanelOutputDevice route list file %s is missing or can not be opened\n", fileName.c_str());
-		}
-	}
-
 	updateCurrentStatus();
 
 	if (ret)
@@ -315,26 +292,5 @@ void PanelOutputDevice::saveConfig(const String &)
 	else
 	{
 		DEBUG_PRINT("Error saving PanelOutputDevice Config file %s\n", fileName.c_str());
-	}
-
-	// Load routes if they exist
-	if (m_data.m_routeCount > 0)
-	{
-		String fileName("/Device_");
-		fileName += getID();
-		fileName += "_routes.json";
-		DEBUG_PRINT("SAVE PanelOutputDevice Route List %s\n", fileName.c_str());
-
-		File f = SPIFFS.open(fileName, "w");
-
-		if (f)
-		{
-			f.write((uint8_t*)m_routeList, m_data.m_routeCount);
-			f.close();
-		}
-		else
-		{
-			DEBUG_PRINT("Error saving PanelOutputDevice route list file %s\n", fileName.c_str());
-		}
 	}
 }

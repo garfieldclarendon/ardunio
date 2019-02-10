@@ -15,7 +15,7 @@ public:
 	void addDevice(int deviceID);
 	bool setDeviceStatus(int deviceID, byte status);
 
-	byte getDeviceStatus(int deviceID) const;
+	byte getDeviceStatus(int deviceID);
 
 private:
 	int m_device[TOTAL_DEVICES];
